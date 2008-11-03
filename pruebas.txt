@@ -1,0 +1,20 @@
+
+\'\'\'Texto en negrita\'\'\';;-1
+\'\'Texto en cursiva\'\';;-1
+\[\[Título del enlace\]\];;-1
+\[http\:\/\/www\.ejemplo\.com Título del enlace\];;-1
+\[\[Imagen\:Ejemplo\.jpg\]\];;-1
+\[\[Media\:Ejemplo\.ogg\]\];;-1
+\&lt\;math\&gt\;Escribe aquí una fórmula\&lt\;\/math\&gt;;-1
+\&lt\;nowiki\&gt\;Aquí inserta texto sin formato\&lt\;\/nowiki\&gt;;-1
+\=\= Texto de titular \=\=;;-1
+Aquí inserta texto sin formato;;-1
+Escribe aquí una fórmula;;-1
+Texto de titular;;-1
+Título del enlace;;-1
+Texto en cursiva;;-1
+Texto en negrita;;-1
+Ejemplo\.jpg;;-1
+Ejemplo\.ogg;;-1
+\-\-\[\[Special\:Contributions;;-1
+\[\[Imagen\:\[\[Imagen\:;;-1
