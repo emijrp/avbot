@@ -28,6 +28,9 @@
 #Línea no gestionada ---> 14[[07Especial:Log/protect14]]4 protect10 02 5* 03Edmenb 5*  10protegió [[02Discusión:W.A.S.P.10]] [edit=autoconfirmed] (caduca el 14:10 10 nov 2008) [move=autoconfirmed] (caduca el 14:10 10 nov 2008): [[Wikipedia:Vandalismo|Vandalismo]] excesivo
 #############################################
 
+#-----------------------------------------------------------------------------------------------------------------------
+# EXTERNAL FILES
+#-----------------------------------------------------------------------------------------------------------------------
 import os,sys,re
 import threading,thread
 import httplib,urllib,urllib2
@@ -40,7 +43,7 @@ import wikipedia, difflib
 import datetime
 
 #-----------------------------------------------------------------------------------------------------------------------
-# MIS MODULOS
+# MY FILES
 #-----------------------------------------------------------------------------------------------------------------------
 import xxxload
 import xxxsave
@@ -52,7 +55,6 @@ import xxxcomb
 #-----------------------------------------------------------------------------------------------------------------------
 # VARIABLES
 #-----------------------------------------------------------------------------------------------------------------------
-
 global ediciones
 global admins
 global bots
@@ -72,36 +74,36 @@ global whitelist
 global colors
 global edits
 global site
-global nickdelbot
-global velocidad
+global botNick
+global speed
 global tvel
 global stats
 global tstats
-global novato
+global newbie
 global patterns
-global anyoactual
+global currentYear
 
 #-----------------------------------------------------------------------------------------------------------------------
 # CONFIGURACION DEL BOT
 #-----------------------------------------------------------------------------------------------------------------------
-nickdelbot=u'AVBOT'
+botNick=u'AVBOT'
 language=u'es'
 site=wikipedia.Site(language, 'wikipedia')
 colors={'admin':'lightblue', 'bot':'lightpurple', 'reg':'lightgreen', 'anon':'lightyellow'}
 edits={'admin':0,'bot':0,'reg':0,'anon':0}
 today=datetime.date.today()
-anyoactual=today.year
+currentYear=today.year
 
 #-----------------------------------------------------------------------------------------------------------------------
 # PARAMETROS DE REVERSION
 #-----------------------------------------------------------------------------------------------------------------------
 # cuidado al incrementar el numero, que puede hacer que usuarios con acento parezcan novatos, Amadís=26
-novato=25 #hasta cuando se considera novato a un usuario
+newbie=25 #hasta cuando se considera novato a un usuario
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ESTADISTICAS
 #-----------------------------------------------------------------------------------------------------------------------
-velocidad=0
+speed=0
 stats={}
 stats[2]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 stats[12]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
@@ -120,14 +122,14 @@ wikipedia.output(u'%s\n# NOMBRE: AVBOT\n# VERSIÓN: 0.6\n# MISIÓN: REVERTIR VAN
 #-----------------------------------------------------------------------------------------------------------------------
 # CARGANDO DATOS...
 #-----------------------------------------------------------------------------------------------------------------------
-ediciones=xxxload.loadEdits(novato)
+ediciones=xxxload.loadEdits(newbie)
 admins=xxxload.loadAdmins(site)
 bots=xxxload.loadBots(site)
 
 contexto=ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]' #mejor no incluir \[ \] y \|  \{\} ???
-pruebas=xxxload.loadTests(pruebas, contexto, site, nickdelbot)
+pruebas=xxxload.loadTests(pruebas, contexto, site, botNick)
 wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para pruebas..." % len(pruebas.items()))
-[vandalismos, error]=xxxload.loadVandalism(contexto, site, nickdelbot)
+[vandalismos, error]=xxxload.loadVandalism(contexto, site, botNick)
 wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para vandalismos...%s" % (len(vandalismos.items()), error))
 [imageneschocantes, error]=xxxload.loadShockingImages(site)
 wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
@@ -223,11 +225,11 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 	global colors
 	global edits
 	global site
-	global nickdelbot
-	global novato
+	global botNick
+	global newbie
 	global patterns
 	global stats
-	global anyoactual
+	global currentYear
 	
 	p=wikipedia.Page(site, titulo)
 	if p.exists():
@@ -239,7 +241,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 		
 		#recarga de expresiones regulares de vandalismos
 		if wtitle==u'Usuario:Emijrp/Lista del bien y del mal.css':
-			[vandalismos_nuevo, error]=xxxload.loadVandalism(contexto, site, nickdelbot)
+			[vandalismos_nuevo, error]=xxxload.loadVandalism(contexto, site, botNick)
 			if xxxload.changedRegexpsList(vandalismos, vandalismos_nuevo):
 				wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
 				if error:
@@ -278,11 +280,11 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 				if ediciones.has_key(author):
 					#actualizamos? dado de 10 caras
 					if not random.randint(0,10): #afirmativo si sale cero
-						ediciones[author]=xxxload.loadUserEdits(author, site, novato)
+						ediciones[author]=xxxload.loadUserEdits(author, site, newbie)
 						xxxsave.saveedits(ediciones)
 				else:
 					#cargamos
-					ediciones[author]=xxxload.loadUserEdits(author, site, novato)
+					ediciones[author]=xxxload.loadUserEdits(author, site, newbie)
 					xxxsave.saveedits(ediciones)
 				edicionesauthor=ediciones[author]
 			
@@ -294,7 +296,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 				else:
 					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (+%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, len(newtext)))
 				
-				[done, motivo, stats]=xxxanalysis.isRubbish(p, userclass, wtitle, newtext, colors, author, edicionesauthor, novato, namespace, pruebas, vandalismos, stats)
+				[done, motivo, stats]=xxxanalysis.isRubbish(p, userclass, wtitle, newtext, colors, author, edicionesauthor, newbie, namespace, pruebas, vandalismos, stats)
 				
 				if done:
 					wikipedia.output(u'\03{lightred}Alerta: Poniendo destruir en [[%s]]. Motivo: %s\03{default}' % (wtitle, motivo))
@@ -332,7 +334,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, lenold, lennew, signo, lendiff))
 			
 			#evitamos analizar nuestras propias ediciones
-			if author==nickdelbot:
+			if author==botNick:
 				return
 			
 			#destruires
@@ -357,25 +359,25 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			#wikipedia.output(cleandata)
 			
 			#deteccion de blanqueos
-			[done, controlvand, stats]=xxxanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, novato, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, nickdelbot, oldtext, p, oldid, stats, anyoactual)
+			[done, controlvand, stats]=xxxanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, botNick, oldtext, p, oldid, stats, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
 			
 			#deteccion de blanqueo de secciones
-			"""[done, controlvand, stats]=xxxanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, novato, data, controlvand, diff, oldid, site, nickdelbot, stats, p, oldtext, vh, anyoactual)
+			"""[done, controlvand, stats]=xxxanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, stats, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
 				return"""
 			
 			#deteccion de pruebas
-			"""[done, details, controlvand, stats]=xxxanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, novato, pruebas, cleandata, controlvand, diff, site, nickdelbot, stats, p, oldtext, vh, anyoactual)
+			"""[done, details, controlvand, stats]=xxxanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, newbie, pruebas, cleandata, controlvand, diff, site, botNick, stats, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, details, '-'*50))
 				return"""
 			
 			#deteccion de texto vandalico tras ==Secciones== blabla................
-			[done, controlvand, stats]=xxxanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, novato, data, controlvand, diff, oldid, site, nickdelbot, stats, p, oldtext, vh, anyoactual)
+			[done, controlvand, stats]=xxxanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, stats, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
@@ -386,13 +388,13 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
 			#
-			[done, score, details, controlvand, stats]=xxxanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, novato, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, nickdelbot, oldtext, stats, anyoactual)
+			[done, score, details, controlvand, stats]=xxxanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, stats, currentYear)
 			if done: 
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, score, details, '-'*50))
 				return
 			
 			#imagenes chocantes
-			[done, controlvand, stats]=xxxanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, novato, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, nickdelbot, oldtext, stats, anyoactual)
+			[done, controlvand, stats]=xxxanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, newbie, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, stats, currentYear)
 			if done: 
 				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
@@ -404,20 +406,20 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			# cambiar nacimientos por fallecimientos
 			
 			#proteccion anticumpleaños
-			[done, motivo, controlvand, stats]=xxxanalysis.antiBirthday(wtitle, userclass, edicionesauthor, novato, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, nickdelbot, author, oldid, stats, p, anyoactual)
+			[done, motivo, controlvand, stats]=xxxanalysis.antiBirthday(wtitle, userclass, edicionesauthor, newbie, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, botNick, author, oldid, stats, p, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, wtitle))
 				return
 			
 			
 			#autofirmas solo en discusiones solo para anonimos y novatos
-			"""done=xxxanalysis.autoSign(userclass, edicionesauthor, novato, namespace, p, vh, author, nickdelbot, data, patterns, site, wtitle, diff, newtext)
+			"""done=xxxanalysis.autoSign(userclass, edicionesauthor, newbie, namespace, p, vh, author, botNick, data, patterns, site, wtitle, diff, newtext)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Comentario sin firmar de %s en [[%s]]\03{default}' % (author, wtitle))
 				return"""
 			
 			#control de spam e imagenes de hostings ajenos
-			if namespace==0 and (userclass=='anon' or (userclass=='reg' and edicionesauthor<=novato)):
+			if namespace==0 and (userclass=='anon' or (userclass=='reg' and edicionesauthor<=newbie)):
 				m=patterns['spam'].finditer(cleandata)
 				if m:
 					for i in m:
@@ -496,7 +498,7 @@ class avbot(SingleServerIRCBot):
 		c.join(self.channel)
 	
 	def on_pubmsg(self, c, e):
-		global velocidad
+		global speed
 		global tvel
 		global tstats
 		global site
@@ -530,7 +532,7 @@ class avbot(SingleServerIRCBot):
 				stats[2]['T']+=1
 				stats[12]['T']+=1
 				stats[24]['T']+=1
-				velocidad+=1
+				speed+=1
 				
 				thread.start_new_thread(edicion,(titulo,author,new,minor,diff,oldid,resumen))
 				break
@@ -550,7 +552,7 @@ class avbot(SingleServerIRCBot):
 				resumen=''
 				time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false
 				thread.start_new_thread(edicion,(titulo,author,new,minor,diff,oldid,resumen))
-				velocidad+=1
+				speed+=1
 				break
 		elif re.search(patterns['bloqueo'], linea):
 			match=patterns['bloqueo'].finditer(linea)
@@ -608,50 +610,32 @@ class avbot(SingleServerIRCBot):
 					pass
 			f.close()
 		
-		#calculando velocidad
-		if time.time()-tvel>=60:
+		#Calculating and showing statistics
+		if time.time()-tvel>=60: #Showing information in console every 60 seconds
 			intervalo=int(time.time()-tvel)
-			wikipedia.output(u'\03{lightgreen}Velocidad media: %d ediciones/minuto\03{default}' % int(velocidad/(intervalo/60.0)))
+			wikipedia.output(u'\03{lightgreen}Velocidad media: %d ediciones/minuto\03{default}' % int(speed/(intervalo/60.0)))
 			wikipedia.output(u'\03{lightgreen}Resumen últimas 2 horas: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (stats[2]['V'], stats[2]['BL'], stats[2]['P'], stats[2]['S'], stats[2]['B'], stats[2]['M'], stats[2]['T'], stats[2]['D']))
 			tvel=time.time()
-			velocidad=0
+			speed=0
 		
-		#recalculando stats
-		stats[2]['M']=stats[2]['V']+stats[2]['BL']+stats[2]['P']+stats[2]['S']
-		stats[2]['B']=stats[2]['T']-stats[2]['M']
+		#Recalculating statistics
+		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
+			stats[period]['M']=stats[period]['V']+stats[period]['BL']+stats[period]['P']+stats[period]['S']
+			stats[period]['B']=stats[period]['T']-stats[period]['M']
 		
-		stats[12]['M']=stats[12]['V']+stats[12]['BL']+stats[12]['P']+stats[12]['S']
-		stats[12]['B']=stats[12]['T']-stats[12]['M']
-		
-		stats[24]['M']=stats[24]['V']+stats[24]['BL']+stats[24]['P']+stats[24]['S']
-		stats[24]['B']=stats[24]['T']-stats[24]['M']
-		
-		#guardando stats
-		if time.time()-tstats[2]>=60*60*2: #cada 2 horas
-			xxxsave.savestats(stats, 2, site)
-			tstats[2]=time.time()
-			stats[2]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-		
-		if time.time()-tstats[12]>=60*60*12: #cada 12 horas
-			xxxsave.savestats(stats, 12, site)
-			tstats[12]=time.time()
-			stats[12]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-		
-		if time.time()-tstats[24]>=60*60*24: #cada 24 horas
-			xxxsave.savestats(stats, 24, site)
-			tstats[24]=time.time()
-			stats[24]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+		#Saving statistics
+		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
+			if time.time()-tstats[period]>=60*60*period:
+				xxxsave.savestats(stats, period, site)
+				tstats[period]=time.time()
+				stats[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 
-def main():
-	global language
-	global nickdelbot
-	import sys
-	
+def main(botNick, language):
 	channel = '#%s.wikipedia' % language
-	nickname = '%s%s' % (nickdelbot, str(random.randint(1000, 9999)))
+	nickname = '%s%s' % (botNick, str(random.randint(1000, 9999)))
 	
 	bot = avbot(channel, nickname, 'irc.wikimedia.org', 6667)
 	bot.start()
 
 if __name__ == '__main__':
-	main()
+	main(botNick, language)
