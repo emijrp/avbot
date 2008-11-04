@@ -2,10 +2,10 @@
 
 import re, wikipedia, datetime
 
-import xxxload
-import xxxsave
-import xxxmsg
-import xxxchan
+import avbotload
+import avbotsave
+import avbotmsg
+import avbotchan
 
 def sameOldid(oldid, id, oldtext, p):
 	#return id, p.getOldVersion(id) #mientras averiguo lo de abajo
@@ -78,11 +78,11 @@ def improveNewArticle(namespace, p):
 				newnewtext=u''
 				if not p.interwiki():
 					try:
-						[newnewtext, resumen]=xxxchan.magicInterwiki(p, resumen, 'en')
+						[newnewtext, resumen]=avbotchan.magicInterwiki(p, resumen, 'en')
 					except:
 						pass
-				[newnewtext, resumen]=xxxchan.vtee(newnewtext, resumen)
-				#[newnewtext, resumen]=xxxchan.cosmetic(newnewtext, resumen)
+				[newnewtext, resumen]=avbotchan.vtee(newnewtext, resumen)
+				#[newnewtext, resumen]=avbotchan.cosmetic(newnewtext, resumen)
 				if len(newnewtext)>len(newtext):
 					p.put(newnewtext, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
 					return True, resumen
@@ -115,11 +115,11 @@ def isBlanking(namespace, wtitle, author, userclass, edicionesauthor, novato, le
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
-					xxxmsg.msgBlanqueo(author, site, wtitle, diff, controlvand[author]['avisos'])
+					avbotmsg.msgBlanqueo(author, site, wtitle, diff, controlvand[author]['avisos'])
 					
 					#avisamos en WP:VEC
 					if len(controlvand[author].items())==4:
-						xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 					return True, controlvand, stats
 				c+=1
 	return False, controlvand, stats
@@ -159,11 +159,11 @@ def isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, nov
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
-						xxxmsg.msgBlanqueo(author, site, wtitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgBlanqueo(author, site, wtitle, diff, controlvand[author]['avisos'])
 						
 						#avisamos en WP:VEC
 						if len(controlvand[author].items())==4:
-							xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+							avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 						
 						return True, controlvand, stats
 					c+=1
@@ -201,11 +201,11 @@ def isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, no
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
-						xxxmsg.msgVandalismo(author, site, wtitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgVandalismo(author, site, wtitle, diff, controlvand[author]['avisos'])
 						
 						#avisamos en WP:VEC
 						if len(controlvand[author].items())==4:
-							xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+							avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 						
 						return True, controlvand, stats
 					c+=1
@@ -248,11 +248,11 @@ def isVandalism(namespace, wtitle, author, userclass, edicionesauthor, novato, v
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
-					xxxmsg.msgVandalismo(author, site, wtitle, diff, controlvand[author]['avisos'])
+					avbotmsg.msgVandalismo(author, site, wtitle, diff, controlvand[author]['avisos'])
 					
 					#avisamos en WP:VEC
 					if len(controlvand[author].items())==4:
-						xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 					
 					#guardamos log
 					log=open('/home/emijrp/public_html/avbot/%s.txt' % datetime.date.today(), 'a')
@@ -289,11 +289,11 @@ def isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, nov
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
-						xxxmsg.msgContenidoChocante(author, site, wtitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgContenidoChocante(author, site, wtitle, diff, controlvand[author]['avisos'])
 						
 						#avisamos en WP:VEC
 						if len(controlvand[author].items())==4:
-							xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+							avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 						
 						return True, controlvand, stats
 					c+=1
@@ -336,11 +336,11 @@ def isTest(namespace, wtitle, author, userclass, edicionesauthor, novato, prueba
 				
 				#avisamos al usuario
 				controlvand[author]['avisos']+=1
-				xxxmsg.msgPrueba(author, site, wtitle, diff, controlvand[author]['avisos'])
+				avbotmsg.msgPrueba(author, site, wtitle, diff, controlvand[author]['avisos'])
 				
 				#avisamos en WP:VEC
 				if len(controlvand[author].items())==4:
-					xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+					avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 				
 				return True, details, controlvand, stats
 	return False, details, controlvand, stats
@@ -425,13 +425,13 @@ def antiBirthday(wtitle, userclass, edicionesauthor, novato, namespace, oldtext,
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
 					if re.search(ur'(?i)irrelevante', motivo):
-						xxxmsg.msgEnlaceIrrelevante(author, site, wtitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgEnlaceIrrelevante(author, site, wtitle, diff, controlvand[author]['avisos'])
 					elif re.search(ur'(?i)imposible', motivo):
-						xxxmsg.msgFechaImposible(author, site, wtitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgFechaImposible(author, site, wtitle, diff, controlvand[author]['avisos'])
 					
 					#avisamos en WP:VEC
 					if len(controlvand[author].items())==4:
-						xxxmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
+						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userclass, site)
 					
 					return True, motivo, controlvand, stats
 	return False, u'', controlvand, stats
@@ -459,6 +459,6 @@ def autoSign(userclass, edicionesauthor, novato, namespace, p, vh, author, nickd
 					temp=re.sub(re.escape(ultimalinea), u'%s {{No firmado|%s|{{subst:CURRENTTIME}} {{subst:CURRENTDAY}} {{subst:CURRENTMONTHNAME}} {{subst:CURRENTYEAR}} (UTC)}}' % (ultimalinea, author), newtext)
 					p.put(temp, u'BOT - Firmando el comentario de [[Usuario:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (author, author, author, author))
 					#avisamos al usuario
-					xxxmsg.msgFirma(p, author, site, wtitle, diff)
+					avbotmsg.msgFirma(p, author, site, wtitle, diff)
 					return True
 	return False

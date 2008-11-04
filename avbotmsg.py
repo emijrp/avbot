@@ -4,13 +4,13 @@ import re
 import wikipedia
 import os
 
-import xxxchan
+import avbotchan
 
 def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 	#hasta que lo arregle, lo comento
 	"""#archivamos
 	if not random.randint(0,4): #afirmativo si sale cero
-		archivado=xxxchan.archiveVEC(site)
+		archivado=avbotchan.archiveVEC(site)
 		if archivado:
 			wikipedia.output(u"\03{lightblue}Archivando WP:VEC\03{default}")
 	
