@@ -109,7 +109,7 @@ def loadVandalism(contexto, site, nickdelbot):
 				error+=u'* Línea: %d' % c
 				error+=u'\n* Regexp errónea: %s' % reg
 				error+=u'\n* Regexp errónea (con contexto): %s' % regex
-				error+=u'\n* Puntuación: %d\n' % score
+				error+=u'\n* Puntuación: %d\n\n' % score
 	
 	return vandalismos, error
 

@@ -502,6 +502,11 @@ class AVBOT(SingleServerIRCBot):
 				speed+=1
 				
 				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
+				
+				#Check resume for reverts
+				if re.search(ur'(?i)(Revertidos los cambios de.*AVBOT.*a la última edición de|Deshecha la edición \d+ de.*AVBOT)', resume):
+					wiii=wikipedia.Page(site, u'Usuario:AVBOT/Errores/Automático')
+					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}\n\n%s' % (wiii.get(), title, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, title))
 				break
 		elif re.search(patterns['newpage'], linea):
 			match=patterns['newpage'].finditer(linea)
