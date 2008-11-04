@@ -75,7 +75,6 @@ global edits
 global site
 global botNick
 global speed
-global tvel
 global statsDic
 global timeStatsDic
 global newbie
@@ -100,16 +99,14 @@ currentYear=today.year
 newbie=25 #hasta cuando se considera novato a un usuario
 
 #-----------------------------------------------------------------------------------------------------------------------
-# ESTADISTICAS
+# STATISTICS
 #-----------------------------------------------------------------------------------------------------------------------
 speed=0
 statsDic={}
 statsDic[2]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 statsDic[12]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 statsDic[24]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-timeStatsDic={2: time.time(), 12: time.time(), 24: time.time()}
-tvel=time.time()
-tact=time.time()
+timeStatsDic={2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
 
 #-----------------------------------------------------------------------------------------------------------------------
 # OTROS
@@ -460,7 +457,6 @@ class AVBOT(SingleServerIRCBot):
 	
 	def on_pubmsg(self, c, e):
 		global speed
-		global tvel
 		global timeStatsDic
 		global site
 		global statsDic
@@ -572,12 +568,13 @@ class AVBOT(SingleServerIRCBot):
 					pass
 			f.close()
 		
+		
 		#Calculating and showing statistics
-		if time.time()-tvel>=60: #Showing information in console every 60 seconds
-			intervalo=int(time.time()-tvel)
+		if time.time()-timeStatsDic['tvel']>=60: #Showing information in console every 60 seconds
+			intervalo=int(time.time()-timeStatsDic['tvel'])
 			wikipedia.output(u'\03{lightgreen}Velocidad media: %d ediciones/minuto\03{default}' % int(speed/(intervalo/60.0)))
 			wikipedia.output(u'\03{lightgreen}Resumen últimas 2 horas: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (statsDic[2]['V'], statsDic[2]['BL'], statsDic[2]['P'], statsDic[2]['S'], statsDic[2]['B'], statsDic[2]['M'], statsDic[2]['T'], statsDic[2]['D']))
-			tvel=time.time()
+			timeStatsDic['tvel']=time.time()
 			speed=0
 		
 		#Recalculating statistics
