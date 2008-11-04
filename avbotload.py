@@ -35,7 +35,7 @@ def loadEdits(newbie):
 				numero=newbie+1
 			ediciones[usuario]=numero
 		l=f.readline()
-	wikipedia.output(u"Cargada información de %d usuarios..." % len(ediciones.items()))
+	wikipedia.output(u"Loaded info for %d users..." % len(ediciones.items()))
 	return ediciones
 
 def loadAdmins(site):
@@ -46,7 +46,7 @@ def loadAdmins(site):
 	m=re.compile(ur" title=\"Usuario:(.*?)\">").finditer(data)
 	for i in m:
 		admins.append(i.group(1))
-	wikipedia.output(u"Cargados %d usuarios con flag de admin..." % len(admins))
+	wikipedia.output(u"Loaded info for %d admins..." % len(admins))
 	return admins
 
 def loadBots(site):
@@ -57,7 +57,7 @@ def loadBots(site):
 	m=re.compile(ur" title=\"Usuario:(.*?)\">").finditer(data)
 	for i in m:
 		bots.append(i.group(1))
-	wikipedia.output(u"Cargados %d usuarios con flag de bot..." % len(bots))
+	wikipedia.output(u"Loaded info for %d bots..." % len(bots))
 	return bots
 
 def loadTests(pruebas_viejo, contexto, site, nickdelbot):
@@ -109,7 +109,7 @@ def loadVandalism(contexto, site, nickdelbot):
 				error+=u'* Línea: %d' % c
 				error+=u'\n* Regexp errónea: %s' % reg
 				error+=u'\n* Regexp errónea (con contexto): %s' % regex
-				error+=u'\n* Puntuación: %d\n\n' % score
+				error+=u'\n* Puntuación: %d\n' % score
 	
 	return vandalismos, error
 

@@ -43,12 +43,12 @@ import datetime
 #-----------------------------------------------------------------------------------------------------------------------
 # MY FILES
 #-----------------------------------------------------------------------------------------------------------------------
-import avbotload #Information and regexp loader
-import avbotsave #
-import avbotmsg #
-import avbotchan #
+import avbotload     #Information and regexp loader
+import avbotsave     #
+import avbotmsg      #
+import avbotchan     #
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
-import avbotcomb #
+import avbotcomb     #
 import avbotpatterns #Patterns to scan Recent Changes RSS
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -113,26 +113,38 @@ timeStatsDic={2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.tim
 #-----------------------------------------------------------------------------------------------------------------------
 obviar=[u'Anexo:Diferencias de jerga o argot entre países hispanohablantes', u'Wikipedia:Zona de pruebas', u'Wikipedia:Cambiar el nombre de usuario']
 
-wikipedia.output(u'%s\n# NOMBRE: AVBOT\n# VERSIÓN: 0.6\n# MISIÓN: REVERTIR VANDALISMOS, BLANQUEOS Y PRUEBAS DE EDICIÓN\n#         CONTROLAR EL SPAM\n#         FIRMAR COMENTARIOS ANONIMOS\n#         ACICALAR ARTÍCULOS NUEVOS\n#         FILTRO ANTICUMPLEAÑOS\n#         AVISAR DE VANDALISMO REINCIDENTE\n#         CONTROL DE IMÁGENES CHOCANTES\n%s\nCargando datos...' % ('#'*78, '#'*78))
+header =u'############################################################################\n'
+header+=u'# Name:    AVBOT (AntiVandal BOT)                                          #\n'
+header+=u'# Version: 0.7                                                             #\n'
+header+=u'# Purpose: To revert vandalism, blanking and test edits                    #\n'
+header+=u'#          To improve new articles                                         #\n'
+header+=u'#          Anti-birthday protection                                        #\n'
+header+=u'#          Shocking images control                                         #\n'
+header+=u'############################################################################\n'
+header+=u'Loading data...'
+wikipedia.output(header)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # DATA LOADERS
 #-----------------------------------------------------------------------------------------------------------------------
-ediciones=avbotload.loadEdits(newbie)
-admins=avbotload.loadAdmins(site)
-bots=avbotload.loadBots(site)
+ediciones = avbotload.loadEdits(newbie)
+admins    = avbotload.loadAdmins(site)
+bots      = avbotload.loadBots(site)
 
-contexto=ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]' #mejor no incluir \[ \] y \|  \{\} ???
+#Regular expresions for tests edits
+contexto=ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]'
 pruebas=avbotload.loadTests(pruebas, contexto, site, botNick)
-wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para pruebas..." % len(pruebas.items()))
+wikipedia.output(u"Loaded and compiled %d regular expresions for test edits..." % len(pruebas.items()))
+
+#Regular expresions for vandalism edits
 [vandalismos, error]=avbotload.loadVandalism(contexto, site, botNick)
-wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para vandalismos...%s" % (len(vandalismos.items()), error))
+wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(vandalismos.items()), error))
+
+#Shocking images list
 #[imageneschocantes, error]=avbotload.loadShockingImages(site)
 #wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
-#-----------------------------------------------------------------------------------------------------------------------
-# REGEXPS PRECOMPILATION
-#-----------------------------------------------------------------------------------------------------------------------
+#Patterns for RSS Recent Changes
 patterns=avbotpatterns.loadPatterns()
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -247,7 +259,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 					avbotsave.saveedits(ediciones)
 				edicionesauthor=ediciones[author]
 			
-			#analisis de paginas nuevas
+			#New pages analysis
 			if new:
 				newtext=p.get()
 				if userclass=='anon':
@@ -266,22 +278,22 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 					wikipedia.output(u'\03{lightred}Alerta: Aplicando %s... a [[%s]]\03{default}' % (resumen, wtitle))
 					return
 					
-				return #obligatorio si ha entrado en el if
+				return #End of analysis for this new page, Exit
 			
-			#coger historial
+			#To get history
 			oldtext=u''
 			newtext=u''
 			try:
-				vh=p.getVersionHistory(revCount=10) #evitar que el bot entre en guerras de ediciones
-				oldtext=p.getOldVersion(p.previousRevision()) #es la nueva forma
-				newtext=p.get()
+				vh=p.getVersionHistory(revCount=10) #To avoid bot edit wars
+				oldtext=p.getOldVersion(p.previousRevision()) #Previous text
+				newtext=p.get() #Current text
 			except:
-				return #es pagina nueva, deberia haber sido analizada antes
+				return #No previous text? New? Exit
 			
 			lenold=len(oldtext)
 			lennew=len(newtext)
 			
-			#diferencia de tamaños
+			#Size diff
 			lendiff=lennew-lenold
 			signo=u''
 			if lendiff>0:
@@ -292,51 +304,46 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			else:
 				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, lenold, lennew, signo, lendiff))
 			
-			return
-			#evitamos analizar nuestras propias ediciones
-			if author==botNick:
+			if author==botNick: #Avoid to check our edits
 				return
 			
-			#destruires
-			if re.search(patterns['destruir'], newtext):
-				wikipedia.output(u'Alguien ha marcado [[%s]] para destruir' % wtitle)
+			if re.search(patterns['destruir'], newtext): #Proposed to delete? Skip
+				wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % wtitle)
 				return
 			
-			#evitamos analizar articulos que pueden dar falsos positivos
-			if re.search(patterns['conflictivos'], newtext):
+			if re.search(patterns['conflictivos'], newtext): #Avoid to check false positives pages
 				wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % wtitle)
 				return
 			
-			#capturamos diff
-			try:
+			try: #Try to catch diff
 				data=site.getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (diff, oldid))
 				data=data.split('<!-- start content -->')[1]
-				data=data.split('<!-- end content -->')[0] #no cambiar
+				data=data.split('<!-- end content -->')[0] #No change
 			except:
-				return #salimos
+				return #No diff, exit
 			
-			cleandata=cleandiff(wtitle, data, patterns)
-			#wikipedia.output(cleandata)
+			cleandata=cleandiff(wtitle, data, patterns) #To clean diff text
 			
-			#deteccion de blanqueos
+			#Vandalism analysis
+			#1) Blanking all
 			[done, controlvand, statsDic]=avbotanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, botNick, oldtext, p, oldid, statsDic, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
 			
-			#deteccion de blanqueo de secciones
+			#2) Section blanking
 			"""[done, controlvand, statsDic]=avbotanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
 				return"""
 			
-			#deteccion de pruebas
+			#3) Test edits
 			"""[done, details, controlvand, statsDic]=avbotanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, newbie, pruebas, cleandata, controlvand, diff, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, details, '-'*50))
 				return"""
 			
-			#deteccion de texto vandalico tras ==Secciones== blabla................
+			#4) Section vandalisms
 			[done, controlvand, statsDic]=avbotanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
@@ -347,32 +354,32 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			#llamo a cleandiff, cuando isBlanking este unificado, poner data=cleandiff(wtitle, data, patterns) arriba
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
-			#
+			#5) Common vandalism
 			[done, score, details, controlvand, statsDic]=avbotanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
 			if done: 
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, score, details, '-'*50))
 				return
 			
-			#imagenes chocantes
+			#6) Shocking images
 			"""[done, controlvand, statsDic]=avbotanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, newbie, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
 			if done: 
 				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, wtitle))
 				return"""
 			
-			#antihoygans
+			#7) Anti-hoygans protection
 			
 			
 			#deteccion vandalismos repetitivos
 			# cambiar nacimientos por fallecimientos
 			
-			#proteccion anticumpleaños
+			#8) Anti-birthday protection
 			[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(wtitle, userclass, edicionesauthor, newbie, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, botNick, author, oldid, statsDic, p, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, wtitle))
 				return
 			
 			
-			#autofirmas solo en discusiones solo para anonimos y novatos
+			#9) Auto-sign to anonymous users and newbies
 			"""done=avbotanalysis.autoSign(userclass, edicionesauthor, newbie, namespace, p, vh, author, botNick, data, patterns, site, wtitle, diff, newtext)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Comentario sin firmar de %s en [[%s]]\03{default}' % (author, wtitle))
