@@ -43,12 +43,13 @@ import datetime
 #-----------------------------------------------------------------------------------------------------------------------
 # MY FILES
 #-----------------------------------------------------------------------------------------------------------------------
-import xxxload #
+import xxxload #Information and regexp loader
 import xxxsave #
 import xxxmsg #
 import xxxchan #
-import xxxanalysis #
+import xxxanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
 import xxxcomb #
+import xxxpatterns #Patterns to scan Recent Changes RSS
 
 #-----------------------------------------------------------------------------------------------------------------------
 # VARIABLES
@@ -118,7 +119,7 @@ obviar=[u'Anexo:Diferencias de jerga o argot entre países hispanohablantes', u'
 wikipedia.output(u'%s\n# NOMBRE: AVBOT\n# VERSIÓN: 0.6\n# MISIÓN: REVERTIR VANDALISMOS, BLANQUEOS Y PRUEBAS DE EDICIÓN\n#         CONTROLAR EL SPAM\n#         FIRMAR COMENTARIOS ANONIMOS\n#         ACICALAR ARTÍCULOS NUEVOS\n#         FILTRO ANTICUMPLEAÑOS\n#         AVISAR DE VANDALISMO REINCIDENTE\n#         CONTROL DE IMÁGENES CHOCANTES\n%s\nCargando datos...' % ('#'*78, '#'*78))
 
 #-----------------------------------------------------------------------------------------------------------------------
-# CARGANDO DATOS...
+# DATA LOADERS
 #-----------------------------------------------------------------------------------------------------------------------
 ediciones=xxxload.loadEdits(newbie)
 admins=xxxload.loadAdmins(site)
@@ -133,38 +134,12 @@ wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para vandalism
 #wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
 #-----------------------------------------------------------------------------------------------------------------------
-# PRECOMPILAMOS REGEXS
+# REGEXPS PRECOMPILATION
 #-----------------------------------------------------------------------------------------------------------------------
-patterns={
-'blanqueos': re.compile(ur'(?i)redirect|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar)'),
-#14[[07Especial:Log/block14]]4 block10 02 5* 03Yeza 5*  10bloqueó a "02Usuario:87.219.206.12310" (sólo anónimos) durante un plazo de "31 horas".: [[WP:VAND|Vandalismo]] de páginas
-#'bloqueo': re.compile(ur'(?i)\[\[...Usuario:(?P<blocked>.*?)..\]\].*?block.*?\*.....(?P<blocker>.*?)...\*'),
-#[[Especial:Log/block]] block  * Alhen *  bloqueó a "Usuario:Tocapelotas" (desactivada la creación de cuentas) durante un plazo de "para siempre".: Cuenta creada para vandalizar
-'bloqueo': re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<castigo>.*?)\"'),
-#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
-#'borrado': re.compile(ur'(?i)\[\[...(?P<titulo>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
-'borrado': re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +.(?P<titulo>.*?).\:'),
-'conflictivos': re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *\}\}'),
-'destruir': re.compile(ur'(?i)\{\{ *destruir'),
-#diffstylebegin y end va relacionado
-'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),
-'diffstyleend': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)([^<]*?)</(ins|span)>'),
-'ip': re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),
-'firmas1': re.compile(ur'<td class="diff-addedline"><div>([^<]*?)</div>'),
-'normal': re.compile(ur'(?i)\[\[(?P<titulo>.*?)\]\] +(?P<nm>.*?) +http\://es\.wikipedia\.org/w/index\.php\?title\=.*?diff\=(?P<diff>\d+)\&oldid\=(?P<oldid>\d+) +\* +(?P<author>.*?) +\* +\(.*?\) +(?P<resumen>.*)'),
-'nuevo': re.compile(ur'(?i)\[\[(?P<titulo>.*?)\]\] +(?P<nm>.*?) +http\://es\.wikipedia\.org/wiki/.*? +\* (?P<author>.*?) +\*'),
-'nuevousuario': re.compile(ur'(?i)\[\[Especial:Log/newusers\]\] +create +\* +(?P<usuario>.*?) +\* +Usuario nuevo'),
-'protegida': re.compile(ur'(?i)\[\[Especial:Log/protect\]\] +protect +\* +(?P<protecter>.*?) +\* +protegió +\[\[(?P<titulo>.*?)\]\] +\[edit\=(?P<edit>sysop|autoconfirmed)\][^\[]*?\[move\=(?P<move>sysop|autoconfirmed)\]'),
-#protegidacreacion [[Especial:Log/protect]] protect  * Snakeyes *  protegió [[Tucupido cincuentero]] [create=sysop]  (indefinido): Artículo ensayista reincidente
-'desprotegida': re.compile(ur'(?i)\[\[.*?Especial\:Log/protect.*?\]\].*?unprotect'),
-'spam': re.compile(ur'(?im)<td class="diff-addedline"><div>[^<]*?(http://[a-z0-9\.\-\=\?\_\/]+)[^<]*?</div></td>'),
-#[[Especial:Log/move]] move_redir  * Manuel González Olaechea y Franco * [[Anexo:Presidente del Perú]] ha sido trasladado a [[Anexo:Presidentes del Perú]] sobre una redirección.
-#[[Especial:Log/move]] move  * Dhidalgo *  [[Macizo Etíope]] ha sido trasladado a [[Macizo etíope]]
-'traslado': re.compile(ur'(?i)\[\[Especial:Log/move\]\] +move +\* +(?P<usuario>.*?) +\* +\[\[(?P<origen>.*?)\]\] +ha sido trasladado a +\[\[(?P<destino>.*?)\]\]'),
-}
+patterns=xxxpatterns.loadPatterns()
 
 #-----------------------------------------------------------------------------------------------------------------------
-# LISTAS DE URLS, BLANCAS, IMAGE HOSTINGS...
+# WHITE LIST
 #-----------------------------------------------------------------------------------------------------------------------
 whitelist=[
 re.compile(ur'(?i)http://commons.wikimedia\.org'),
@@ -175,6 +150,9 @@ re.compile(ur'(?i)http://[a-z]{2,3}\.wikiquote\.org'),
 re.compile(ur'(?i)http://[a-z]{2,3}\.wikiversity\.org'),
 ]
 
+#-----------------------------------------------------------------------------------------------------------------------
+# IMAGE HOSTINGS TO AVOID
+#-----------------------------------------------------------------------------------------------------------------------
 imagehostings=[
 re.compile(ur'(?i)http://img\d{1,3}\.imageshack\.us/'),
 re.compile(ur'(?i)http://i\d{1,3}\.photobucket\.com/'),
@@ -496,13 +474,13 @@ class AVBOT(SingleServerIRCBot):
 		nick = nm_to_n(e.source())
 		#print '['+time.strftime('%H:%M:%S')+'] <'+nick+'> '+linea
 		
-		linea=re.sub(ur'\x03\d{0,2}', ur'', linea) #colores
-		linea=re.sub(ur'\x02\d{0,2}', ur'', linea) #negritas
+		linea=re.sub(ur'\x03\d{0,2}', ur'', linea) #No colors
+		linea=re.sub(ur'\x02\d{0,2}', ur'', linea) #No bold
 		#wikipedia.output(linea)
-		if re.search(patterns['normal'], linea):
-			match=patterns['normal'].finditer(linea)
+		if re.search(patterns['edit'], linea):
+			match=patterns['edit'].finditer(linea)
 			for m in match:
-				titulo=m.group('titulo')
+				title=m.group('title')
 				diff=m.group('diff')
 				oldid=m.group('oldid')
 				author=m.group('author')
@@ -513,41 +491,39 @@ class AVBOT(SingleServerIRCBot):
 					new=True
 				if re.search('M', nm):
 					minor=True
-				resumen=m.group('resumen')
+				resume=m.group('resume')
 				
 				statsDic[2]['T']+=1
 				statsDic[12]['T']+=1
 				statsDic[24]['T']+=1
 				speed+=1
 				
-				thread.start_new_thread(edicion,(titulo,author,new,minor,diff,oldid,resumen))
+				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
 				break
-		elif re.search(patterns['nuevo'], linea):
-			match=patterns['nuevo'].finditer(linea)
+		elif re.search(patterns['newpage'], linea):
+			match=patterns['newpage'].finditer(linea)
 			for m in match:
-				titulo=m.group('titulo')
-				#wikipedia.output(u'->%s<- (%d)' % (titulo, len(titulo)))
-				diff=0
-				oldid=0
+				title=m.group('title')
+				diff=oldid=0
 				author=m.group('author')
 				nm=m.group('nm')
 				new=True
 				minor=False
 				if re.search('M', nm):
 					minor=True
-				resumen=''
+				resume=''
 				time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false
-				thread.start_new_thread(edicion,(titulo,author,new,minor,diff,oldid,resumen))
+				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
 				speed+=1
 				break
-		elif re.search(patterns['bloqueo'], linea):
-			match=patterns['bloqueo'].finditer(linea)
+		elif re.search(patterns['block'], linea):
+			match=patterns['block'].finditer(linea)
 			for m in match:
 				blocker=m.group('blocker')
 				blocked=m.group('blocked')
-				castigo=m.group('castigo')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[Usuario:%s]] (%d) ha sido bloqueado por [[Usuario:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), castigo))
-				thread.start_new_thread(xxxcomb.bloqueo,(site,blocker,blocked,castigo))
+				block=m.group('block')
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[Usuario:%s]] (%d) ha sido bloqueado por [[Usuario:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
+				thread.start_new_thread(xxxcomb.bloqueo,(site,blocker,blocked,block))
 				break
 		elif re.search(patterns['nuevousuario'], linea):
 			match=patterns['nuevousuario'].finditer(linea)

@@ -17,7 +17,7 @@ def changedRegexpsList(list1, list2):
 				return True
 	return False
 
-def loadEdits(novato):
+def loadEdits(newbie):
 	ediciones={}
 	f=open("ediciones.txt", "r")
 	l=ur""
@@ -32,7 +32,7 @@ def loadEdits(novato):
 			if numero=='None':
 				numero=0
 			if numero<1: #nos curamos en salud, por el bug de usuarios con acentos ej: Zósimo, Botellín (aunque a boteellin no deberia ni revisarlo por ser bot)
-				numero=novato+1
+				numero=newbie+1
 			ediciones[usuario]=numero
 		l=f.readline()
 	wikipedia.output(u"Cargada información de %d usuarios..." % len(ediciones.items()))
@@ -164,19 +164,19 @@ def loadShockingImages(site):
 	return imageneschocantes, error
 	
 
-def loadUserEdits(author, site, novato):
+def loadUserEdits(author, site, newbie):
 	try:
-		data=site.getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(re.sub(' ', '_', author)))
-		if re.search(u"editcount", data):
-			m=re.compile(ur' editcount="(\d+)"').finditer(data)
+		rawdata=site.getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(re.sub(' ', '_', author)))
+		if re.search(u"editcount", rawdata):
+			m=re.compile(ur' editcount="(\d+)"').finditer(rawdata)
 			for i in m:
-				numero=int(i.group(1))
-				if numero<1:
-					return novato+1
+				editsnum=int(i.group(1))
+				if editsnum<1:
+					return newbie+1
 				else:
-					return numero
+					return editsnum
 		else:
-			return novato+1
+			return newbie+1
 	except:
-		return novato+1
+		return newbie+1
 		
