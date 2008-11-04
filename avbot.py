@@ -3,12 +3,9 @@
 #############################################
 # TODO:  comprobar que ultimalinea del apartado firmar no esta mas de 1 vez
 # modulo bienvenidas: tus pruebas de edicion en la WP:ZP se realizaron correctamente, revisar si ha sido revertido, si ha incluido imagenes de otros servidores .jpg, ultimas modificaciones
-# modulo centro de control, vandalismos-blanqueos/hora, bienvenidas, registros, defcon, comentarios firmados
-# recomendar imagenes
 # revertir anidados por parte de varios usuarios, 
 # categorias magicas, antiblanqueos de secciones
 # no ha introducido url alguna http://es.wikipedia.org/w/index.php?diff=16088818&oldid=prev&diffonly=1
-# tachar/archivar los casos solucionados de SPAM y Errores automaticamente
 # comprobar que al revertir no se esta revirtiendo a un vandalismo de otro usuario
 # poner quitar {{semiprotegido|pequeño=sí}}
 # proteccion especial para destacados, buenos, y plantillas de la portada
@@ -26,6 +23,7 @@
 #error frecuente: WARNING: No character set found.
 #avisar en el tablon de 3RR
 #Línea no gestionada ---> 14[[07Especial:Log/protect14]]4 protect10 02 5* 03Edmenb 5*  10protegió [[02Discusión:W.A.S.P.10]] [edit=autoconfirmed] (caduca el 14:10 10 nov 2008) [move=autoconfirmed] (caduca el 14:10 10 nov 2008): [[Wikipedia:Vandalismo|Vandalismo]] excesivo
+# quitar los colores msg=msg.decode("utf-8")  msg=re.sub("\x03\d{2}?","",msg) 
 #############################################
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -45,12 +43,12 @@ import datetime
 #-----------------------------------------------------------------------------------------------------------------------
 # MY FILES
 #-----------------------------------------------------------------------------------------------------------------------
-import xxxload
-import xxxsave
-import xxxmsg
-import xxxchan
-import xxxanalysis
-import xxxcomb
+import xxxload #
+import xxxsave #
+import xxxmsg #
+import xxxchan #
+import xxxanalysis #
+import xxxcomb #
 
 #-----------------------------------------------------------------------------------------------------------------------
 # VARIABLES
@@ -77,14 +75,14 @@ global site
 global botNick
 global speed
 global tvel
-global stats
-global tstats
+global statsDic
+global timeStatsDic
 global newbie
 global patterns
 global currentYear
 
 #-----------------------------------------------------------------------------------------------------------------------
-# CONFIGURACION DEL BOT
+# BOT PREFERENCES
 #-----------------------------------------------------------------------------------------------------------------------
 botNick=u'AVBOT'
 language=u'es'
@@ -104,11 +102,11 @@ newbie=25 #hasta cuando se considera novato a un usuario
 # ESTADISTICAS
 #-----------------------------------------------------------------------------------------------------------------------
 speed=0
-stats={}
-stats[2]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-stats[12]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-stats[24]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-tstats={2: time.time(), 12: time.time(), 24: time.time()}
+statsDic={}
+statsDic[2]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+statsDic[12]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+statsDic[24]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+timeStatsDic={2: time.time(), 12: time.time(), 24: time.time()}
 tvel=time.time()
 tact=time.time()
 
@@ -131,8 +129,8 @@ pruebas=xxxload.loadTests(pruebas, contexto, site, botNick)
 wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para pruebas..." % len(pruebas.items()))
 [vandalismos, error]=xxxload.loadVandalism(contexto, site, botNick)
 wikipedia.output(u"Cargadas y compiladas %d expresiones regulares para vandalismos...%s" % (len(vandalismos.items()), error))
-[imageneschocantes, error]=xxxload.loadShockingImages(site)
-wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
+#[imageneschocantes, error]=xxxload.loadShockingImages(site)
+#wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
 #-----------------------------------------------------------------------------------------------------------------------
 # PRECOMPILAMOS REGEXS
@@ -141,10 +139,11 @@ patterns={
 'blanqueos': re.compile(ur'(?i)redirect|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar)'),
 #14[[07Especial:Log/block14]]4 block10 02 5* 03Yeza 5*  10bloqueó a "02Usuario:87.219.206.12310" (sólo anónimos) durante un plazo de "31 horas".: [[WP:VAND|Vandalismo]] de páginas
 #'bloqueo': re.compile(ur'(?i)\[\[...Usuario:(?P<blocked>.*?)..\]\].*?block.*?\*.....(?P<blocker>.*?)...\*'),
-'bloqueo': re.compile(ur'(?i)\[\[.*?Especial:Log/block.*?\]\].*?block.*?\*.....(?P<blocker>.*?)....\*.*?bloqueó a.*?Usuario:(?P<blocked>.*?)\".*?durante un plazo de \"(?P<castigo>.*?)\"'),
+#[[Especial:Log/block]] block  * Alhen *  bloqueó a "Usuario:Tocapelotas" (desactivada la creación de cuentas) durante un plazo de "para siempre".: Cuenta creada para vandalizar
+'bloqueo': re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<castigo>.*?)\"'),
 #[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
 #'borrado': re.compile(ur'(?i)\[\[...(?P<titulo>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
-'borrado': re.compile(ur'(?i)\[\[.*?Especial:Log/delete.*?\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*.*?borró \"...(?P<titulo>.*?)..\"\:'),
+'borrado': re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +.(?P<titulo>.*?).\:'),
 'conflictivos': re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *\}\}'),
 'destruir': re.compile(ur'(?i)\{\{ *destruir'),
 #diffstylebegin y end va relacionado
@@ -152,19 +151,16 @@ patterns={
 'diffstyleend': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)([^<]*?)</(ins|span)>'),
 'ip': re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),
 'firmas1': re.compile(ur'<td class="diff-addedline"><div>([^<]*?)</div>'),
-#[[Pantalla inflable]]  http://es.wikipedia.org/w/index.php?title=Pantalla_inflable&diff=19301260&oldid=19301243 * Graciani * (+0) /* Enlaces Externos */ 
-'normal': re.compile(ur'(?i)\[\[...(?P<titulo>.*?)...\]\](?P<nm>.*?)http\://es\.wikipedia\.org/w/index\.php\?title\=.*?diff\=(?P<diff>\d+)\&oldid\=(?P<oldid>\d+). .*?\*.....(?P<author>.*?)....\*.*?\(.*?\)....(?P<resumen>.*).'),
-'nuevo': re.compile(ur'(?i)\[\[...(?P<titulo>.*?)...\]\](?P<nm>.*?)http\://es\.wikipedia\.org/wiki/.*?\*.....(?P<author>.*?)....\*'),
-#14[[07Especial:Log/newusers14]]4 create10 02 5* 03Webtuno 5*  10Usuario nuevo
-#'nuevousuario': re.compile(ur'(?i)\[\[...Usuario:(?P<usuario>.*?)..\]\].*?create.*?\*'),
-'nuevousuario': re.compile(ur'(?i)\[\[.*?Especial:Log/newusers.*?\]\].*?create.*?\*.....(?P<usuario>.*?)....\*.*?Usuario nuevo'),
-#[[Especial:Log/protect]] protect  * Snakeyes * protegió [[Heavy metal]]: Vandalismos persistentes [edit=autoconfirmed:move=autoconfirmed] (caduca el 00:00 20 may 2008)
-#'protegida': re.compile(ur'(?i)\[\[...(?P<titulo>.*?)..\]\].*?protect.*?\*.....(?P<protecter>.*?)...\*.*?\[edit\=(?P<edit>sysop|autoconfirmed)\:move\=(?P<move>sysop|autoconfirmed)\]'),
-'protegida': re.compile(ur'(?i)\[\[.*?Especial:Log/protect.*?\]\].*?protect.*?\*.....(?P<protecter>.*?)....\*.*?protegió.*?\[\[...(?P<titulo>.*?)...\]\]\:.*?\[edit\=(?P<edit>sysop|autoconfirmed)\:move\=(?P<move>sysop|autoconfirmed)\]'),
+'normal': re.compile(ur'(?i)\[\[(?P<titulo>.*?)\]\] +(?P<nm>.*?) +http\://es\.wikipedia\.org/w/index\.php\?title\=.*?diff\=(?P<diff>\d+)\&oldid\=(?P<oldid>\d+) +\* +(?P<author>.*?) +\* +\(.*?\) +(?P<resumen>.*)'),
+'nuevo': re.compile(ur'(?i)\[\[(?P<titulo>.*?)\]\] +(?P<nm>.*?) +http\://es\.wikipedia\.org/wiki/.*? +\* (?P<author>.*?) +\*'),
+'nuevousuario': re.compile(ur'(?i)\[\[Especial:Log/newusers\]\] +create +\* +(?P<usuario>.*?) +\* +Usuario nuevo'),
+'protegida': re.compile(ur'(?i)\[\[Especial:Log/protect\]\] +protect +\* +(?P<protecter>.*?) +\* +protegió +\[\[(?P<titulo>.*?)\]\] +\[edit\=(?P<edit>sysop|autoconfirmed)\][^\[]*?\[move\=(?P<move>sysop|autoconfirmed)\]'),
+#protegidacreacion [[Especial:Log/protect]] protect  * Snakeyes *  protegió [[Tucupido cincuentero]] [create=sysop]  (indefinido): Artículo ensayista reincidente
 'desprotegida': re.compile(ur'(?i)\[\[.*?Especial\:Log/protect.*?\]\].*?unprotect'),
 'spam': re.compile(ur'(?im)<td class="diff-addedline"><div>[^<]*?(http://[a-z0-9\.\-\=\?\_\/]+)[^<]*?</div></td>'),
 #[[Especial:Log/move]] move_redir  * Manuel González Olaechea y Franco * [[Anexo:Presidente del Perú]] ha sido trasladado a [[Anexo:Presidentes del Perú]] sobre una redirección.
-'traslado': re.compile(ur'(?i)\[\[...Especial:Log/move..\]\].*?move.*?\*...(?P<usuario>.*?)..\*.*?\[\[..(?P<origen>.*?)..\]\].*?ha sido trasladado a.*?\[\[...(?P<destino>.*?)..\]\]'),
+#[[Especial:Log/move]] move  * Dhidalgo *  [[Macizo Etíope]] ha sido trasladado a [[Macizo etíope]]
+'traslado': re.compile(ur'(?i)\[\[Especial:Log/move\]\] +move +\* +(?P<usuario>.*?) +\* +\[\[(?P<origen>.*?)\]\] +ha sido trasladado a +\[\[(?P<destino>.*?)\]\]'),
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -228,7 +224,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 	global botNick
 	global newbie
 	global patterns
-	global stats
+	global statsDic
 	global currentYear
 	
 	p=wikipedia.Page(site, titulo)
@@ -241,20 +237,8 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 		
 		#recarga de expresiones regulares de vandalismos
 		if wtitle==u'Usuario:Emijrp/Lista del bien y del mal.css':
-			[vandalismos_nuevo, error]=xxxload.loadVandalism(contexto, site, botNick)
-			if xxxload.changedRegexpsList(vandalismos, vandalismos_nuevo):
-				wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
-				if error:
-					wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, diff, len(vandalismos_nuevo), error, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
-				else:
-					wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, diff, len(vandalismos_nuevo), wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
-				vandalismos=vandalismos_nuevo
-			else:
-				wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
-				if error:
-					wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(vandalismos), diff, error, wiii.get()), u'BOT - La lista del bien y del mal no ha cambiado. Total [%d]' % len(vandalismos))
-				else:
-					wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(vandalismos), diff, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos))
+			vandalismos=xxxload.reloadVandalism(contexto, site, botNick, vandalismos, author, diff)
+			return #salimos
 		
 		if p.isRedirectPage():
 			return
@@ -296,7 +280,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 				else:
 					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (+%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, len(newtext)))
 				
-				[done, motivo, stats]=xxxanalysis.isRubbish(p, userclass, wtitle, newtext, colors, author, edicionesauthor, newbie, namespace, pruebas, vandalismos, stats)
+				[done, motivo, statsDic]=xxxanalysis.isRubbish(p, userclass, wtitle, newtext, colors, author, edicionesauthor, newbie, namespace, pruebas, vandalismos, statsDic)
 				
 				if done:
 					wikipedia.output(u'\03{lightred}Alerta: Poniendo destruir en [[%s]]. Motivo: %s\03{default}' % (wtitle, motivo))
@@ -333,6 +317,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			else:
 				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, lenold, lennew, signo, lendiff))
 			
+			return
 			#evitamos analizar nuestras propias ediciones
 			if author==botNick:
 				return
@@ -359,25 +344,25 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			#wikipedia.output(cleandata)
 			
 			#deteccion de blanqueos
-			[done, controlvand, stats]=xxxanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, botNick, oldtext, p, oldid, stats, currentYear)
+			[done, controlvand, statsDic]=xxxanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, botNick, oldtext, p, oldid, statsDic, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
 			
 			#deteccion de blanqueo de secciones
-			"""[done, controlvand, stats]=xxxanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, stats, p, oldtext, vh, currentYear)
+			"""[done, controlvand, statsDic]=xxxanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
 				return"""
 			
 			#deteccion de pruebas
-			"""[done, details, controlvand, stats]=xxxanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, newbie, pruebas, cleandata, controlvand, diff, site, botNick, stats, p, oldtext, vh, currentYear)
+			"""[done, details, controlvand, statsDic]=xxxanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, newbie, pruebas, cleandata, controlvand, diff, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, details, '-'*50))
 				return"""
 			
 			#deteccion de texto vandalico tras ==Secciones== blabla................
-			[done, controlvand, stats]=xxxanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, stats, p, oldtext, vh, currentYear)
+			[done, controlvand, statsDic]=xxxanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
 				return
@@ -388,16 +373,16 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
 			#
-			[done, score, details, controlvand, stats]=xxxanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, stats, currentYear)
+			[done, score, details, controlvand, statsDic]=xxxanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
 			if done: 
 				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, score, details, '-'*50))
 				return
 			
 			#imagenes chocantes
-			[done, controlvand, stats]=xxxanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, newbie, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, stats, currentYear)
+			"""[done, controlvand, statsDic]=xxxanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, newbie, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
 			if done: 
 				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, wtitle))
-				return
+				return"""
 			
 			#antihoygans
 			
@@ -406,7 +391,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			# cambiar nacimientos por fallecimientos
 			
 			#proteccion anticumpleaños
-			[done, motivo, controlvand, stats]=xxxanalysis.antiBirthday(wtitle, userclass, edicionesauthor, newbie, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, botNick, author, oldid, stats, p, currentYear)
+			[done, motivo, controlvand, statsDic]=xxxanalysis.antiBirthday(wtitle, userclass, edicionesauthor, newbie, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, botNick, author, oldid, statsDic, p, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, wtitle))
 				return
@@ -448,9 +433,9 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 									controlspam[author][url][wtitle]=diff
 									if len(controlspam[author][url].items())==4 and not controlspam[author][url]['SPAMAVISADO']:
 										controlspam[author][url]['SPAMAVISADO']=True #evitamos avisos duplicados que se producen cuando hay mucha actividad
-										stats[2]['S']+=1
-										stats[12]['S']+=1
-										stats[24]['S']+=1
+										statsDic[2]['S']+=1
+										statsDic[12]['S']+=1
+										statsDic[24]['S']+=1
 										artis=u''
 										for k, v in controlspam[author][url].items():
 											if k!='SPAMAVISADO':
@@ -486,23 +471,21 @@ def parseaentrada(entrada):
 			return
 	return salida
 
-class avbot(SingleServerIRCBot):
+class AVBOT(SingleServerIRCBot):
 	def __init__(self, channel, nickname, server, port=6667):
 		SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
 		self.channel = channel
 		self.nickname = nickname
 	
 	def on_welcome(self, c, e):
-		#c.privmsg('NickServ','GHOST '+self.nickname+' bicicleta')
-		#c.privmsg('NickServ','IDENTIFY bicicleta')
 		c.join(self.channel)
 	
 	def on_pubmsg(self, c, e):
 		global speed
 		global tvel
-		global tstats
+		global timeStatsDic
 		global site
-		global stats
+		global statsDic
 		global contexto
 		global pruebas
 		global vandalismos
@@ -513,6 +496,9 @@ class avbot(SingleServerIRCBot):
 		nick = nm_to_n(e.source())
 		#print '['+time.strftime('%H:%M:%S')+'] <'+nick+'> '+linea
 		
+		linea=re.sub(ur'\x03\d{0,2}', ur'', linea) #colores
+		linea=re.sub(ur'\x02\d{0,2}', ur'', linea) #negritas
+		#wikipedia.output(linea)
 		if re.search(patterns['normal'], linea):
 			match=patterns['normal'].finditer(linea)
 			for m in match:
@@ -529,9 +515,9 @@ class avbot(SingleServerIRCBot):
 					minor=True
 				resumen=m.group('resumen')
 				
-				stats[2]['T']+=1
-				stats[12]['T']+=1
-				stats[24]['T']+=1
+				statsDic[2]['T']+=1
+				statsDic[12]['T']+=1
+				statsDic[24]['T']+=1
 				speed+=1
 				
 				thread.start_new_thread(edicion,(titulo,author,new,minor,diff,oldid,resumen))
@@ -598,7 +584,7 @@ class avbot(SingleServerIRCBot):
 				break
 				
 		else:
-			wikipedia.output(u'Línea no gestionada ---> %s' % linea)
+			wikipedia.output(u'No gestionada ---> %s' % linea)
 			f=open('lineasnogestionadas.txt', 'a')
 			linea=u'%s\n' % linea
 			try:
@@ -614,28 +600,28 @@ class avbot(SingleServerIRCBot):
 		if time.time()-tvel>=60: #Showing information in console every 60 seconds
 			intervalo=int(time.time()-tvel)
 			wikipedia.output(u'\03{lightgreen}Velocidad media: %d ediciones/minuto\03{default}' % int(speed/(intervalo/60.0)))
-			wikipedia.output(u'\03{lightgreen}Resumen últimas 2 horas: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (stats[2]['V'], stats[2]['BL'], stats[2]['P'], stats[2]['S'], stats[2]['B'], stats[2]['M'], stats[2]['T'], stats[2]['D']))
+			wikipedia.output(u'\03{lightgreen}Resumen últimas 2 horas: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (statsDic[2]['V'], statsDic[2]['BL'], statsDic[2]['P'], statsDic[2]['S'], statsDic[2]['B'], statsDic[2]['M'], statsDic[2]['T'], statsDic[2]['D']))
 			tvel=time.time()
 			speed=0
 		
 		#Recalculating statistics
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
-			stats[period]['M']=stats[period]['V']+stats[period]['BL']+stats[period]['P']+stats[period]['S']
-			stats[period]['B']=stats[period]['T']-stats[period]['M']
+			statsDic[period]['M']=statsDic[period]['V']+statsDic[period]['BL']+statsDic[period]['P']+statsDic[period]['S']
+			statsDic[period]['B']=statsDic[period]['T']-statsDic[period]['M']
 		
 		#Saving statistics
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
-			if time.time()-tstats[period]>=60*60*period:
-				xxxsave.savestats(stats, period, site)
-				tstats[period]=time.time()
-				stats[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+			if time.time()-timeStatsDic[period]>=60*60*period:
+				xxxsave.savestats(statsDic, period, site) #Saving statistics in Wikipedia pages for historical reasons
+				timeStatsDic[period]=time.time() #Saving time begin
+				statsDic[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0} #Blanking statistics for a new period
 
 def main(botNick, language):
-	channel = '#%s.wikipedia' % language
-	nickname = '%s%s' % (botNick, str(random.randint(1000, 9999)))
+	channel = '#%s.wikipedia' % language #RSS channel for recent changes in Wikipedia
+	nickname = '%s%s' % (botNick, str(random.randint(1000, 9999))) #Bot nick in channel, with random numbers to avoid nick collisions
 	
-	bot = avbot(channel, nickname, 'irc.wikimedia.org', 6667)
-	bot.start()
+	bot = AVBOT(channel, nickname, 'irc.wikimedia.org', 6667) #Creating bot object
+	bot.start() #Starting bot
 
 if __name__ == '__main__':
 	main(botNick, language)

@@ -113,6 +113,23 @@ def loadVandalism(contexto, site, nickdelbot):
 	
 	return vandalismos, error
 
+def reloadVandalism(contexto, site, botNick, vandalismos, author, diff):
+	[vandalismos_nuevo, error]=loadVandalism(contexto, site, botNick)
+	if changedRegexpsList(vandalismos, vandalismos_nuevo):
+		wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
+		if error:
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, diff, len(vandalismos_nuevo), error, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
+		else:
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, diff, len(vandalismos_nuevo), wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
+		vandalismos=vandalismos_nuevo
+	else:
+		wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
+		if error:
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(vandalismos), diff, error, wiii.get()), u'BOT - La lista del bien y del mal no ha cambiado. Total [%d]' % len(vandalismos))
+		else:
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(vandalismos), diff, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos))
+	return vandalismos
+
 def loadShockingImages(site):
 	imageneschocantes={'exceptions':[], 'images':{}}
 	
