@@ -70,13 +70,13 @@ def msgEnlaceIrrelevante(author, site, wtitle, diff, n):
 def msgFechaImposible(author, site, wtitle, diff, n):
 	return msgGenerico(author, site, wtitle, diff, n, u'Fecha imposible')
 
-def msgBloqueo(author, site):
-	aviso=wikipedia.Page(site, u"User talk:%s" % author)
+def msgBloqueo(blocked, site, blocker):
+	aviso=wikipedia.Page(site, u"User talk:%s" % blocked)
 	avisotexto=u""
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
-	avisotexto+=u"{{subst:User:Toolserver/AvisoBloqueo}}"
-	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado" % (author, author))
+	avisotexto+=u"{{subst:User:Toolserver/AvisoBloqueo|%s}}" % blocker
+	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[Usuario:%s|%s]]" % (blocked, blocked, blocker, blocker))
 
 def msgImageHost(author, site, wtitle, diff):
 	aviso=wikipedia.Page(site, u"User talk:%s" % author)

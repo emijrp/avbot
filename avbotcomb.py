@@ -7,7 +7,7 @@ import datetime
 import avbotmsg
 
 def bloqueo(site, blocker, blocked, castigo):
-	avbotmsg.msgBloqueo(blocked, site) #Send message to vandal's talk page
+	avbotmsg.msgBloqueo(blocked, site, blocker) #Send message to vandal's talk page
 	pvec=wikipedia.Page(site, u'Wikipedia:Vandalismo en curso')
 	if pvec.exists():
 		if pvec.isRedirectPage():
