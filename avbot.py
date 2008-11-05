@@ -45,10 +45,9 @@ import datetime
 #-----------------------------------------------------------------------------------------------------------------------
 import avbotload     #Information and regexp loader
 import avbotsave     #
-import avbotmsg      #
-import avbotchan     #
+import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
-import avbotcomb     #
+import avbotcomb     #Trivia functions
 import avbotpatterns #Patterns to scan Recent Changes RSS
 
 #-----------------------------------------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import re, wikipedia, datetime
 import avbotload
 import avbotsave
 import avbotmsg
-import avbotchan
+import avbotcomb
 
 def sameOldid(oldid, id, oldtext, p):
 	#return id, p.getOldVersion(id) #mientras averiguo lo de abajo
@@ -78,11 +78,11 @@ def improveNewArticle(namespace, p):
 				newnewtext=u''
 				if not p.interwiki():
 					try:
-						[newnewtext, resumen]=avbotchan.magicInterwiki(p, resumen, 'en')
+						[newnewtext, resumen]=avbotcomb.magicInterwiki(p, resumen, 'en')
 					except:
 						pass
-				[newnewtext, resumen]=avbotchan.vtee(newnewtext, resumen)
-				#[newnewtext, resumen]=avbotchan.cosmetic(newnewtext, resumen)
+				[newnewtext, resumen]=avbotcomb.vtee(newnewtext, resumen)
+				#[newnewtext, resumen]=avbotcomb.cosmetic(newnewtext, resumen)
 				if len(newnewtext)>len(newtext):
 					p.put(newnewtext, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
 					return True, resumen
