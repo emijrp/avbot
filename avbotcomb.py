@@ -33,11 +33,11 @@ def bloqueo(site, blocker, blocked, castigo):
 			
 			#enviamos
 			if newvectext!=vectext:
-				wikipedia.showDiff(vectext, newvectext)
+				#wikipedia.showDiff(vectext, newvectext)
 				pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[Usuario:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
 				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[Usuario:%s]] de WP:VEC. Gestionado por [[Usuario:%s]]\03{default}' % (blocked, blocker))
 			else:
-				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC :(\03{default}')
+				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
 			
 			#si ha sido bloqueado para siempre, redirigimos su pagina de usuario
 			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
