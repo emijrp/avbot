@@ -50,7 +50,10 @@ def msgGenerico(author, site, wtitle, diff, n, tipo):
 		avisotexto+=u"{{subst:User:Toolserver/Aviso%sInminente|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff)
 	elif n<3:
 		avisotexto+=u"{{subst:User:Toolserver/Aviso%s|%s|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff, n)
-	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su %s en [[%s]] ha sido revertido (Aviso #%d)" % (author, author, tipo.lower(), wtitle, n))
+	if tipo.lower()=='prueba':
+		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su %s en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, tipo.lower(), wtitle, n))
+	else:
+		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su %s en [[%s]] ha sido revertido (Aviso #%d)" % (author, author, tipo.lower(), wtitle, n))
 
 def msgBlanqueo(author, site, wtitle, diff, n):
 	return msgGenerico(author, site, wtitle, diff, n, u'Blanqueo')

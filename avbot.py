@@ -336,13 +336,8 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return
 			
-			#3) Test edits
-			"""[done, details, controlvand, statsDic]=avbotanalysis.isTest(namespace, pageTitle, author, userClass, authorEditNum, newbie, pruebas, cleandata, controlvand, diff, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
-			if done:
-				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, details, '-'*50))
-				return"""
 			
-			#4) Section vandalisms
+			#3) Section vandalisms
 			[done, controlvand, statsDic]=avbotanalysis.isSectionVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, pageTitle))
@@ -353,32 +348,35 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			#llamo a cleandiff, cuando isBlanking este unificado, poner data=cleandiff(pageTitle, data, patterns) arriba
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
-			#5) Common vandalism
+			#4) Common vandalism
 			[done, score, details, controlvand, statsDic, type]=avbotanalysis.isVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, vandalismos, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
 			if done: 
-				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible %s de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, type, author, pageTitle, score, details, '-'*50))
+				if type=='V':
+					wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, score, details, '-'*50))
+				elif type=='P':
+					wikipedia.output(u'%s\n\03{lightred}Alerta: Posible prueba de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, type, author, pageTitle, score, details, '-'*50))
 				return
 			
-			#6) Shocking images
+			#5) Shocking images
 			"""[done, controlvand, statsDic]=avbotanalysis.isShockingContent(namespace, pageTitle, author, userClass, authorEditNum, newbie, imageneschocantes, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
 			if done: 
 				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return"""
 			
-			#7) Anti-hoygans protection
+			#6) Anti-hoygans protection
 			
 			
 			#deteccion vandalismos repetitivos
 			# cambiar nacimientos por fallecimientos
 			
-			#8) Anti-birthday protection
+			#7) Anti-birthday protection
 			[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(pageTitle, userClass, authorEditNum, newbie, namespace, oldText, newText, cleandata, controlvand, site, pageHistory, diff, botNick, author, oldid, statsDic, p, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, pageTitle))
 				return
 			
 			
-			#9) Auto-sign to anonymous users and newbies
+			#8) Auto-sign to anonymous users and newbies
 			"""done=avbotanalysis.autoSign(userClass, authorEditNum, newbie, namespace, p, pageHistory, author, botNick, data, patterns, site, pageTitle, diff, newText)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Comentario sin firmar de %s en [[%s]]\03{default}' % (author, pageTitle))
