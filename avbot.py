@@ -7,7 +7,6 @@
 # categorias magicas, antiblanqueos de secciones
 # no ha introducido url alguna http://es.wikipedia.org/w/index.php?diff=16088818&oldid=prev&diffonly=1
 # comprobar que al revertir no se esta revirtiendo a un vandalismo de otro usuario
-# poner quitar {{semiprotegido|pequeño=sí}}
 # proteccion especial para destacados, buenos, y plantillas de la portada
 # avisa dos veces de la misma ip, aunque con articulos distintos http://es.wikipedia.org/w/index.php?title=Usuario:AVBOT/Spam&diff=prev&oldid=16553707
 # bbdd de imagenes chocantes en commons, controlar que no la pongan en paginas de usuario o artiulos que no vengan a cuento
@@ -18,7 +17,6 @@
 # revierte prueba a edicion mala http://es.wikipedia.org/w/index.php?title=Aparato_circulatorio&diff=16610029&oldid=16610024
 # no revertir a una version en blanco http://es.wikipedia.org/w/index.php?title=Aristas&diff=prev&oldid=16807904
 #controlar eliminacion de categorias e iws en masa, deleted-lines http://es.wikipedia.org/w/index.php?title=Tik%C3%BAn_Olam&diff=prev&oldid=16896350
-# detectar por resumen cuando alguien revierte al bot, y dejar un aviso para ser revisado
 # estadisticas de vandalismos mas frecuentes
 #error frecuente: WARNING: No character set found.
 #avisar en el tablon de 3RR
@@ -130,11 +128,7 @@ ediciones = avbotload.loadEdits(newbie)
 admins    = avbotload.loadAdmins(site)
 bots      = avbotload.loadBots(site)
 
-#Regular expresions for tests edits
 contexto=ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]'
-pruebas=avbotload.loadTests(pruebas, contexto, site, botNick)
-wikipedia.output(u"Loaded and compiled %d regular expresions for test edits..." % len(pruebas.items()))
-
 #Regular expresions for vandalism edits
 [vandalismos, error]=avbotload.loadVandalism(contexto, site, botNick)
 wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(vandalismos.items()), error))

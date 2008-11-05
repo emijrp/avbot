@@ -7,7 +7,7 @@ import catlib
 
 def changedRegexpsList(list1, list2):
 	#funcion que devuelve si las dos listas de expresiones regualres son distintas
-	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadVandalism() y loadTests()
+	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadVandalism()
 	if len(list1)!=len(list2):
 		return True
 	else:
@@ -60,31 +60,6 @@ def loadBots(site):
 	wikipedia.output(u"Loaded info for %d bots..." % len(bots))
 	return bots
 
-def loadTests(pruebas_viejo, contexto, site, nickdelbot):
-	pruebas={}
-	f=open("pruebas.txt", "r")
-	l=f.readline()
-	while l:
-		l=unicode(l, "utf-8")
-		l=l[:len(l)-1] #necesario para no cargar los satlos de linea
-		if len(l)>3: #evitamos regex demasiado pequenas
-			if l[0]=='#':
-				l=f.readline()
-				continue
-			#wikipedia.output(u'%s' % l)
-			trozos=l.split(';;')
-			reg=trozos[0]
-			score=int(trozos[1])
-			regex=ur'%s%s%s' % (contexto, reg, contexto)
-			pruebas[reg]={'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
-		l=f.readline()
-	f.close()
-	
-	#if changedRegexpsList(pruebas_viejo, pruebas):
-	#	#aqui deberiamos salvar cmo en loadVandalism
-	
-	return pruebas
-	
 def loadVandalism(contexto, site, nickdelbot):
 	vandalismos={}
 	
