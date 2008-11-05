@@ -99,11 +99,12 @@ def loadVandalism(contexto, site, nickdelbot):
 			if l[0]=='#' or l[0]=='<':
 				continue
 			trozos=l.split(';;')
-			reg=trozos[0]
-			score=int(trozos[1])
+			type=trozos[0]
+			reg=trozos[1]
+			score=int(trozos[2])
 			regex=ur'%s%s%s' % (contexto, reg, contexto)
 			try:
-				vandalismos[reg]={'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
+				vandalismos[reg]={'type':type, 'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
 			except:
 				error+=u'=== Error en regexp ===\n'
 				error+=u'* Línea: %d' % c

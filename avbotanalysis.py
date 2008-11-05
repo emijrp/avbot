@@ -215,12 +215,16 @@ def isSectionVandalism(namespace, pageTitle, author, userClass, authorEditsNum, 
 def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie, vandalismos, cleandata, controlvand, p, pageHistory, diff, oldid, site, nickdelbot, oldText, stats, currentYear):
 	score=0
 	regexlist=[]
+	typeText={u'V': u'Vandalismo', u'P': u'Prueba'}
 	details=u''
 	if vigilar(namespace, pageTitle, author, userClass, authorEditsNum, newbie):
+		type='P'
 		for k, v in vandalismos.items():
 			m=v['compiled'].finditer(cleandata)
 			added=False #para que no se desborde el log
 			for i in m:
+				if v['type']=='V':
+					type='V'
 				score+=v['score']
 				regexlist.append(k)
 				if not added:
@@ -243,12 +247,15 @@ def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie,
 							#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, excepto si es muy baja
 							break
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
-					stats=incrementaStats(stats, 'V')
-					p.put(oldText, u'BOT - Vandalismo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
+					stats=incrementaStats(stats, type)
+					p.put(oldText, u'BOT - %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (typeText[type], author, author, str(oldid), i[2], i[2]))
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
-					avbotmsg.msgVandalismo(author, site, pageTitle, diff, controlvand[author]['avisos'])
+					if type=='V':
+						avbotmsg.msgVandalismo(author, site, pageTitle, diff, controlvand[author]['avisos'])
+					else:
+						avbotmsg.msgPrueba(author, site, pageTitle, diff, controlvand[author]['avisos'])
 					
 					#avisamos en WP:VEC
 					if len(controlvand[author].items())==4:
