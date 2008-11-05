@@ -58,9 +58,9 @@ def semiproteger(site, titulo, protecter):
 			semitext=p.get()
 			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Pp\-semi\-template)', semitext):
 				p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
-				wikipedia.output(u'\03{lightblue}Alerta:Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
+				wikipedia.output(u'\03{lightblue}Aviso: Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
 			else:
-				wikipedia.output(u'\03{lightblue}Alerta:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
+				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
 
 def traslado(site, usuario, origen, destino):
 	#es un traslado vandálico?

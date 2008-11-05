@@ -168,7 +168,7 @@ re.compile(ur'(?i)http://i\d{1,3}\.photobucket\.com/'),
 
 wikipedia.output(u'Entrando al canal de IRC de cambios recientes...')
 
-def cleandiff(wtitle, data, patterns):
+def cleandiff(pageTitle, data, patterns):
 	#TODO
 	#evitar que diffdelete y diffaddedline coincidan
 	#http://es.wikipedia.org/w/index.php?title=Lenguaje_ensamblador&diff=prev&oldid=16735402
@@ -192,7 +192,7 @@ def cleandiff(wtitle, data, patterns):
 	return re.sub(ur'[\n\r]', ur';;', clean)
 
 
-def edicion(titulo, author, new, minor, diff, oldid, resumen):
+def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 	global ediciones
 	global admins
 	global bots
@@ -213,16 +213,16 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 	global statsDic
 	global currentYear
 	
-	p=wikipedia.Page(site, titulo)
+	p=wikipedia.Page(site, pageTitle)
 	if p.exists():
-		wtitle=p.title()
+		pageTitle=p.title()
 		namespace=p.namespace()
 		
-		if obviar.count(wtitle)!=0:
+		if obviar.count(pageTitle)!=0:
 			return
 		
 		#recarga de expresiones regulares de vandalismos
-		if wtitle==u'Usuario:Emijrp/Lista del bien y del mal.css':
+		if pageTitle==u'Usuario:Emijrp/Lista del bien y del mal.css':
 			vandalismos=avbotload.reloadVandalism(contexto, site, botNick, vandalismos, author, diff)
 			return #salimos
 		
@@ -230,23 +230,23 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			return
 		else: #si es articulo o desambiguacion, analizamos
 			nm=u''
-			edicionesauthor=0
+			authorEditNum=0
 			if new:
 				nm+=u'\03{lightred}N\03{default}'
 			if minor:
 				nm+=u'\03{lightred}m\03{default}'
 			if nm:
 				nm+=u' '
-			userclass='anon'
+			userClass='anon'
 			if admins.count(author)!=0:
-				userclass='admin'
+				userClass='admin'
 			elif bots.count(author)!=0:
-				userclass='bot'
+				userClass='bot'
 			elif not re.search(patterns['ip'], author):
-				userclass='reg'
+				userClass='reg'
 			
 			#actualizando info de ediciones si se necesita
-			if userclass!='anon':
+			if userClass!='anon':
 				if ediciones.has_key(author):
 					#actualizamos? dado de 10 caras
 					if not random.randint(0,10): #afirmativo si sale cero
@@ -256,62 +256,62 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 					#cargamos
 					ediciones[author]=avbotload.loadUserEdits(author, site, newbie)
 					avbotsave.saveedits(ediciones)
-				edicionesauthor=ediciones[author]
+				authorEditNum=ediciones[author]
 			
 			#New pages analysis
 			if new:
-				newtext=p.get()
-				if userclass=='anon':
-					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (+%d)' % (nm, wtitle, colors[userclass], author, len(newtext)))
+				newText=p.get()
+				if userClass=='anon':
+					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (+%d)' % (nm, pageTitle, colors[userClass], author, len(newText)))
 				else:
-					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (+%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, len(newtext)))
+					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (+%d)' % (nm, pageTitle, colors[userClass], author, authorEditNum, len(newText)))
 				
-				[done, motivo, statsDic]=avbotanalysis.isRubbish(p, userclass, wtitle, newtext, colors, author, edicionesauthor, newbie, namespace, pruebas, vandalismos, statsDic)
+				[done, motivo, statsDic]=avbotanalysis.isRubbish(p, userClass, pageTitle, newText, colors, author, authorEditNum, newbie, namespace, pruebas, vandalismos, statsDic)
 				
 				if done:
-					wikipedia.output(u'\03{lightred}Alerta: Poniendo destruir en [[%s]]. Motivo: %s\03{default}' % (wtitle, motivo))
+					wikipedia.output(u'\03{lightred}Alerta: Poniendo destruir en [[%s]]. Motivo: %s\03{default}' % (pageTitle, motivo))
 					return
 				
 				[done, resumen]=avbotanalysis.improveNewArticle(namespace, p)
 				if done:
-					wikipedia.output(u'\03{lightred}Alerta: Aplicando %s... a [[%s]]\03{default}' % (resumen, wtitle))
+					wikipedia.output(u'\03{lightred}Alerta: Aplicando %s... a [[%s]]\03{default}' % (resumen, pageTitle))
 					return
 					
 				return #End of analysis for this new page, Exit
 			
 			#To get history
-			oldtext=u''
-			newtext=u''
+			oldText=u''
+			newText=u''
 			try:
-				vh=p.getVersionHistory(revCount=10) #To avoid bot edit wars
-				oldtext=p.getOldVersion(p.previousRevision()) #Previous text
-				newtext=p.get() #Current text
+				pageHistory=p.getVersionHistory(revCount=10) #To avoid bot edit wars
+				oldText=p.getOldVersion(p.previousRevision()) #Previous text
+				newText=p.get() #Current text
 			except:
 				return #No previous text? New? Exit
 			
-			lenold=len(oldtext)
-			lennew=len(newtext)
+			lenOld=len(oldText)
+			lenNew=len(newText)
 			
 			#Size diff
-			lendiff=lennew-lenold
+			lenDiff=lenNew-lenOld
 			signo=u''
-			if lendiff>0:
+			if lenDiff>0:
 				signo=u'+'
 			
-			if userclass=='anon':
-				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (%d/%d %s%d)' % (nm, wtitle, colors[userclass], author, lenold, lennew, signo, lendiff))
+			if userClass=='anon':
+				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (%d/%d %s%d)' % (nm, pageTitle, colors[userClass], author, lenOld, lenNew, signo, lenDiff))
 			else:
-				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, wtitle, colors[userclass], author, edicionesauthor, lenold, lennew, signo, lendiff))
+				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, pageTitle, colors[userClass], author, authorEditNum, lenOld, lenNew, signo, lenDiff))
 			
 			if author==botNick: #Avoid to check our edits
 				return
 			
-			if re.search(patterns['destruir'], newtext): #Proposed to delete? Skip
-				wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % wtitle)
+			if re.search(patterns['destruir'], newText): #Proposed to delete? Skip
+				wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % pageTitle)
 				return
 			
-			if re.search(patterns['conflictivos'], newtext): #Avoid to check false positives pages
-				wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % wtitle)
+			if re.search(patterns['conflictivos'], newText): #Avoid to check false positives pages
+				wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % pageTitle)
 				return
 			
 			try: #Try to catch diff
@@ -321,48 +321,48 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			except:
 				return #No diff, exit
 			
-			cleandata=cleandiff(wtitle, data, patterns) #To clean diff text
+			cleandata=cleandiff(pageTitle, data, patterns) #To clean diff text
 			
 			#Vandalism analysis
 			#1) Blanking all
-			[done, controlvand, statsDic]=avbotanalysis.isBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, lenold, lennew, patterns, newtext, controlvand, diff, site, vh, botNick, oldtext, p, oldid, statsDic, currentYear)
+			[done, controlvand, statsDic]=avbotanalysis.isBlanking(namespace, pageTitle, author, userClass, authorEditNum, newbie, lenOld, lenNew, patterns, newText, controlvand, diff, site, pageHistory, botNick, oldText, p, oldid, statsDic, currentYear)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, wtitle))
+				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return
 			
 			#2) Section blanking
-			"""[done, controlvand, statsDic]=avbotanalysis.isSectionBlanking(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
+			[done, controlvand, statsDic]=avbotanalysis.isSectionBlanking(namespace, pageTitle, author, userClass, authorEditNum, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
-				return"""
+				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, pageTitle))
+				return
 			
 			#3) Test edits
-			"""[done, details, controlvand, statsDic]=avbotanalysis.isTest(namespace, wtitle, author, userclass, edicionesauthor, newbie, pruebas, cleandata, controlvand, diff, site, botNick, statsDic, p, oldtext, vh, currentYear)
+			"""[done, details, controlvand, statsDic]=avbotanalysis.isTest(namespace, pageTitle, author, userClass, authorEditNum, newbie, pruebas, cleandata, controlvand, diff, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
 			if done:
-				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, details, '-'*50))
+				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible edición de prueba de %s en [[%s]]\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, details, '-'*50))
 				return"""
 			
 			#4) Section vandalisms
-			[done, controlvand, statsDic]=avbotanalysis.isSectionVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldtext, vh, currentYear)
+			[done, controlvand, statsDic]=avbotanalysis.isSectionVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, wtitle))
+				wikipedia.output(u'\03{lightred}Alerta: Posible vandalismo de sección de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return
 			
 			#deteccion vandalismos
 			#
-			#llamo a cleandiff, cuando isBlanking este unificado, poner data=cleandiff(wtitle, data, patterns) arriba
+			#llamo a cleandiff, cuando isBlanking este unificado, poner data=cleandiff(pageTitle, data, patterns) arriba
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
 			#5) Common vandalism
-			[done, score, details, controlvand, statsDic]=avbotanalysis.isVandalism(namespace, wtitle, author, userclass, edicionesauthor, newbie, vandalismos, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
+			[done, score, details, controlvand, statsDic]=avbotanalysis.isVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, vandalismos, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
 			if done: 
-				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, wtitle, score, details, '-'*50))
+				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, score, details, '-'*50))
 				return
 			
 			#6) Shocking images
-			"""[done, controlvand, statsDic]=avbotanalysis.isShockingContent(namespace, wtitle, author, userclass, edicionesauthor, newbie, imageneschocantes, cleandata, controlvand, p, vh, diff, oldid, site, botNick, oldtext, statsDic, currentYear)
+			"""[done, controlvand, statsDic]=avbotanalysis.isShockingContent(namespace, pageTitle, author, userClass, authorEditNum, newbie, imageneschocantes, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
 			if done: 
-				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, wtitle))
+				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return"""
 			
 			#7) Anti-hoygans protection
@@ -372,20 +372,20 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 			# cambiar nacimientos por fallecimientos
 			
 			#8) Anti-birthday protection
-			[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(wtitle, userclass, edicionesauthor, newbie, namespace, oldtext, newtext, cleandata, controlvand, site, vh, diff, botNick, author, oldid, statsDic, p, currentYear)
+			[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(pageTitle, userClass, authorEditNum, newbie, namespace, oldText, newText, cleandata, controlvand, site, pageHistory, diff, botNick, author, oldid, statsDic, p, currentYear)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, wtitle))
+				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, pageTitle))
 				return
 			
 			
 			#9) Auto-sign to anonymous users and newbies
-			"""done=avbotanalysis.autoSign(userclass, edicionesauthor, newbie, namespace, p, vh, author, botNick, data, patterns, site, wtitle, diff, newtext)
+			"""done=avbotanalysis.autoSign(userClass, authorEditNum, newbie, namespace, p, pageHistory, author, botNick, data, patterns, site, pageTitle, diff, newText)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: Comentario sin firmar de %s en [[%s]]\03{default}' % (author, wtitle))
+				wikipedia.output(u'\03{lightred}Alerta: Comentario sin firmar de %s en [[%s]]\03{default}' % (author, pageTitle))
 				return"""
 			
 			#control de spam e imagenes de hostings ajenos
-			if namespace==0 and (userclass=='anon' or (userclass=='reg' and edicionesauthor<=newbie)):
+			if namespace==0 and (userClass=='anon' or (userClass=='reg' and authorEditNum<=newbie)):
 				m=patterns['spam'].finditer(cleandata)
 				if m:
 					for i in m:
@@ -411,7 +411,7 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 							wikipedia.output(u'\03{lightgreen}Link por %s: %s\03{default}' % (author, url))
 							if controlspam.has_key(author):
 								if controlspam[author].has_key(url):
-									controlspam[author][url][wtitle]=diff
+									controlspam[author][url][pageTitle]=diff
 									if len(controlspam[author][url].items())==4 and not controlspam[author][url]['SPAMAVISADO']:
 										controlspam[author][url]['SPAMAVISADO']=True #evitamos avisos duplicados que se producen cuando hay mucha actividad
 										statsDic[2]['S']+=1
@@ -427,18 +427,18 @@ def edicion(titulo, author, new, minor, diff, oldid, resumen):
 										restopag=re.sub(ur'(?i)=== *Posible spam *===\n', ur'', restopag)
 										wii.put(u'=== Posible spam ===\n;{{u|%s}} ha puesto %d veces %s: %s([http://es.wikipedia.org/w/index.php?title=Especial:Linksearch&target=%s ver todos]). No se avisará si continúa poniéndolo. [[Special:Blockip/%s|Bloquear]]. ({{subst:CURRENTTIME}} (UTC) del {{subst:CURRENTDAY}}/{{subst:CURRENTMONTH}}/{{subst:CURRENTYEAR}})\n\n%s' % (author, len(controlspam[author][url].items())-1, url, artis, url, author, restopag), u'BOT - Añadiendo aviso de posible spam')
 								else:
-									controlspam[author][url]={wtitle: diff, 'SPAMAVISADO': False}
+									controlspam[author][url]={pageTitle: diff, 'SPAMAVISADO': False}
 							else:
-								controlspam[author]={url: {wtitle: diff, 'SPAMAVISADO': False}}
+								controlspam[author]={url: {pageTitle: diff, 'SPAMAVISADO': False}}
 							avbotsave.saveControlSpam(controlspam)"""
 						if imagehost:
 							wikipedia.output(u'\03{lightred}Alerta: Avisando de cómo subir imágenes correctamente a [[Usuario:%s]]\03{default}' % author)
 							#avisamos al usuario
-							avbotmsg.msgImageHost(author, site, wtitle, diff)
+							avbotmsg.msgImageHost(author, site, pageTitle, diff)
 							return
 			
 	else:
-		wikipedia.output(u'LA HAN BORRADO? :/ [[%s]]' % titulo)
+		wikipedia.output(u'LA HAN BORRADO? :/ [[%s]]' % pageTitle)
 
 def parseaentrada(entrada):
 	try:
@@ -482,7 +482,7 @@ class AVBOT(SingleServerIRCBot):
 		if re.search(patterns['edit'], linea):
 			match=patterns['edit'].finditer(linea)
 			for m in match:
-				title=m.group('title')
+				pageTitle=m.group('pageTitle')
 				diff=m.group('diff')
 				oldid=m.group('oldid')
 				author=m.group('author')
@@ -500,17 +500,17 @@ class AVBOT(SingleServerIRCBot):
 				statsDic[24]['T']+=1
 				speed+=1
 				
-				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
+				thread.start_new_thread(edicion,(pageTitle,author,new,minor,diff,oldid,resume))
 				
 				#Check resume for reverts
 				if re.search(ur'(?i)(Revertidos los cambios de.*AVBOT.*a la última edición de|Deshecha la edición \d+ de.*AVBOT)', resume):
 					wiii=wikipedia.Page(site, u'Usuario:AVBOT/Errores/Automático')
-					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}\n\n%s' % (wiii.get(), title, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, title))
+					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}\n\n%s' % (wiii.get(), pageTitle, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, pageTitle))
 				break
 		elif re.search(patterns['newpage'], linea):
 			match=patterns['newpage'].finditer(linea)
 			for m in match:
-				title=m.group('title')
+				pageTitle=m.group('pageTitle')
 				diff=oldid=0
 				author=m.group('author')
 				nm=m.group('nm')
@@ -520,7 +520,7 @@ class AVBOT(SingleServerIRCBot):
 					minor=True
 				resume=''
 				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
-				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
+				thread.start_new_thread(edicion,(pageTitle,author,new,minor,diff,oldid,resume))
 				speed+=1
 				break
 		elif re.search(patterns['block'], linea):
@@ -541,9 +541,9 @@ class AVBOT(SingleServerIRCBot):
 		elif re.search(patterns['borrado'], linea):
 			match=patterns['borrado'].finditer(linea)
 			for m in match:
-				titulo=m.group('titulo')
+				pageTitle=m.group('pageTitle')
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido borrado por [[Usuario:%s]]\03{default}' % (titulo, usuario))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido borrado por [[Usuario:%s]]\03{default}' % (pageTitle, usuario))
 				break
 		elif re.search(patterns['traslado'], linea):
 			match=patterns['traslado'].finditer(linea)
@@ -557,13 +557,13 @@ class AVBOT(SingleServerIRCBot):
 		elif re.search(patterns['protegida'], linea):
 			match=patterns['protegida'].finditer(linea)
 			for m in match:
-				titulo=m.group('titulo')
+				pageTitle=m.group('pageTitle')
 				protecter=m.group('protecter')
 				edit=m.group('edit')
 				move=m.group('move')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[Usuario:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (titulo, len(titulo), protecter, len(protecter), edit, len(edit), move, len(move)))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[Usuario:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
 				if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
-					thread.start_new_thread(avbotcomb.semiproteger,(site,titulo,protecter))
+					thread.start_new_thread(avbotcomb.semiproteger,(site,pageTitle,protecter))
 				break
 				
 		else:
