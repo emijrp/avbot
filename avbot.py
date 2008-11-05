@@ -348,7 +348,7 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				if type=='V':
 					wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, score, details, '-'*50))
 				elif type=='P':
-					wikipedia.output(u'%s\n\03{lightred}Alerta: Posible prueba de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, type, author, pageTitle, score, details, '-'*50))
+					wikipedia.output(u'%s\n\03{lightred}Alerta: Posible prueba de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, score, details, '-'*50))
 				return
 			
 			#5) Shocking images
