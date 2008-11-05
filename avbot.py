@@ -520,7 +520,7 @@ class AVBOT(SingleServerIRCBot):
 				if re.search('M', nm):
 					minor=True
 				resume=''
-				time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false
+				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
 				thread.start_new_thread(edicion,(title,author,new,minor,diff,oldid,resume))
 				speed+=1
 				break
