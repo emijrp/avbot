@@ -354,9 +354,9 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			#unificar el autoSign, controlspam y todas las de este modulo tambien
 			#
 			#5) Common vandalism
-			[done, score, details, controlvand, statsDic]=avbotanalysis.isVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, vandalismos, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
+			[done, score, details, controlvand, statsDic, type]=avbotanalysis.isVandalism(namespace, pageTitle, author, userClass, authorEditNum, newbie, vandalismos, cleandata, controlvand, p, pageHistory, diff, oldid, site, botNick, oldText, statsDic, currentYear)
 			if done: 
-				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible vandalismo de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, author, pageTitle, score, details, '-'*50))
+				wikipedia.output(u'%s\n\03{lightred}Alerta: Posible %s de %s en [[%s]] (%d puntos)\03{default}\nDetalles:\n%s\n%s' % ('-'*50, type, author, pageTitle, score, details, '-'*50))
 				return
 			
 			#6) Shocking images

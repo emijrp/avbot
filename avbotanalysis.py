@@ -217,8 +217,8 @@ def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie,
 	regexlist=[]
 	typeText={u'V': u'Vandalismo', u'P': u'Prueba'}
 	details=u''
+	type='P'
 	if vigilar(namespace, pageTitle, author, userClass, authorEditsNum, newbie):
-		type='P'
 		for k, v in vandalismos.items():
 			m=v['compiled'].finditer(cleandata)
 			added=False #para que no se desborde el log
@@ -267,9 +267,9 @@ def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie,
 					log.write(logentry.encode('utf-8'))
 					log.close()
 					
-					return True, score, details, controlvand, stats
+					return True, score, details, controlvand, stats, type
 				c+=1
-	return False, score, details, controlvand, stats
+	return False, score, details, controlvand, stats, type
 
 def isShockingContent(namespace, pageTitle, author, userClass, authorEditsNum, newbie, imageneschocantes, cleandata, controlvand, p, pageHistory, diff, oldid, site, nickdelbot, oldText, stats, currentYear):
 	if imageneschocantes['exceptions'].count(pageTitle)==0 and vigilar(namespace, pageTitle, author, userClass, authorEditsNum, newbie):
