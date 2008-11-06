@@ -274,8 +274,7 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				return #End of analysis for this new page, Exit
 			
 			#To get history
-			oldText=u''
-			newText=u''
+			oldText=newText=u''
 			try:
 				pageHistory=p.getVersionHistory(revCount=10) #To avoid bot edit wars
 				oldText=p.getOldVersion(p.previousRevision()) #Previous text
@@ -325,10 +324,11 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				return
 			
 			#2) Section blanking
-			[done, controlvand, statsDic]=avbotanalysis.isSectionBlanking(namespace, pageTitle, author, userClass, authorEditNum, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
+			#No se puede distinguir cuando el blanqueo de una sección es legítimo o no
+			"""[done, controlvand, statsDic]=avbotanalysis.isSectionBlanking(namespace, pageTitle, author, userClass, authorEditNum, newbie, data, controlvand, diff, oldid, site, botNick, statsDic, p, oldText, pageHistory, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de sección de %s en [[%s]]\03{default}' % (author, pageTitle))
-				return
+				return"""
 			
 			
 			#3) Section vandalisms
@@ -497,7 +497,7 @@ class AVBOT(SingleServerIRCBot):
 				#Check resume for reverts
 				if re.search(ur'(?i)(Revertidos los cambios de.*AVBOT.*a la última edición de|Deshecha la edición \d+ de.*AVBOT)', resume):
 					wiii=wikipedia.Page(site, u'Usuario:AVBOT/Errores/Automático')
-					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}\n\n%s' % (wiii.get(), pageTitle, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, pageTitle))
+					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}' % (wiii.get(), pageTitle, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, pageTitle))
 				break
 		elif re.search(patterns['newpage'], linea):
 			match=patterns['newpage'].finditer(linea)
