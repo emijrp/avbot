@@ -108,7 +108,8 @@ timeStatsDic={2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.tim
 #-----------------------------------------------------------------------------------------------------------------------
 # OTROS
 #-----------------------------------------------------------------------------------------------------------------------
-obviar=[u'Anexo:Diferencias de jerga o argot entre países hispanohablantes', u'Wikipedia:Zona de pruebas', u'Wikipedia:Cambiar el nombre de usuario']
+#hacer una pagina en la wiki para gestionar esto
+obviar=[u'Anexo:Diferencias de jerga o argot entre países hispanohablantes', u'Wikipedia:Zona de pruebas', u'Wikipedia:Cambiar el nombre de usuario', u'Wikipedia:Libro de visitas']
 
 header =u'############################################################################\n'
 header+=u'# Name:    AVBOT (AntiVandal BOT)                                          #\n'
@@ -160,7 +161,7 @@ re.compile(ur'(?i)http://img\d{1,3}\.imageshack\.us/'),
 re.compile(ur'(?i)http://i\d{1,3}\.photobucket\.com/'),
 ]
 
-wikipedia.output(u'Entrando al canal de IRC de cambios recientes...')
+wikipedia.output(u'Joining to recent changes IRC channel...')
 
 def cleandiff(pageTitle, data, patterns):
 	#TODO
