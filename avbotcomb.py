@@ -20,8 +20,9 @@ def bloqueo(site, blocker, blocked, castigo):
 			for trozo in trozos:
 				if re.search(ur'%s' % blocked, trozo) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
 					wikipedia.output(u'\03{lightblue}Se ha encontrado a %s :)\03{default}' % (blocked))
-					if re.search(ur'(?i)\(a rellenar por un bibliotecario\)', trozos2[c+1]):
-						trozos2[c+1]=re.sub(ur'(?i)\( *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)', ur"{{Vb|1=%s ([http://es.wikipedia.org/w/index.php?title=Especial:Log&type=block&user=%s&page=Usuario:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, re.sub(u' ', u'_', blocker), re.sub(u' ', u'_', blocked), blocker), trozos2[c+1])
+					arellenar=ur'(?i)\( *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)'
+					if re.search(arellenar, trozos2[c+1]):
+						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://es.wikipedia.org/w/index.php?title=Especial:Log&type=block&user=%s&page=Usuario:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, re.sub(u' ', u'_', blocker), re.sub(u' ', u'_', blocked), blocker), trozos2[c+1])
 						break
 				c+=1
 			
