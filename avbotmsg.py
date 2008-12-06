@@ -39,6 +39,7 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 	wii.put(u'%s\n\n%s' % (restopag, aviso), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]' % (author, author))
 
 def msgGenerico(author, site, wtitle, diff, n, tipo):
+	return
 	aviso=wikipedia.Page(site, u"User talk:%s" % author)
 	avisotexto=u""
 	wtitle2=wtitle

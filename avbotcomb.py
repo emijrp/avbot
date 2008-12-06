@@ -200,5 +200,28 @@ def archiveVEC(site):
 		return True
 	
 	return False
+
+def namespaceTranslator(site, namespace):
+	data=site.getUrl("/w/index.php?title=Special:RecentChanges&limit=0")
+	data=data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
+	m=re.compile(ur'<option value="([1-9]\d*)">(.*?)</option>').finditer(data)
+	wikipedianm=u''
+	for i in m:
+		number=i.group(1)
+		name=i.group(2)
+		if number=='%s' % namespace:
+			wikipedianm+=name
+	return wikipedianm
 	
+
+def resumeTranslator(type,vandal,stableid,stableauthor):
+	resume=u''
 	
+	if lang=='en':
+		if type=='blanking':
+			resume=u'BOT - Blanking by [[Special:Contributions/%s|%s]], reverting to %s edit by [[Usuario:%s|%s]].' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
+	else:
+		if type=='blanking':
+			resume=u'BOT - Blanqueo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
+	
+	return resume

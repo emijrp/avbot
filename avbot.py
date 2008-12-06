@@ -83,6 +83,8 @@ global currentYear
 #-----------------------------------------------------------------------------------------------------------------------
 botNick=u'AVBOT'
 language=u'es'
+if len(sys.argv)>=2:
+	language=sys.argv[1]
 site=wikipedia.Site(language, 'wikipedia')
 colors={'admin':'lightblue', 'bot':'lightpurple', 'reg':'lightgreen', 'anon':'lightyellow'}
 edits={'admin':0,'bot':0,'reg':0,'anon':0}
@@ -139,7 +141,7 @@ wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits
 #wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
 #Patterns for RSS Recent Changes
-patterns=avbotpatterns.loadPatterns()
+patterns=avbotpatterns.loadPatterns(language)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # WHITE LIST
@@ -246,15 +248,18 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 					#actualizamos? dado de 10 caras
 					if not random.randint(0,10): #afirmativo si sale cero
 						ediciones[author]=avbotload.loadUserEdits(author, site, newbie)
-						avbotsave.saveedits(ediciones)
+						if not random.randint(0,10): #afirmativo si sale cero
+							avbotsave.saveedits(ediciones)
 				else:
 					#cargamos
 					ediciones[author]=avbotload.loadUserEdits(author, site, newbie)
-					avbotsave.saveedits(ediciones)
+					if not random.randint(0,10): #afirmativo si sale cero
+						avbotsave.saveedits(ediciones)
 				authorEditNum=ediciones[author]
 			
 			#New pages analysis
 			if new:
+				return
 				newText=p.get()
 				if userClass=='anon':
 					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (+%d)' % (nm, pageTitle, colors[userClass], author, len(newText)))
@@ -274,6 +279,13 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 					
 				return #End of analysis for this new page, Exit
 			
+			if userClass=='anon':
+				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}}' % (nm, pageTitle, colors[userClass], author))
+			else:
+				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.}' % (nm, pageTitle, colors[userClass], author, authorEditNum))
+				if authorEditNum>newbie:
+					return #Exit
+			
 			#To get history
 			oldText=newText=u''
 			try:
@@ -291,11 +303,6 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			signo=u''
 			if lenDiff>0:
 				signo=u'+'
-			
-			if userClass=='anon':
-				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (%d/%d %s%d)' % (nm, pageTitle, colors[userClass], author, lenOld, lenNew, signo, lenDiff))
-			else:
-				wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}, %s ed.} (%d/%d %s%d)' % (nm, pageTitle, colors[userClass], author, authorEditNum, lenOld, lenNew, signo, lenDiff))
 			
 			if author==botNick: #Avoid to check our edits
 				return
@@ -365,10 +372,10 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			# cambiar nacimientos por fallecimientos
 			
 			#7) Anti-birthday protection
-			[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(pageTitle, userClass, authorEditNum, newbie, namespace, oldText, newText, cleandata, controlvand, site, pageHistory, diff, botNick, author, oldid, statsDic, p, currentYear)
+			"""[done, motivo, controlvand, statsDic]=avbotanalysis.antiBirthday(pageTitle, userClass, authorEditNum, newbie, namespace, oldText, newText, cleandata, controlvand, site, pageHistory, diff, botNick, author, oldid, statsDic, p, currentYear)
 			if done:
 				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, pageTitle))
-				return
+				return"""
 			
 			
 			#8) Auto-sign to anonymous users and newbies
@@ -572,12 +579,12 @@ class AVBOT(SingleServerIRCBot):
 					pass
 			f.close()
 		
-		
 		#Calculating and showing statistics
 		if time.time()-timeStatsDic['tvel']>=60: #Showing information in console every 60 seconds
 			intervalo=int(time.time()-timeStatsDic['tvel'])
-			wikipedia.output(u'\03{lightgreen}Velocidad media: %d ediciones/minuto\03{default}' % int(speed/(intervalo/60.0)))
-			wikipedia.output(u'\03{lightgreen}Resumen últimas 2 horas: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (statsDic[2]['V'], statsDic[2]['BL'], statsDic[2]['P'], statsDic[2]['S'], statsDic[2]['B'], statsDic[2]['M'], statsDic[2]['T'], statsDic[2]['D']))
+			wikipedia.output(u'\03{lightgreen}AVBOT working in %s.wikipedia.org\03{default}' % language)
+			wikipedia.output(u'\03{lightgreen}Average speed: %d edits/minute\03{default}' % int(speed/(intervalo/60.0)))
+			wikipedia.output(u'\03{lightgreen}Last 2 hours: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (statsDic[2]['V'], statsDic[2]['BL'], statsDic[2]['P'], statsDic[2]['S'], statsDic[2]['B'], statsDic[2]['M'], statsDic[2]['T'], statsDic[2]['D']))
 			timeStatsDic['tvel']=time.time()
 			speed=0
 		
@@ -585,9 +592,7 @@ class AVBOT(SingleServerIRCBot):
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
 			statsDic[period]['M']=statsDic[period]['V']+statsDic[period]['BL']+statsDic[period]['P']+statsDic[period]['S']
 			statsDic[period]['B']=statsDic[period]['T']-statsDic[period]['M']
-		
-		#Saving statistics
-		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
+			#Saving statistics
 			if time.time()-timeStatsDic[period]>=60*60*period:
 				avbotsave.saveStats(statsDic, period, site) #Saving statistics in Wikipedia pages for historical reasons
 				timeStatsDic[period]=time.time() #Saving time begin

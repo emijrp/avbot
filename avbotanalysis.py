@@ -111,7 +111,7 @@ def isBlanking(namespace, pageTitle, author, userClass, authorEditsNum, newbie, 
 							break
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 					stats=incrementaStats(stats, 'BL')
-					p.put(oldText, u'BOT - Blanqueo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
+					p.put(oldText, avbotcomb.resumeTranslator('blanking',author,str(oldid),i[2]))
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1

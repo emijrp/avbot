@@ -5,6 +5,8 @@ import urllib
 import wikipedia
 import catlib
 
+import avbotcomb
+
 def changedRegexpsList(list1, list2):
 	#funcion que devuelve si las dos listas de expresiones regualres son distintas
 	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadVandalism()
@@ -38,33 +40,31 @@ def loadEdits(newbie):
 	wikipedia.output(u"Loaded info for %d users..." % len(ediciones.items()))
 	return ediciones
 
-def loadAdmins(site):
-	admins=[]
-	data=site.getUrl("/w/index.php?title=Especial:Listusers&limit=5000&group=sysop")
+def loadUsers(site, type):
+	users=[]
+	data=site.getUrl("/w/index.php?title=Special:Listusers&limit=5000&group=%s" % type)
 	data=data.split('<!-- start content -->')
 	data=data[1].split('<!-- end content -->')[0]
-	m=re.compile(ur" title=\"Usuario:(.*?)\">").finditer(data)
+	namespace=avbotcomb.namespaceTranslator(site, 2)
+	m=re.compile(ur" title=\"%s:(.*?)\">" % namespace).finditer(data)
 	for i in m:
-		admins.append(i.group(1))
-	wikipedia.output(u"Loaded info for %d admins..." % len(admins))
-	return admins
+		users.append(i.group(1))
+	wikipedia.output(u"Loaded info for %d %ss..." % (len(users), type))
+	return users
+
+def loadAdmins(site):
+	return loadUsers(site, 'sysop')
 
 def loadBots(site):
-	bots=[]
-	data=site.getUrl("/w/index.php?title=Especial:Listusers&limit=5000&group=bot")
-	data=data.split('<!-- start content -->')
-	data=data[1].split('<!-- end content -->')[0]
-	m=re.compile(ur" title=\"Usuario:(.*?)\">").finditer(data)
-	for i in m:
-		bots.append(i.group(1))
-	wikipedia.output(u"Loaded info for %d bots..." % len(bots))
-	return bots
+	return loadUsers(site, 'bot')
 
 def loadVandalism(contexto, site, nickdelbot):
 	vandalismos={}
 	
 	wiii=wikipedia.Page(site, u'Usuario:Emijrp/Lista del bien y del mal.css')
-	raw=wiii.get()
+	raw=''
+	if wiii.exists() and not wiii.isRedirectPage() and not wiii.isDisambig():
+		raw=wiii.get()
 	
 	c=0
 	error=u''
