@@ -258,8 +258,7 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				authorEditNum=ediciones[author]
 			
 			#New pages analysis
-			if new:
-				return
+			if new and site.lang=='es':
 				newText=p.get()
 				if userClass=='anon':
 					wikipedia.output(u'%s[[%s]] {\03{%s}%s\03{default}} (+%d)' % (nm, pageTitle, colors[userClass], author, len(newText)))
@@ -269,12 +268,12 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 				[done, motivo, statsDic]=avbotanalysis.isRubbish(p, userClass, pageTitle, newText, colors, author, authorEditNum, newbie, namespace, pruebas, vandalismos, statsDic)
 				
 				if done:
-					wikipedia.output(u'\03{lightred}Alerta: Poniendo destruir en [[%s]]. Motivo: %s\03{default}' % (pageTitle, motivo))
+					wikipedia.output(u'\03{lightred}Alert!: Putting destroy template in [[%s]]. Motive: %s\03{default}' % (pageTitle, motivo))
 					return
 				
 				[done, resumen]=avbotanalysis.improveNewArticle(namespace, p)
 				if done:
-					wikipedia.output(u'\03{lightred}Alerta: Aplicando %s... a [[%s]]\03{default}' % (resumen, pageTitle))
+					wikipedia.output(u'\03{lightred}Alert!: Aplicando %s... a [[%s]]\03{default}' % (resumen, pageTitle))
 					return
 					
 				return #End of analysis for this new page, Exit
@@ -328,7 +327,7 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			#1) Blanking all
 			[done, controlvand, statsDic]=avbotanalysis.isBlanking(namespace, pageTitle, author, userClass, authorEditNum, newbie, lenOld, lenNew, patterns, newText, controlvand, diff, site, pageHistory, botNick, oldText, p, oldid, statsDic, currentYear)
 			if done:
-				wikipedia.output(u'\03{lightred}Alerta: Posible blanqueo de %s en [[%s]]\03{default}' % (author, pageTitle))
+				wikipedia.output(u'\03{lightred}Alert!: Blanking by %s in [[%s]]\03{default}' % (author, pageTitle))
 				return
 			
 			#2) Section blanking
@@ -600,7 +599,7 @@ class AVBOT(SingleServerIRCBot):
 
 def main(botNick, language):
 	channel = '#%s.wikipedia' % language #RSS channel for recent changes in Wikipedia
-	nickname = '%s%s' % (botNick, str(random.randint(1000, 9999))) #Bot nick in channel, with random numbers to avoid nick collisions
+	nickname = '%s%s' % (botNick, str(random.randint(10000, 99999))) #Bot nick in channel, with random numbers to avoid nick collisions
 	
 	bot = AVBOT(channel, nickname, 'irc.wikimedia.org', 6667) #Creating bot object
 	bot.start() #Starting bot

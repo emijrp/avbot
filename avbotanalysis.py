@@ -33,7 +33,7 @@ def incrementaStats(stats, tipo):
 	return stats
 
 def vigilar(namespace, pageTitle, author, userClass, authorEditsNum, newbie):
-	if (namespace==0 or namespace==10 or namespace==12 or namespace==14 or namespace==100 or namespace==102 or namespace==104 or (namespace==2 and not re.search(ur'\/', pageTitle) and not re.search(ur'(?i)%s' % re.sub('_', ' ', author), re.sub('_', ' ', pageTitle))) or (namespace==4 and not re.search(ur'Wikipedia\:Café', pageTitle))) and (userClass=='anon' or (userClass=='reg' and authorEditsNum<=newbie)):
+	if (namespace==0 or namespace==10 or namespace==12 or namespace==14 or namespace==100 or namespace==102 or namespace==104 or (namespace==2 and not re.search(ur'\/', pageTitle) and not re.search(ur'(?i)%s' % re.sub('_', ' ', author), re.sub('_', ' ', pageTitle))) or (namespace==4 and not re.search(ur'Wikipedia\:Café', pageTitle))) and (userClass=='anon' or (userClass=='reg' and authorEditsNum<=newbie)) and not re.search(ur'(?i)(sandbox|zona de pruebas)', pageTitle):
 		return True
 	return False
 
@@ -65,7 +65,7 @@ def isRubbish(p, userClass, pageTitle, newText, colors, author, authorEditsNum, 
 						motivo=u'Demasiado corto'
 		if destruir:
 			stats=incrementaStats(stats, 'D')
-			p.put(u'{{RobotDestruir|%s|%s}}\n%s' % (author, motivo, newText), u'Marcando para destruir. Motivo: %s. Página creada por [[Usuario:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motivo, author, author, author, author))
+			p.put(u'{{RobotDestruir|%s|%s}}\n%s' % (author, motivo, newText), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motivo, author, author, author, author))
 			return True, motivo, stats
 	return False, motivo, stats
 
@@ -111,7 +111,7 @@ def isBlanking(namespace, pageTitle, author, userClass, authorEditsNum, newbie, 
 							break
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 					stats=incrementaStats(stats, 'BL')
-					p.put(oldText, avbotcomb.resumeTranslator('blanking',author,str(oldid),i[2]))
+					p.put(oldText, avbotcomb.resumeTranslator(site,'blanking',author,str(oldid),i[2]))
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
@@ -155,7 +155,7 @@ def isSectionBlanking(namespace, pageTitle, author, userClass, authorEditsNum, n
 								break
 						[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 						stats=incrementaStats(stats, 'BL')
-						p.put(oldText, u'BOT - Blanqueo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
+						p.put(oldText, u'BOT - Blanqueo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
@@ -197,7 +197,7 @@ def isSectionVandalism(namespace, pageTitle, author, userClass, authorEditsNum, 
 								break
 						[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 						stats=incrementaStats(stats, 'V')
-						p.put(oldText, u'BOT - Vandalismo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
+						p.put(oldText, u'BOT - Vandalismo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
@@ -248,7 +248,7 @@ def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie,
 							break
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 					stats=incrementaStats(stats, type)
-					p.put(oldText, u'BOT - %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (typeText[type], author, author, str(oldid), i[2], i[2]))
+					p.put(oldText, u'BOT - %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (typeText[type], author, author, str(oldid), i[2], i[2]))
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
@@ -292,7 +292,7 @@ def isShockingContent(namespace, pageTitle, author, userClass, authorEditsNum, n
 								break
 						[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 						stats=incrementaStats(stats, 'V')
-						p.put(oldText, u'BOT - Contenido chocante de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
+						p.put(oldText, u'BOT - Contenido chocante de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
 						
 						#avisamos al usuario
 						controlvand[author]['avisos']+=1
@@ -339,7 +339,7 @@ def isTest(namespace, pageTitle, author, userClass, authorEditsNum, newbie, prue
 			#no meter dentro del bucle de pageHistory para presumir buena fe
 			if restaurar:
 				stats=incrementaStats(stats, 'P')
-				p.put(oldText, u'BOT - Prueba de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(pageHistory[1][0]), pageHistory[1][2], pageHistory[1][2]))
+				p.put(oldText, u'BOT - Prueba de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(pageHistory[1][0]), pageHistory[1][2], pageHistory[1][2]))
 				
 				#avisamos al usuario
 				controlvand[author]['avisos']+=1
@@ -427,7 +427,7 @@ def antiBirthday(pageTitle, userClass, authorEditsNum, newbie, namespace, oldTex
 				if i[2]!=author:
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
 					stats=incrementaStats(stats, 'V')
-					p.put(oldText, u'BOT - %s en la edición de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (motivo, author, author, str(oldid), i[2], i[2]))
+					p.put(oldText, u'BOT - %s en la edición de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (motivo, author, author, str(oldid), i[2], i[2]))
 					
 					#avisamos al usuario
 					controlvand[author]['avisos']+=1
@@ -464,7 +464,7 @@ def autoSign(userClass, authorEditsNum, newbie, namespace, p, pageHistory, autho
 			if not firmado:
 				if not re.search(ur'==', ultimalinea) and cuantas>=1 and len(ultimalinea)>20 and not re.search(ur'\{\{', ultimalinea):
 					temp=re.sub(re.escape(ultimalinea), u'%s {{No firmado|%s|{{subst:CURRENTTIME}} {{subst:CURRENTDAY}} {{subst:CURRENTMONTHNAME}} {{subst:CURRENTYEAR}} (UTC)}}' % (ultimalinea, author), newText)
-					p.put(temp, u'BOT - Firmando el comentario de [[Usuario:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (author, author, author, author))
+					p.put(temp, u'BOT - Firmando el comentario de [[User:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (author, author, author, author))
 					#avisamos al usuario
 					avbotmsg.msgFirma(p, author, site, pageTitle, diff)
 					return True

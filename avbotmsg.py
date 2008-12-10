@@ -39,7 +39,8 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 	wii.put(u'%s\n\n%s' % (restopag, aviso), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]' % (author, author))
 
 def msgGenerico(author, site, wtitle, diff, n, tipo):
-	return
+	if site.lang!='es':
+		return
 	aviso=wikipedia.Page(site, u"User talk:%s" % author)
 	avisotexto=u""
 	wtitle2=wtitle
@@ -48,9 +49,9 @@ def msgGenerico(author, site, wtitle, diff, n, tipo):
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
 	if n==3: #If n>3, no messages
-		avisotexto+=u"{{subst:User:Toolserver/Aviso%sInminente|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff)
+		avisotexto+=u"{{subst:User:AVBOT/Aviso%sInminente|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff)
 	elif n<3:
-		avisotexto+=u"{{subst:User:Toolserver/Aviso%s|%s|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff, n)
+		avisotexto+=u"{{subst:User:AVBOT/Aviso%s|%s|%s|%s}}" % (re.sub(' ', '', tipo), wtitle2, diff, n)
 	if tipo.lower()=='prueba':
 		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su %s en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, tipo.lower(), wtitle, n))
 	else:
@@ -79,16 +80,16 @@ def msgBloqueo(blocked, site, blocker):
 	avisotexto=u""
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
-	avisotexto+=u"{{subst:User:Toolserver/AvisoBloqueo|%s}}" % blocker
+	avisotexto+=u"{{subst:User:AVBOT/AvisoBloqueo|%s}}" % blocker
 	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[Usuario:%s|%s]]" % (blocked, blocked, blocker, blocker))
 
 def msgImageHost(author, site, wtitle, diff):
 	aviso=wikipedia.Page(site, u"User talk:%s" % author)
 	avisotexto=u''
 	if aviso.exists() and not aviso.isRedirectPage():
-		avisotexto+=u'%s\n\n{{subst:User:Toolserver/AvisoImageshack|%s|%s}}' % (aviso.get(), wtitle, diff)
+		avisotexto+=u'%s\n\n{{subst:User:AVBOT/AvisoImageshack|%s|%s}}' % (aviso.get(), wtitle, diff)
 	else:
-		avisotexto+=u'{{subst:User:Toolserver/AvisoImageshack|%s|%s}}' % (wtitle, diff)
+		avisotexto+=u'{{subst:User:AVBOT/AvisoImageshack|%s|%s}}' % (wtitle, diff)
 	if re.search(ur'(?i)Categor(ía|y)\:', wtitle):
 		wtitle=':%s' % wtitle
 	aviso.put(avisotexto, u'BOT - Avisando a [[Special:Contributions/%s|%s]] de cómo subir imágenes correctamente' % (author, author))
@@ -98,8 +99,8 @@ def msgFirma(p, author, site, wtitle, diff):
 	if p!=aviso: #evitamos avisar comentarios sin firmar en la discusion del menda
 		avisotexto=u''
 		if aviso.exists():
-			avisotexto+=u'%s\n\n{{subst:User:Toolserver/AvisoNoFirmado|%s|%s}}' % (aviso.get(), wtitle, diff)
+			avisotexto+=u'%s\n\n{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (aviso.get(), wtitle, diff)
 		else:
-			avisotexto+=u'{{subst:User:Toolserver/AvisoNoFirmado|%s|%s}}' % (wtitle, diff)
+			avisotexto+=u'{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (wtitle, diff)
 		aviso.put(avisotexto, u'BOT - Avisando a [[Usuario:%s|%s]] de que su comentario en [[%s]] ha sido firmado' % (author, author, wtitle))
 		

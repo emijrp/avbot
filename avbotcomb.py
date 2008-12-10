@@ -214,14 +214,14 @@ def namespaceTranslator(site, namespace):
 	return wikipedianm
 	
 
-def resumeTranslator(type,vandal,stableid,stableauthor):
+def resumeTranslator(site,type,vandal,stableid,stableauthor):
 	resume=u''
 	
-	if lang=='en':
+	if site.lang=='en':
 		if type=='blanking':
-			resume=u'BOT - Blanking by [[Special:Contributions/%s|%s]], reverting to %s edit by [[Usuario:%s|%s]].' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
+			resume=u'BOT - Blanking by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
 	else:
 		if type=='blanking':
-			resume=u'BOT - Blanqueo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[Usuario:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
+			resume=u'BOT - Blanqueo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
 	
 	return resume
