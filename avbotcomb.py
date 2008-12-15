@@ -7,6 +7,8 @@ import datetime
 import avbotmsg
 
 def bloqueo(site, blocker, blocked, castigo):
+	blocker_=re.sub(u' ', u'_', blocker)
+	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
 	#avbotmsg.msgBloqueo(blocked, site, blocker) #Send message to vandal's talk page
 	pvec=wikipedia.Page(site, u'Wikipedia:Vandalismo en curso')
@@ -22,7 +24,7 @@ def bloqueo(site, blocker, blocked, castigo):
 					wikipedia.output(u'\03{lightblue}Se ha encontrado a %s :)\03{default}' % (blocked))
 					arellenar=ur'(?i)\( *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)'
 					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://es.wikipedia.org/w/index.php?title=Especial:Log&type=block&user=%s&page=Usuario:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, re.sub(u' ', u'_', blocker), re.sub(u' ', u'_', blocked), blocker), trozos2[c+1])
+						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (site.lang, castigo, blocker, blocked, blocker), trozos2[c+1])
 						break
 				c+=1
 			
@@ -39,12 +41,12 @@ def bloqueo(site, blocker, blocked, castigo):
 			#enviamos
 			if newvectext!=vectext:
 				#wikipedia.showDiff(vectext, newvectext)
-				pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[Usuario:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
-				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[Usuario:%s]] de WP:VEC. Gestionado por [[Usuario:%s]]\03{default}' % (blocked, blocker))
+				pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
 			else:
 				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
 			
-			#si ha sido bloqueado para siempre, redirigimos su pagina de usuario
+			#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
 			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
 				userpage=wikipedia.Page(site, u'User:%s' % blocked)
 				userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
@@ -154,6 +156,16 @@ def mes(num):
 		return 'Julio'
 	elif num==8:
 		return 'Agosto'
+	elif num==9:
+		return 'Septiembre'
+	elif num==10:
+		return 'Octubre'
+	elif num==11:
+		return 'Noviembre'
+	elif num==12:
+		return 'Diciembre'
+	else:
+		return 'Mes desconocido'
 	
 
 def archiveVEC(site):

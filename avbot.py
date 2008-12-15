@@ -1,6 +1,24 @@
 # -*- coding: utf-8 -*-
 
 #############################################
+# AVBOT - Antivandal bot for MediaWiki projects
+# Copyright (C) 2008 Emilio José Rodríguez Posada
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#############################################
+
+#############################################
+#############################################
 # TODO:  comprobar que ultimalinea del apartado firmar no esta mas de 1 vez
 # modulo bienvenidas: tus pruebas de edicion en la WP:ZP se realizaron correctamente, revisar si ha sido revertido, si ha incluido imagenes de otros servidores .jpg, ultimas modificaciones
 # revertir anidados por parte de varios usuarios, 
@@ -54,6 +72,7 @@ import avbotpatterns #Patterns to scan Recent Changes RSS
 global ediciones
 global admins
 global bots
+global exclusions
 global contexto
 global pruebas
 pruebas={}
@@ -65,7 +84,6 @@ global controlspam
 controlspam={}
 global controlvand
 controlvand={}
-global obviar
 global whitelist
 global colors
 global edits
@@ -83,9 +101,10 @@ global currentYear
 #-----------------------------------------------------------------------------------------------------------------------
 botNick=u'AVBOT'
 language=u'es'
+family=u'wikipedia'
 if len(sys.argv)>=2:
 	language=sys.argv[1]
-site=wikipedia.Site(language, 'wikipedia')
+site=wikipedia.Site(language, family)
 colors={'admin':'lightblue', 'bot':'lightpurple', 'reg':'lightgreen', 'anon':'lightyellow'}
 edits={'admin':0,'bot':0,'reg':0,'anon':0}
 today=datetime.date.today()
@@ -94,7 +113,6 @@ currentYear=today.year
 #-----------------------------------------------------------------------------------------------------------------------
 # PARAMETROS DE REVERSION
 #-----------------------------------------------------------------------------------------------------------------------
-# cuidado al incrementar el numero, que puede hacer que usuarios con acento parezcan novatos, Amadís=26
 newbie=25 #hasta cuando se considera novato a un usuario
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -110,26 +128,29 @@ timeStatsDic={2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.tim
 #-----------------------------------------------------------------------------------------------------------------------
 # OTROS
 #-----------------------------------------------------------------------------------------------------------------------
-#hacer una pagina en la wiki para gestionar esto
-obviar=[u'Anexo:Diferencias de jerga o argot entre países hispanohablantes', u'Wikipedia:Zona de pruebas', u'Wikipedia:Cambiar el nombre de usuario', u'Wikipedia:Libro de visitas']
 
-header =u'############################################################################\n'
-header+=u'# Name:    AVBOT (AntiVandal BOT)                                          #\n'
-header+=u'# Version: 0.7                                                             #\n'
-header+=u'# Purpose: To revert vandalism, blanking and test edits                    #\n'
-header+=u'#          To improve new articles                                         #\n'
-header+=u'#          Anti-birthday protection                                        #\n'
-header+=u'#          Shocking images control                                         #\n'
-header+=u'############################################################################\n'
-header+=u'Loading data...'
+header =u"\nAVBOT Copyright (C) 2008 Emilio José Rodríguez Posada\n"
+header+=u"This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
+header+=u"This is free software, and you are welcome to redistribute it\n"
+header+=u"under certain conditions; type `show c' for details.\n\n"
+header+=u"############################################################################\n"
+header+=u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
+header+=u"# Version: 0.7                                                             #\n"
+header+=u"# Purpose: To revert vandalism, blanking and test edits                    #\n"
+header+=u"#          To improve new articles                                         #\n"
+header+=u"#          Anti-birthday protection                                        #\n"
+header+=u"#          Shocking images control                                         #\n"
+header+=u"############################################################################\n\n"
+header+=u"Loading data for %s.wikipedia.org..." % site.lang
 wikipedia.output(header)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # DATA LOADERS
 #-----------------------------------------------------------------------------------------------------------------------
-ediciones = avbotload.loadEdits(newbie)
-admins    = avbotload.loadAdmins(site)
-bots      = avbotload.loadBots(site)
+ediciones  = avbotload.loadEdits(newbie)
+admins     = avbotload.loadAdmins(site)
+bots       = avbotload.loadBots(site)
+exclusions = avbotload.loadExclusions(site)
 
 contexto=ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]'
 #Regular expresions for vandalism edits
@@ -193,13 +214,13 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 	global ediciones
 	global admins
 	global bots
+	global exclusions
 	global contexto
 	global pruebas
 	global vandalismos
 	global imageneschocantes
 	global controlspam
 	global controlvand
-	global obviar
 	global whitelist
 	global colors
 	global edits
@@ -215,7 +236,7 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 		pageTitle=p.title()
 		namespace=p.namespace()
 		
-		if obviar.count(pageTitle)!=0:
+		if exclusions.has_key(pageTitle):
 			return
 		
 		#recarga de expresiones regulares de vandalismos
@@ -223,7 +244,11 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 			vandalismos=avbotload.reloadVandalism(contexto, site, botNick, vandalismos, author, diff)
 			return #salimos
 		
-		if p.isRedirectPage():
+		if pageTitle==u'Usuario:Emijrp/Exclusiones.css':
+			exclusions=avbotload.loadExclusions(site)
+			return #salimos
+		
+		if p.isRedirectPage(): #Do not analysis redirect pages by now
 			return
 		else: #si es articulo o desambiguacion, analizamos
 			nm=u''
@@ -429,9 +454,9 @@ def edicion(pageTitle, author, new, minor, diff, oldid, resumen):
 									controlspam[author][url]={pageTitle: diff, 'SPAMAVISADO': False}
 							else:
 								controlspam[author]={url: {pageTitle: diff, 'SPAMAVISADO': False}}
-							avbotsave.saveControlSpam(controlspam)"""
+							"""
 						if imagehost:
-							wikipedia.output(u'\03{lightred}Alerta: Avisando de cómo subir imágenes correctamente a [[Usuario:%s]]\03{default}' % author)
+							wikipedia.output(u'\03{lightred}Alerta: Avisando de cómo subir imágenes correctamente a [[User:%s]]\03{default}' % author)
 							#avisamos al usuario
 							avbotmsg.msgImageHost(author, site, pageTitle, diff)
 							return
@@ -468,6 +493,7 @@ class AVBOT(SingleServerIRCBot):
 		global contexto
 		global pruebas
 		global vandalismos
+		global botNick
 		
 		#a=parseaentrada(a).encode('utf-8')
 		linea = (e.arguments()[0])
@@ -502,9 +528,9 @@ class AVBOT(SingleServerIRCBot):
 				thread.start_new_thread(edicion,(pageTitle,author,new,minor,diff,oldid,resume))
 				
 				#Check resume for reverts
-				if re.search(ur'(?i)(Revertidos los cambios de.*AVBOT.*a la última edición de|Deshecha la edición \d+ de.*AVBOT)', resume):
-					wiii=wikipedia.Page(site, u'Usuario:AVBOT/Errores/Automático')
-					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://es.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}' % (wiii.get(), pageTitle, diff, oldid, author), u'BOT - Informe automático. [[Usuario:%s|%s]] ha revertido a [[Usuario:AVBOT|AVBOT]] en [[%s]]' % (author, author, pageTitle))
+				if re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (botNick, botNick), resume):
+					wiii=wikipedia.Page(site, u'User:AVBOT/Errores/Automático')
+					wiii.put(u'%s\n\n== [[%s]] ({{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}) ==\n* Diff: http://%s.wikipedia.org/w/index.php?diff=%s&oldid=%s\n* Autor de la reversión: {{u|%s}}' % (wiii.get(), pageTitle, site.lang, diff, oldid, author), u'BOT - Informe automático. [[User:%s|%s]] ha revertido a [[User:%s|%s]] en [[%s]]' % (author, author, botNick, botNick, pageTitle))
 				break
 		elif re.search(patterns['newpage'], linea):
 			match=patterns['newpage'].finditer(linea)
@@ -528,21 +554,21 @@ class AVBOT(SingleServerIRCBot):
 				blocker=m.group('blocker')
 				blocked=m.group('blocked')
 				block=m.group('block')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[Usuario:%s]] (%d) ha sido bloqueado por [[Usuario:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) ha sido bloqueado por [[User:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
 				thread.start_new_thread(avbotcomb.bloqueo,(site,blocker,blocked,block))
 				break
 		elif re.search(patterns['nuevousuario'], linea):
 			match=patterns['nuevousuario'].finditer(linea)
 			for m in match:
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[Usuario:%s]] (%d) se acaba de registrar.\03{default}' % (usuario, len(usuario)))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) se acaba de registrar.\03{default}' % (usuario, len(usuario)))
 				break
 		elif re.search(patterns['borrado'], linea):
 			match=patterns['borrado'].finditer(linea)
 			for m in match:
 				pageTitle=m.group('pageTitle')
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido borrado por [[Usuario:%s]]\03{default}' % (pageTitle, usuario))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido borrado por [[User:%s]]\03{default}' % (pageTitle, usuario))
 				break
 		elif re.search(patterns['traslado'], linea):
 			match=patterns['traslado'].finditer(linea)
@@ -550,7 +576,7 @@ class AVBOT(SingleServerIRCBot):
 				usuario=m.group('usuario')
 				origen=m.group('origen')
 				destino=m.group('destino')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido trasladado a [[%s]] por [[Usuario:%s]]\03{default}' % (origen, destino, usuario))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido trasladado a [[%s]] por [[User:%s]]\03{default}' % (origen, destino, usuario))
 				thread.start_new_thread(avbotcomb.traslado,(site,usuario,origen,destino))
 				break
 		elif re.search(patterns['protegida'], linea):
@@ -560,7 +586,7 @@ class AVBOT(SingleServerIRCBot):
 				protecter=m.group('protecter')
 				edit=m.group('edit')
 				move=m.group('move')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[Usuario:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
 				if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
 					thread.start_new_thread(avbotcomb.semiproteger,(site,pageTitle,protecter))
 				break

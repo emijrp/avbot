@@ -262,7 +262,7 @@ def isVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie,
 						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
 					
 					#guardamos log
-					log=open('/home/emijrp/public_html/avbot/%s.txt' % datetime.date.today(), 'a')
+					log=open('/home/emijrp/logs/avbot/%s.txt' % datetime.date.today(), 'a')
 					logentry=u'\n%s\nArtículo: [[%s]]\nFecha: %s\nPuntuación: %d\nExpresiones regulares:\n%s\n%s' % ('-'*100, pageTitle, datetime.datetime.today(), score, details, '-'*100)
 					log.write(logentry.encode('utf-8'))
 					log.close()

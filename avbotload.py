@@ -61,7 +61,7 @@ def loadBots(site):
 def loadVandalism(contexto, site, nickdelbot):
 	vandalismos={}
 	
-	wiii=wikipedia.Page(site, u'Usuario:Emijrp/Lista del bien y del mal.css')
+	wiii=wikipedia.Page(site, u'User:Emijrp/Lista del bien y del mal.css')
 	raw=''
 	if wiii.exists() and not wiii.isRedirectPage() and not wiii.isDisambig():
 		raw=wiii.get()
@@ -92,18 +92,18 @@ def loadVandalism(contexto, site, nickdelbot):
 def reloadVandalism(contexto, site, botNick, vandalismos, author, diff):
 	[vandalismos_nuevo, error]=loadVandalism(contexto, site, botNick)
 	if changedRegexpsList(vandalismos, vandalismos_nuevo):
-		wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
+		wiii=wikipedia.Page(site, u'User talk:Emijrp/Lista del bien y del mal.css')
 		if error:
-			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, diff, len(vandalismos_nuevo), error, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, site.lang, diff, len(vandalismos_nuevo), error, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
 		else:
-			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, diff, len(vandalismos_nuevo), wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, site.lang, diff, len(vandalismos_nuevo), wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos_nuevo))
 		vandalismos=vandalismos_nuevo
 	else:
-		wiii=wikipedia.Page(site, u'Usuario Discusión:Emijrp/Lista del bien y del mal.css')
+		wiii=wikipedia.Page(site, u'User talk:Emijrp/Lista del bien y del mal.css')
 		if error:
-			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(vandalismos), diff, error, wiii.get()), u'BOT - La lista del bien y del mal no ha cambiado. Total [%d]' % len(vandalismos))
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(vandalismos), site.lang, diff, error, wiii.get()), u'BOT - La lista del bien y del mal no ha cambiado. Total [%d]' % len(vandalismos))
 		else:
-			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://es.wikipedia.org/w/index.php?title=Usuario:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(vandalismos), diff, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos))
+			wiii.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:Emijrp/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(vandalismos), site.lang, diff, wiii.get()), u'BOT - La lista del bien y del mal ha cambiado. Total [%d]' % len(vandalismos))
 	return vandalismos
 
 def loadShockingImages(site):
@@ -134,15 +134,13 @@ def loadShockingImages(site):
 		
 		except:
 			pass
-		
-		
 	
 	return imageneschocantes, error
-	
 
 def loadUserEdits(author, site, newbie):
+	author_=re.sub(' ', '_', author)
 	try:
-		rawdata=site.getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(re.sub(' ', '_', author)))
+		rawdata=site.getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(author_))
 		if re.search(u"editcount", rawdata):
 			m=re.compile(ur' editcount="(\d+)"').finditer(rawdata)
 			for i in m:
@@ -155,4 +153,23 @@ def loadUserEdits(author, site, newbie):
 			return newbie+1
 	except:
 		return newbie+1
-		
+
+def loadExclusions(site):
+	exclusions={}
+	
+	wiii=wikipedia.Page(site, u'User:Emijrp/Exclusiones.css')
+	raw=''
+	if wiii.exists() and not wiii.isRedirectPage() and not wiii.isDisambig():
+		raw=wiii.get()
+	
+	for l in raw.splitlines():
+		if len(l)>=1:
+			if l[0]=='#' or l[0]=='<':
+				continue
+			if not exclusions.has_key(l):
+				exclusions[l]=True
+	
+	wikipedia.output(u"Loaded %d page exclusions..." % (len(exclusions.items())))
+	
+	return exclusions
+	

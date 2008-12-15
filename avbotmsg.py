@@ -29,7 +29,7 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 	wii=wikipedia.Page(site, u"Wikipedia:Vandalismo en curso")
 	restopag=wii.get()
 	#evitamos avisar dos veces
-	if re.search(ur'(?i)\=\=\= *%s *\=\=\=' % author, restopag):
+	if re.search(ur'(?i)\=\=\= *%s *\=\=\=' % author, restopag): #xiste ya un aviso
 		return
 	aviso=u''
 	if userclass=='reg':
@@ -81,7 +81,7 @@ def msgBloqueo(blocked, site, blocker):
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
 	avisotexto+=u"{{subst:User:AVBOT/AvisoBloqueo|%s}}" % blocker
-	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[Usuario:%s|%s]]" % (blocked, blocked, blocker, blocker))
+	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))
 
 def msgImageHost(author, site, wtitle, diff):
 	aviso=wikipedia.Page(site, u"User talk:%s" % author)
@@ -102,5 +102,5 @@ def msgFirma(p, author, site, wtitle, diff):
 			avisotexto+=u'%s\n\n{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (aviso.get(), wtitle, diff)
 		else:
 			avisotexto+=u'{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (wtitle, diff)
-		aviso.put(avisotexto, u'BOT - Avisando a [[Usuario:%s|%s]] de que su comentario en [[%s]] ha sido firmado' % (author, author, wtitle))
+		aviso.put(avisotexto, u'BOT - Avisando a [[User:%s|%s]] de que su comentario en [[%s]] ha sido firmado' % (author, author, wtitle))
 		
