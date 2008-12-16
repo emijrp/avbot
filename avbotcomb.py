@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
 
+#############################################
+# AVBOT - Antivandal bot for MediaWiki projects
+# Copyright (C) 2008 Emilio José Rodríguez Posada
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#############################################
+
 import wikipedia
 import re
 import datetime
@@ -24,7 +41,7 @@ def bloqueo(site, blocker, blocked, castigo):
 					wikipedia.output(u'\03{lightblue}Se ha encontrado a %s :)\03{default}' % (blocked))
 					arellenar=ur'(?i)\( *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)'
 					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (site.lang, castigo, blocker, blocked, blocker), trozos2[c+1])
+						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, site.lang, blocker, blocked, blocker), trozos2[c+1])
 						break
 				c+=1
 			
@@ -169,6 +186,8 @@ def mes(num):
 	
 
 def archiveVEC(site):
+	minimo=5 #archivar cuando haya x informes resueltos o mas
+	
 	#calculo de fecha
 	mesactual=mes(datetime.date.today().month)
 	anyoactual=datetime.date.today().year
@@ -188,7 +207,7 @@ def archiveVEC(site):
 	vecactual=[]
 	for i in avisos:
 		if c % 2 == 0:
-			if re.search(ur'Acción administrativa.*?%d' % anyoactual, avisos[c+1]):
+			if re.search(ur'(?i)Acción administrativa.*?%d' % anyoactual, avisos[c+1]):
 				archivo.append(avisos[c])
 				archivo.append(avisos[c+1])
 			else:
@@ -196,7 +215,7 @@ def archiveVEC(site):
 				vecactual.append(avisos[c+1])
 		c+=1
 	
-	if len(archivo)>=6: #archivamos cuando haya 3 resueltos
+	if len(archivo)>=minimo*2: #archivamos cuando haya x resueltos
 		vecnewtext=u'%s\n' % cabecera
 		for i in vecactual:
 			vecnewtext+=u'===%s' % i
@@ -204,11 +223,13 @@ def archiveVEC(site):
 		for i in archivo:
 			archivotext+=u'===%s' % i
 		
-		cuantos=len(vecactual)/2
+		cuantos=len(archivo)/2
 		
-		vec.put(vecnewtext, u'BOT - Archivando %d avisos resueltos (bot en pruebas)' % cuantos)
-		arc=wikipedia.Page(site, u"Wikipedia:Vandalismo en curso/%s %s" % (mesactual, anyoactual))
-		arc.put(u'%s\n%s' % (arc.get(), archivotext), u'BOT - Archivando %d avisos resueltos (bot en pruebas)' % cuantos)
+		vec.put(vecnewtext, u'BOT - Archivando %d avisos resueltos en [[%s]] (bot en pruebas)' % (cuantos, arctitle))
+		arctitle=u"Wikipedia:Vandalismo en curso/%s %s" % (mesactual, anyoactual)
+		arc=wikipedia.Page(site, arctitle)
+		arc.put(u'%s\n%s' % (arc.get(), archivotext), u'BOT - Archivando %d avisos resueltos de [[Wikipedia:Vandalismo en curso]] (bot en pruebas)' % (cuantos))
+		
 		return True
 	
 	return False
@@ -224,16 +245,33 @@ def namespaceTranslator(site, namespace):
 		if number=='%s' % namespace:
 			wikipedianm+=name
 	return wikipedianm
-	
 
-def resumeTranslator(site,type,vandal,stableid,stableauthor):
+def resumeTranslator(preferences,editData):
 	resume=u''
+	type=editData['type']
 	
-	if site.lang=='en':
-		if type=='blanking':
-			resume=u'BOT - Blanking by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
-	else:
-		if type=='blanking':
-			resume=u'BOT - Blanqueo de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (vandal, vandal, str(stableid), stableauthor, stableauthor)
+	if preferences['language']=='en':
+		if editData['type']=='blanking':
+			type=u'Blanking'
+		elif editData['type']=='vandalism':
+			type=u'Vandalism'
+		elif editData['test']=='test':
+			type=u'Test'
+		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (type, editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+	elif preferences['language']=='es':
+		if editData['type']=='blanking':
+			type=u'Blanqueo'
+		elif editData['type']=='vandalism':
+			type=u'Vandalismo'
+		elif editData['type']=='test':
+			type=u'Prueba'
+		resume=u'BOT - %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (type, editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	
 	return resume
+
+def getParameters(preferences, parameters):
+	#mirar en replace.py
+	if len(parameters)>=2:
+		preferences['language']=parameters[1]
+	
+	return preferences

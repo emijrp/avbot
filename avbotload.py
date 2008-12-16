@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
 
+#############################################
+# AVBOT - Antivandal bot for MediaWiki projects
+# Copyright (C) 2008 Emilio José Rodríguez Posada
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#############################################
+
 import re
 import urllib
 import wikipedia
@@ -19,7 +36,8 @@ def changedRegexpsList(list1, list2):
 				return True
 	return False
 
-def loadEdits(newbie):
+def loadEdits(preferences):
+	newbie=preferences['newbie']
 	ediciones={}
 	f=open("ediciones.txt", "r")
 	l=ur""
@@ -58,7 +76,7 @@ def loadAdmins(site):
 def loadBots(site):
 	return loadUsers(site, 'bot')
 
-def loadVandalism(contexto, site, nickdelbot):
+def loadVandalism(context, site):
 	vandalismos={}
 	
 	wiii=wikipedia.Page(site, u'User:Emijrp/Lista del bien y del mal.css')
@@ -77,7 +95,7 @@ def loadVandalism(contexto, site, nickdelbot):
 			type=trozos[0]
 			reg=trozos[1]
 			score=int(trozos[2])
-			regex=ur'%s%s%s' % (contexto, reg, contexto)
+			regex=ur'%s%s%s' % (context, reg, context)
 			try:
 				vandalismos[reg]={'type':type, 'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
 			except:
