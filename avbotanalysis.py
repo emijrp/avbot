@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#############################################
 # AVBOT - Antivandal bot for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
@@ -15,16 +14,23 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#############################################
+
+## @package avbotanalysis
+# Module for detect vandalisms, blanking, testing edits, new pages analysis
 
 import re, wikipedia, datetime
+import random
 
+# AVBOT modules
+import avbotglobals
 import avbotload
 import avbotsave
 import avbotmsg
 import avbotcomb
 
 def sameOldid(editData):
+	"""  """
+	
 	#return id, p.getOldVersion(id) #mientras averiguo lo de abajo
 	
 	#este metodo falla? http://es.wikipedia.org/w/index.php?title=Usuario:AVBOT/Errores&diff=prev&oldid=21309979
@@ -36,6 +42,8 @@ def sameOldid(editData):
 		return editData
 
 def isSameVandalism(regexlistold, regexlistnew):
+	"""  """
+	
 	if len(regexlistold)!=len(regexlistnew):
 		return False
 	else:
@@ -44,7 +52,9 @@ def isSameVandalism(regexlistold, regexlistnew):
 				return False
 	return True
 
-def incrementaStats(stats, type):
+def incrementaStats(type):
+	""" Increase stats variables """
+	
 	type2=type
 	if re.search(ur'(?i)blanking', type):
 		type2='BL'
@@ -53,82 +63,88 @@ def incrementaStats(stats, type):
 	if re.search(ur'(?i)vandalism', type):
 		type2='V'
 	
-	stats[2][type2]+=1
-	stats[12][type2]+=1
-	stats[24][type2]+=1
-	
-	return stats
+	avbotglobals.statsDic[2][type2]+=1
+	avbotglobals.statsDic[12][type2]+=1
+	avbotglobals.statsDic[24][type2]+=1
 
-def watch(editData, preferences, userClass, authorEditsNum):
-	if (editData['namespace']==0 or editData['namespace']==4 or editData['namespace']==10 or editData['namespace']==12 or editData['namespace']==14 or editData['namespace']==100 or editData['namespace']==102 or editData['namespace']==104 or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % re.sub('_', ' ', editData['author']), re.sub('_', ' ', editData['pageTitle'])))):
-		if userClass=='anon' or (userClass=='reg' and authorEditsNum<=preferences['newbie']):
+def watch(editData, userData):
+	""" Check if it may watch and analysis edit in editData """
+	
+	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % re.sub('_', ' ', editData['author']), re.sub('_', ' ', editData['pageTitle'])))):
+		if editData['userClass']=='anon' or (editData['userClass']=='reg' and userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True
 	return False
 
-def isRubbish(p, userClass, pageTitle, newText, colors, author, authorEditsNum, newbie, namespace, pruebas, vandalismos, stats):
+def isRubbish(editData, userData):
+	""" Check if the new article is useless """
+	
 	destruir=False
-	motivo=u'Otros'
+	motive=u'Otros'
 	score=0
 	
-	if userClass=='anon' or (userClass=='reg' and authorEditsNum<=newbie):
-		if (namespace==0) and not p.isRedirectPage() and not p.isDisambig():
-			if not re.search(ur'(?i)\{\{|redirect', newText):
-				for k, v in vandalismos.items():
-					m=v['compiled'].finditer(newText)
+	if editData['userClass']=='anon' or (editData['userClass']=='reg' and userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
+		if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+			if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
+				for k, v in avbotglobals.vandalRegexps.items():
+					m=v['compiled'].finditer(editData['newText'])
 					for i in m:
 						score+=v['score']
 				
-				if score<0 and ((score>-5 and len(newText)<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
+				if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
 					destruir=True
-					motivo=u'Vandalismo'
-				else:
-					if len(newText)<200:
-						for k, v in pruebas.items():
-							if re.search(v['compiled'], newText):
-								destruir=True
-								motivo=u'Pruebas'
-				if len(newText)<=75 and not destruir:
-					if not re.search(ur'\[', newText):
+					motive=u'Vandalismo'
+				if len(editData['newText'])<=75 and not destruir:
+					if not re.search(ur'\[', editData['newText']):
 						destruir=True
-						motivo=u'Demasiado corto'
+						motive=u'Demasiado corto'
 		if destruir:
-			stats=incrementaStats(stats, 'D')
-			p.put(u'{{RobotDestruir|%s|%s}}\n%s' % (author, motivo, newText), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[Usuario Discusión:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motivo, author, author, author, author))
-			return True, motivo, stats
-	return False, motivo, stats
+			incrementaStats('D')
+			editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+			return True, motive
+	return False, motive
 
-def improveNewArticle(namespace, p):
-	newText=p.get()
-	if (namespace==0) and not p.isRedirectPage() and not p.isDisambig():
+def improveNewArticle(editData):
+	""" Make some changes in the new article to improve it """
+	
+	newText=editData['page'].get()
+	if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
 		if not re.search(ur'(?i)\{\{ *(destruir|plagio|copyvio)|redirect', newText): #descarta demasiado? destruir|plagio|copyvio
 			if len(newText)>=500:
 				resumen=u''
 				newnewText=u''
-				if not p.interwiki():
+				if not editData['page'].interwiki():
 					try:
-						[newnewText, resumen]=avbotcomb.magicInterwiki(p, resumen, 'en')
+						[newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
 					except:
 						pass
 				[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
 				#[newnewText, resumen]=avbotcomb.cosmetic(newnewText, resumen)
 				if len(newnewText)>len(newText):
-					p.put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
+					editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
 					return True, resumen
 	return False, u''
 
-def revertAllEditsByUser(editData, preferences, controlvand, userClass, statsDic):
+def revertAllEditsByUser(editData, userClass, regexlist):
+	""" Revert all edits in a same article by a same author """
+	
+	#añadimos al control de vandalismos
+	if avbotglobals.vandalControl.has_key(editData['author']):
+		avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexlist]
+	else:
+		avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexlist]}
+	
 	c=0
 	for i in editData['pageHistory']:
 		if i[2]!=editData['author']: 
-			if i[2]==preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja
+			if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja
 				if re.search(ur'(?i)blanking', editData['type']):
 					#para blanqueos no comprobamos si tiene la misma lista de regex (regexlist) que el anterior blanqueo, sino cual fue la logintud que tenia el texto final del blanqueo anterior
-					if len(editData['pageHistory'])-1>=c+1 and controlvand[editData['author']].has_key(editData['pageHistory'][c+1][0]) and controlvand[editData['author']][editData['pageHistory'][c+1][0]][1]==editData['score']: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
+					if len(editData['pageHistory'])-1>=c+1 and avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]) and avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][1]==editData['score']: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
 						#evitamos revertir dos veces el mismo blanqueo, misma puntuacion
 						break
 				if re.search(ur'(?i)vandalism', editData['type']):
-					regexlist=controlvand[editData['author']][editData['diff']][2]
-					if len(editData['pageHistory'])-1>=c+1 and controlvand[editData['author']].has_key(editData['pageHistory'][c+1][0]) and isSameVandalism(controlvand[editData['author']][editData['pageHistory'][c+1][0]][2], regexlist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
+					regexlist=avbotglobals.vandalControl[editData['author']][editData['diff']][2]
+					if len(editData['pageHistory'])-1>=c+1 and avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]) and isSameVandalism(avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][2], regexlist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
 						#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, excepto si es muy baja
 						break
 			
@@ -136,19 +152,19 @@ def revertAllEditsByUser(editData, preferences, controlvand, userClass, statsDic
 			editData['stableAuthor']=i[2]
 			editData=sameOldid(editData)
 			
-			statsDic=incrementaStats(statsDic, editData['type'])
+			incrementaStats(editData['type'])
 			
 			#restauramos version estable del articulo
-			editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(preferences,editData))
+			editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 			
 			#avisamos al usuario
-			controlvand[editData['author']]['avisos']+=1
+			avbotglobals.vandalControl[editData['author']]['avisos']+=1
 			if re.search(ur'(?i)blanking', editData['type']):
-				avbotmsg.msgBlanqueo(editData['author'], preferences['site'], editData['pageTitle'], editData['diff'], controlvand[editData['author']]['avisos'])
+				avbotmsg.msgBlanqueo(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'])
 			if re.search(ur'(?i)test', editData['type']):
-				avbotmsg.msgPrueba(editData['author'], preferences['site'], editData['pageTitle'], editData['diff'], controlvand[editData['author']]['avisos'])
+				avbotmsg.msgPrueba(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'])
 			if re.search(ur'(?i)vandalism', editData['type']):
-				avbotmsg.msgVandalismo(editData['author'], preferences['site'], editData['pageTitle'], editData['diff'], controlvand[editData['author']]['avisos'])
+				avbotmsg.msgVandalismo(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'])
 			
 			#guardamos log
 			log=open('/home/emijrp/logs/avbot/%s.txt' % datetime.date.today(), 'a')
@@ -157,122 +173,33 @@ def revertAllEditsByUser(editData, preferences, controlvand, userClass, statsDic
 			log.close()
 			
 			#avisamos en WP:VEC
-			if len(controlvand[editData['author']].items())==4:
-				avbotmsg.msgVandalismoEnCurso(controlvand[editData['author']], editData['author'], userClass, preferences['site'])
+			if len(avbotglobals.vandalControl[editData['author']].items())==4:
+				avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass)
 			
-			return True, controlvand, statsDic, editData
+			return True, editData
 		c+=1
-	return False, controlvand, statsDic, editData
+	return False, editData
 
-def isBlanking(preferences, editData, userClass, patterns, controlvand, statsDic):
+def isBlanking(editData, userClass):
+	""" Checks if an edit is a blanking one """
+	
 	editData['score']=0
 	regexlist=[]
 	reverted=False
 	
-	if editData['lenOld']>=1000 and editData['lenNew']<editData['lenOld']/7 and not re.search(patterns['blanqueos'], editData['newText']): # 1/7 es un buen numero?
+	if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): # 1/7 es un buen numero?
 		editData['type']='blanking'
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''
-		#añadimos al control de vandalismos
-		if controlvand.has_key(editData['author']):
-			controlvand[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexlist] #metemos regexlist que es una lista vacia, para mantener consistencia con is_Vandalism()
-		else:
-			controlvand[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexlist]}
 		
 		#revertimos todas las ediciones del menda
-		[reverted, controlvand, statsDic, editData]=revertAllEditsByUser(editData, preferences, controlvand, userClass, statsDic)
+		[reverted, editData]=revertAllEditsByUser(editData, userClass, regexlist)
 		
-	return reverted, controlvand, statsDic, editData
+	return reverted, editData
 
-def isSectionBlanking(namespace, pageTitle, author, userClass, authorEditsNum, newbie, data, controlvand, diff, oldid, site, nickdelbot, stats, p, oldText, pageHistory, currentYear):
-	#data contiene el diff sin limpiar
-	score=0
-	regexlist=[]
+def isVandalism(editData, cleandata, userClass):
+	""" Checks if an edit is a vandalism one """
 	
-	#quitamos los saltos de linea para facilitar regex
-	data=re.sub(ur'\n|\r', ur'', data)
-	m=re.findall(ur'(?im)<td class\="diff\-deletedline"><div>(\={2,} *[^\=]+ *\={2,} *)</div></td>', data)
-	n=re.findall(ur'(?im)<td class\="diff\-addedline"><div>(\={2,} *[^\=]+ *\={2,} *)</div></td>', data)
-	o=re.findall(ur'(?im)<td class\="diff\-marker">\+</td>', data) #que no se añada ninguna linea nueva
-	if len(m)==1 and len(n)==0 and len(o)==0: #si ha eliminado una seccion, pero eliminado de verdad, no solo modificar http://es.wikipedia.org/w/index.php?title=Australasia_en_los_Juegos_Ol%EDmpicos&diff=19338323&oldid=19338321&diffonly=1
-		izqda=re.findall(ur'(?im)(<tr><td colspan\="2">&nbsp;</td>)', data)
-		dcha=re.findall(ur'(?im)(<td colspan\="2">&nbsp;</td></tr>)', data) #tienen que ir pegados a un </tr> para que la linea eliminada este en la derecha del diff http://es.wikipedia.org/w/index.php?title=Australasia_en_los_Juegos_Ol%EDmpicos&diff=19338323&oldid=19338321&diffonly=1
-		if len(izqda)==0 and len(dcha)>0: #que haya blanqueado al menos 1 lineas sin contar la seccion == ==
-			score=-len(m[0])
-			if controlvand.has_key(author):
-				controlvand[author][diff]=[pageTitle, score, regexlist]
-			else:
-				controlvand[author]={'avisos': 0, diff: [pageTitle, score, regexlist]}
-			
-			#revertimos todas las ediciones del menda
-			c=0
-			for i in pageHistory:
-				if i[2]!=author: 
-					if i[2]==nickdelbot:#evitar que el bot entre en guerras de ediciones
-						#para blanqueos no comprobamos si tiene la misma lista de regex (regexlist) que el anterior blanqueo, sino cual fue la logintud que tenia el texto final del blanqueo anterior
-						if len(pageHistory)-1>=c+1 and controlvand[author].has_key(pageHistory[c+1][0]) and controlvand[author][pageHistory[c+1][0]][1]==score: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
-							#evitamos revertir dos veces el mismo vandalismo, misma puntuacion
-							break
-					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
-					stats=incrementaStats(stats, 'BL')
-					p.put(oldText, u'BOT - Blanqueo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
-					
-					#avisamos al usuario
-					controlvand[author]['avisos']+=1
-					avbotmsg.msgBlanqueo(author, site, pageTitle, diff, controlvand[author]['avisos'])
-					
-					#avisamos en WP:VEC
-					if len(controlvand[author].items())==4:
-						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
-					
-					return True, controlvand, stats
-				c+=1
-	
-	return False, controlvand, stats
-
-def isSectionVandalism(namespace, pageTitle, author, userClass, authorEditsNum, newbie, data, controlvand, diff, oldid, site, nickdelbot, stats, p, oldText, pageHistory, currentYear):
-	#data contiene el diff sin limpiar
-	score=0
-	regexlist=[]
-	
-	#quitamos los saltos de linea para facilitar regex
-	data=re.sub(ur'\n|\r', ur'', data)
-	m=re.findall(ur'(?im)<td class\="diff\-addedline"><div>\={2,} *[^\=]+ *\={2,} *<span class\="diffchange diffchange\-inline">([^<]+)</span>', data)
-	if len(m)==1: #uno y solo uno
-		if len(m[0])>0 and len(m[0])<50: #cuidado que m[0][0] devuelve un caracter solo?
-			score=-len(m[0])
-			if controlvand.has_key(author):
-				controlvand[author][diff]=[pageTitle, score, regexlist]
-			else:
-				controlvand[author]={'avisos': 0, diff: [pageTitle, score, regexlist]}
-			
-			#revertimos todas las ediciones del menda
-			c=0
-			for i in pageHistory:
-				if i[2]!=author: 
-					if i[2]==nickdelbot:#evitar que el bot entre en guerras de ediciones
-						#para blanqueos no comprobamos si tiene la misma lista de regex (regexlist) que el anterior blanqueo, sino cual fue la logintud que tenia el texto final del blanqueo anterior
-						if len(pageHistory)-1>=c+1 and controlvand[author].has_key(pageHistory[c+1][0]) and controlvand[author][pageHistory[c+1][0]][1]==score: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
-							#evitamos revertir dos veces el mismo vandalismo, misma puntuacion
-							break
-					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
-					stats=incrementaStats(stats, 'V')
-					p.put(oldText, u'BOT - Vandalismo de sección de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
-					
-					#avisamos al usuario
-					controlvand[author]['avisos']+=1
-					avbotmsg.msgVandalismo(author, site, pageTitle, diff, controlvand[author]['avisos'])
-					
-					#avisamos en WP:VEC
-					if len(controlvand[author].items())==4:
-						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
-					
-					return True, controlvand, stats
-				c+=1
-	
-	return False, controlvand, stats
-
-def isVandalism(preferences, editData, vandalismos, cleandata, userClass, patterns, controlvand, statsDic):
 	editData['score']=0
 	regexlist=[]
 	reverted=False
@@ -280,7 +207,7 @@ def isVandalism(preferences, editData, vandalismos, cleandata, userClass, patter
 	editData['type']=u''
 	editData['details']=u''
 	
-	for k, v in vandalismos.items():
+	for k, v in avbotglobals.vandalRegexps.items():
 		m=v['compiled'].finditer(cleandata)
 		added=False #para que no se desborde el log
 		for i in m:
@@ -295,100 +222,51 @@ def isVandalism(preferences, editData, vandalismos, cleandata, userClass, patter
 	if editData['score']<0 and ((editData['score']>-5 and len(cleandata)<editData['score']*-150) or editData['score']<-4): #en fase de pruebas, densidad len(data)<score*-100
 		editData['type']=type
 		
-		#añadimos al control de vandalismos
-		if controlvand.has_key(editData['author']):
-			controlvand[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexlist]
-		else:
-			controlvand[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexlist]}
-		
 		#revertimos todas las ediciones del menda
-		[reverted, controlvand, statsDic, editData]=revertAllEditsByUser(editData, preferences, controlvand, userClass, statsDic)
+		[reverted, editData]=revertAllEditsByUser(editData, userClass, regexlist)
 		
-	return reverted, controlvand, statsDic, editData
+	return reverted, editData
 
-def isShockingContent(namespace, pageTitle, author, userClass, authorEditsNum, newbie, imageneschocantes, cleandata, controlvand, p, pageHistory, diff, oldid, site, nickdelbot, oldText, stats, currentYear):
+def isShockingContent(namespace, pageTitle, author, userClass, userData, imageneschocantes, cleandata, p, pageHistory, diff, oldid, site, oldText, currentYear):
+	""" Checks if user has introduced a  shocking image in a bad place """
+	
 	if imageneschocantes['exceptions'].count(pageTitle)==0:
 		for filename, compiled in imageneschocantes['images'].items():
 			m=re.findall(compiled, cleandata)
 			if m: #reveritmos y salimos
 				#añadimos al control de vandalismos
-				if controlvand.has_key(author):
-					controlvand[author][diff]=[pageTitle, -9999, [filename]]
+				if avbotglobals.vandalControl.has_key(author):
+					avbotglobals.vandalControl[author][diff]=[pageTitle, -9999, [filename]]
 				else:
-					controlvand[author]={'avisos': 0, diff: [pageTitle, -9999, [filename]]}
+					avbotglobals.vandalControl[author]={'avisos': 0, diff: [pageTitle, -9999, [filename]]}
 				
 				#revertimos todas las ediciones del menda
 				c=0
 				for i in pageHistory:
 					if i[2]!=author: 
-						if i[2]==nickdelbot:#evitar que el bot entre en guerras de ediciones
-							if len(pageHistory)-1>=c+1 and controlvand[author].has_key(pageHistory[c+1][0]) and isSameVandalism(controlvand[author][pageHistory[c+1][0]][2], [filename]): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
+						if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones
+							if len(pageHistory)-1>=c+1 and avbotglobals.vandalControl[author].has_key(pageHistory[c+1][0]) and isSameVandalism(avbotglobals.vandalControl[author][pageHistory[c+1][0]][2], [filename]): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
 								#evitamos revertir dos veces el mismo vandalismo, misma puntuacion
 								break
 						[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
-						stats=incrementaStats(stats, 'V')
+						incrementaStats('V')
 						p.put(oldText, u'BOT - Contenido chocante de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(oldid), i[2], i[2]))
 						
 						#avisamos al usuario
-						controlvand[author]['avisos']+=1
-						avbotmsg.msgContenidoChocante(author, site, pageTitle, diff, controlvand[author]['avisos'])
+						avbotglobals.vandalControl[author]['avisos']+=1
+						avbotmsg.msgContenidoChocante(author, site, pageTitle, diff, avbotglobals.vandalControl[author]['avisos'])
 						
 						#avisamos en WP:VEC
-						if len(controlvand[author].items())==4:
-							avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
+						if len(avbotglobals.vandalControl[author].items())==4:
+							avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[author], author, userClass, site)
 						
-						return True, controlvand, stats
+						return True
 					c+=1
-	return False, controlvand, stats
+	return False
 
-def isTest(namespace, pageTitle, author, userClass, authorEditsNum, newbie, pruebas, cleandata, controlvand, diff, site, nickdelbot, stats, p, oldText, pageHistory, currentYear):
-	details=u''
-	regexlist=[]
-	score=0
-	
-	#no calculamos score, con una vale
-	restaurar=False
-	for k, v in pruebas.items():
-		m=v['compiled'].finditer(cleandata)
-		for i in m:
-			score+=v['score']
-			regexlist.append(k) #aunque despues no la usamos para nada, es para mantener consistencia
-			details+=u'%s\n' % (k)
-		
-	if score<0 and ((score>-5 and len(cleandata)<score*-150) or score<-4): #en fase de pruebas, densidad len(data)<score*-100
-		restaurar=True
-		#añadimos al control de vandalismos
-		if controlvand.has_key(author):
-			controlvand[author][diff]=[pageTitle, score, regexlist]
-		else:
-			controlvand[author]={'avisos': 0, diff: [pageTitle, score, regexlist]}
-		
-		for i in pageHistory: #lo ponemos con el is_vandalism()?
-			if i[2]==nickdelbot: #evitar que el bot entre en guerras de ediciones
-				restaurar=False
-				break
-			if i[2]==author: #presumir buena fe
-				restaurar=False
-				break
-		
-		#no meter dentro del bucle de pageHistory para presumir buena fe
-		if restaurar:
-			stats=incrementaStats(stats, 'P')
-			p.put(oldText, u'BOT - Prueba de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (author, author, str(pageHistory[1][0]), pageHistory[1][2], pageHistory[1][2]))
-			
-			#avisamos al usuario
-			controlvand[author]['avisos']+=1
-			avbotmsg.msgPrueba(author, site, pageTitle, diff, controlvand[author]['avisos'])
-			
-			#avisamos en WP:VEC
-			if len(controlvand[author].items())==4:
-				avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
-			
-			return True, details, controlvand, stats
-	return False, details, controlvand, stats
 
-def antiBirthday(pageTitle, userClass, authorEditsNum, newbie, namespace, oldText, newText, cleandata, controlvand, site, pageHistory, diff, nickdelbot, author, oldid, stats, p, currentYear):
-	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', pageTitle) and (userClass=='anon' or (userClass=='reg' and authorEditsNum<=newbie)) and namespace==0:
+def antiBirthday(pageTitle, userClass, userData, newbie, namespace, oldText, newText, cleandata, site, pageHistory, diff, nickdelbot, author, oldid, p, currentYear):
+	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', pageTitle) and (userClass=='anon' or (userClass=='reg' and userData['edits'][editData['author']]<=newbie)) and namespace==0:
 		#wikipedia.output(u'ha entrado')
 		restaurar=False
 		enlaceexiste=False
@@ -449,10 +327,10 @@ def antiBirthday(pageTitle, userClass, authorEditsNum, newbie, namespace, oldTex
 		
 		if restaurar and not enlaceexiste:
 			#añadimos al control de vandalismos
-			if controlvand.has_key(author):
-				controlvand[author][diff]=[pageTitle, score, regexlist]
+			if avbotglobals.vandalControl.has_key(author):
+				avbotglobals.vandalControl[author][diff]=[pageTitle, score, regexlist]
 			else:
-				controlvand[author]={'avisos': 0, diff: [pageTitle, score, regexlist]}
+				avbotglobals.vandalControl[author]={'avisos': 0, diff: [pageTitle, score, regexlist]}
 			
 			#mismo codigo que en vandalismos
 			#wikipedia.output(u'intenta restaurar')
@@ -461,19 +339,178 @@ def antiBirthday(pageTitle, userClass, authorEditsNum, newbie, namespace, oldTex
 					break
 				if i[2]!=author:
 					[oldid, oldText]=sameOldid(oldid, i[0], oldText, p)
-					stats=incrementaStats(stats, 'V')
+					incrementaStats('V')
 					p.put(oldText, u'BOT - %s en la edición de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (motivo, author, author, str(oldid), i[2], i[2]))
 					
 					#avisamos al usuario
-					controlvand[author]['avisos']+=1
+					avbotglobals.vandalControl[author]['avisos']+=1
 					if re.search(ur'(?i)irrelevante', motivo):
-						avbotmsg.msgEnlaceIrrelevante(author, site, pageTitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgEnlaceIrrelevante(author, site, pageTitle, diff, avbotglobals.vandalControl[author]['avisos'])
 					elif re.search(ur'(?i)imposible', motivo):
-						avbotmsg.msgFechaImposible(author, site, pageTitle, diff, controlvand[author]['avisos'])
+						avbotmsg.msgFechaImposible(author, site, pageTitle, diff, avbotglobals.vandalControl[author]['avisos'])
 					
 					#avisamos en WP:VEC
-					if len(controlvand[author].items())==4:
-						avbotmsg.msgVandalismoEnCurso(controlvand[author], author, userClass, site)
+					if len(avbotglobals.vandalControl[author].items())==4:
+						avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[author], author, userClass, site)
 					
-					return True, motivo, controlvand, stats
-	return False, u'', controlvand, stats
+					return True, motivo
+	return False, u''
+
+def newArticleAnalysis(editData, userData):
+	editData['newText']=editData['page'].get()
+	editData['lenNew']=len(editData['newText'])
+	
+	[done, motive]=isRubbish(editData, userData)
+	
+	if done:
+		wikipedia.output(u'\03{lightred}Alert!: Putting destroy template in [[%s]]. Motive: %s\03{default}' % (editData['pageTitle'], motive))
+		return
+	
+	[done, resume]=improveNewArticle(editData)
+	if done:
+		wikipedia.output(u'\03{lightred}Alert!: Aplicando %s... a [[%s]]\03{default}' % (resume, editData['pageTitle']))
+		return
+		
+	return
+
+def cleandiff(pageTitle, data):
+	""" Clean downloaded diff page """
+	
+	#TODO
+	#evitar que diffdelete y diffaddedline coincidan
+	#http://es.wikipedia.org/w/index.php?title=Lenguaje_ensamblador&diff=prev&oldid=16735402
+	
+	clean=u';;'
+	
+	trozos=data.split('<td class="diff-addedline"><div>')[1:]
+
+	for trozo in trozos:
+		trozo=trozo.split('</div></td>')[0]
+		#if re.search(ur'<span class="diffchange">', trozo): #estilo antiguo
+		if re.search(avbotglobals.parserRegexps['diffstylebegin'], trozo):
+			#m=re.compile(ur'<span class="diffchange">([^<]*?)</span>').finditer(trozo) #antiguo estilo
+			m=avbotglobals.parserRegexps['diffstyleend'].finditer(trozo) #diff punteados ¬¬'
+			for i in m:
+				clean+=u';;%s;;' % i.group(2) #<------- cuidado 2 por el diff style nuevo
+		else:
+			if not re.search(ur'<', trozo): #necesario para descartar el/los ultimos trozos de contexto
+				clean+=u';;%s;;' % trozo
+	
+	return re.sub(ur'[\n\r]', ur';;', clean)
+
+def editAnalysis(userData,editData):
+	""" Checks edit to search vandalisms, blanking, tests, etc """
+	
+	global imageneschocantes
+	global currentYear
+	
+	#Getting page object for this edit
+	editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle'])
+	if editData['page'].exists():
+		editData['pageTitle']=editData['page'].title()
+		editData['namespace']=editData['page'].namespace()
+		
+		if editData['page'].isRedirectPage(): #Do not analysis redirect pages
+			return #Exit
+		else:
+			nm=u''
+			if editData['new']:
+				nm+=u'\03{lightred}N\03{default}'
+			if editData['minor']:
+				nm+=u'\03{lightred}m\03{default}'
+			if nm:
+				nm+=u' '
+			
+			if editData['userClass']=='anon':
+				wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author']))
+			else:
+				if userData['edits'].has_key(editData['author']):
+					wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}, %s ed.}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author'], userData['edits'][editData['author']]))
+					if userData['edits'][editData['author']]>avbotglobals.preferences['newbie']:
+						return #Exit
+				else:
+					wikipedia.output(u'Ha habido un error con el número de ediciones de [[User:%s]]' % editData['author'])
+			
+			# Must be analysed?
+			if not watch(editData, userData):
+				wikipedia.output(u'[[%s]] no debe ser analizada' % editData['pageTitle'])
+				return #Exit
+			
+			#Avoid analysis of excluded pages
+			if avbotglobals.excludedPages.has_key(editData['pageTitle']):
+				wikipedia.output(u'[[%s]] está en la lista de exclusión' % editData['pageTitle'])
+				return #Exit
+			
+			# Avoid to check our edits
+			if editData['author'] == avbotglobals.preferences['botNick']: 
+				return #Exit
+			
+			# New pages analysis
+			if editData['new'] and avbotglobals.preferences['language']=='es':
+				newArticleAnalysis(editData, userData)
+				return
+			
+			# To get history
+			editData['oldText']=editData['newText']=u''
+			try:
+				editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars
+				editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
+				editData['newText']     = editData['page'].get() #Current text
+			except:
+				return #No previous text? New? Exit
+			
+			editData['lenOld']  = len(editData['oldText'])
+			editData['lenNew']  = len(editData['newText'])
+			editData['lenDiff'] = editData['lenNew']-editData['lenOld']
+			
+			if re.search(avbotglobals.parserRegexps['destruir'], editData['newText']): #Proposed to delete? Skip
+				wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % editData['pageTitle'])
+				return
+			
+			if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']): #Avoid to check false positives pages
+				wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
+				return
+			
+			try: #Try to catch diff
+				data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
+				data=data.split('<!-- start content -->')[1]
+				data=data.split('<!-- end content -->')[0] #No change
+			except:
+				return #No diff, exit
+			
+			cleandata=cleandiff(editData['pageTitle'], data) #To clean diff text
+			
+			#Vandalism analysis
+			#1) Blanking all
+			
+			[reverted, editData]=isBlanking(editData, editData['userClass'])
+			
+			if reverted:
+				wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s edit by %s in [[%s]]\nDetalles:\n%s\n%s\03{default}%s' % ('-'*50, editData['type'], editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
+				return
+			
+			#deteccion vandalismos
+			#
+			#llamo a cleandiff, cuando isBlanking este unificado, poner data=cleandiff(pageTitle, data) arriba
+			#unificar el autoSign, controlspam y todas las de este modulo tambien
+			
+			[reverted, editData]=isVandalism(editData, cleandata, editData['userClass'])
+			if reverted: 
+				wikipedia.output(u'%s\n\03{lightred}Alert!: %s by %s in [[%s]]\nDetalles:\n%s\n%s\03{default}%s' % ('-'*50, editData['type'], editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
+				return
+			
+			"""
+			#5) Shocking images
+			[done]=isShockingContent(namespace, pageTitle, editData['author'], editData['userClass'], userData['edits'][editData['author']], imageneschocantes, cleandata, p, pageHistory, diff, oldid, site, oldText, currentYear)
+			if done: 
+				wikipedia.output(u'\03{lightred}Alerta: Posible imagen chocante de %s en [[%s]]\03{default}' % (editData['author'], editData['pageTitle']))
+				return
+			
+			#7) Anti-birthday protection
+			[done, motivo]=antiBirthday(pageTitle, editData['userClass'], userData['edits'][editData['author']], avbotglobals.preferences['newbie'], namespace, oldText, newText, cleandata, site, pageHistory, diff, avbotglobals.preferences['botNick'], editData['author'], oldid, p, currentYear)
+			if done:
+				wikipedia.output(u'\03{lightred}Alerta: %s en [[%s]]\03{default}' % (motivo, editData['pageTitle']))
+				return
+			"""
+	else:
+		wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])

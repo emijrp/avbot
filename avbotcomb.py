@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#############################################
 # AVBOT - Antivandal bot for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
@@ -15,20 +14,28 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#############################################
+
+## @package avbotcomb
+# Module for miscellany functions
 
 import wikipedia
 import re
 import datetime
+import time
+import random
 
+# AVBOT modules
+import avbotglobals
 import avbotmsg
+import avbotload
+import avbotsave
 
-def bloqueo(site, blocker, blocked, castigo):
+def bloqueo(blocker, blocked, castigo):
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
-	#avbotmsg.msgBloqueo(blocked, site, blocker) #Send message to vandal's talk page
-	pvec=wikipedia.Page(site, u'Wikipedia:Vandalismo en curso')
+	#avbotmsg.msgBloqueo(blocked, blocker) #Send message to vandal's talk page
+	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
 	if pvec.exists():
 		if pvec.isRedirectPage():
 			return 0
@@ -37,11 +44,11 @@ def bloqueo(site, blocker, blocked, castigo):
 			trozos=trozos2=vectext.split('===')
 			c=0
 			for trozo in trozos:
-				if re.search(ur'%s' % blocked, trozo) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
+				if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
 					wikipedia.output(u'\03{lightblue}Se ha encontrado a %s :)\03{default}' % (blocked))
 					arellenar=ur'(?i)\( *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)'
 					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, site.lang, blocker, blocked, blocker), trozos2[c+1])
+						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
 						break
 				c+=1
 			
@@ -65,13 +72,13 @@ def bloqueo(site, blocker, blocked, castigo):
 			
 			#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
 			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
-				userpage=wikipedia.Page(site, u'User:%s' % blocked)
+				userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
 				userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
 				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
 			
 
-def semiproteger(site, titulo, protecter):
-	p=wikipedia.Page(site, titulo)
+def semiproteger(titulo, protecter):
+	p=wikipedia.Page(avbotglobals.preferences['site'], titulo)
 	if p.exists():
 		if p.isRedirectPage() or p.namespace()!=0:
 			return 0
@@ -83,10 +90,10 @@ def semiproteger(site, titulo, protecter):
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
 
-def traslado(site, usuario, origen, destino):
+def traslado(usuario, origen, destino):
 	#es un traslado vandálico?
 	"""if usuario==u'Emijrp':
-		p=wikipedia.Page(site, destino)
+		p=wikipedia.Page(avbotglobals.preferences['site'], destino)
 		p.move(origen, reason=u'BOT - Probando módulo antitraslados')"""
 
 def vtee(text, resumen):
@@ -158,7 +165,7 @@ def magicInterwiki(page, resumen, idioma):
 	elif idioma=='fr':
 		magicInterwiki(page, resumen, 'pt')
 	else:
-		return newtext, resumen
+		return nuevo, resumen
 
 def mes(num):
 	if num==1:
@@ -185,14 +192,14 @@ def mes(num):
 		return 'Mes desconocido'
 	
 
-def archiveVEC(site):
+def archiveVEC():
 	minimo=5 #archivar cuando haya x informes resueltos o mas
 	
 	#calculo de fecha
 	mesactual=mes(datetime.date.today().month)
 	anyoactual=datetime.date.today().year
 	
-	vec=wikipedia.Page(site, u"Wikipedia:Vandalismo en curso")
+	vec=wikipedia.Page(avbotglobals.preferences['site'], u"Wikipedia:Vandalismo en curso")
 	vectext=vec.get()
 	
 	trozos=vectext.split('===')
@@ -227,15 +234,15 @@ def archiveVEC(site):
 		
 		vec.put(vecnewtext, u'BOT - Archivando %d avisos resueltos en [[%s]] (bot en pruebas)' % (cuantos, arctitle))
 		arctitle=u"Wikipedia:Vandalismo en curso/%s %s" % (mesactual, anyoactual)
-		arc=wikipedia.Page(site, arctitle)
+		arc=wikipedia.Page(avbotglobals.preferences['site'], arctitle)
 		arc.put(u'%s\n%s' % (arc.get(), archivotext), u'BOT - Archivando %d avisos resueltos de [[Wikipedia:Vandalismo en curso]] (bot en pruebas)' % (cuantos))
 		
 		return True
 	
 	return False
 
-def namespaceTranslator(site, namespace):
-	data=site.getUrl("/w/index.php?title=Special:RecentChanges&limit=0")
+def namespaceTranslator(namespace):
+	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges&limit=0")
 	data=data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
 	m=re.compile(ur'<option value="([1-9]\d*)">(.*?)</option>').finditer(data)
 	wikipedianm=u''
@@ -246,11 +253,11 @@ def namespaceTranslator(site, namespace):
 			wikipedianm+=name
 	return wikipedianm
 
-def resumeTranslator(preferences,editData):
+def resumeTranslator(editData):
 	resume=u''
 	type=editData['type']
 	
-	if preferences['language']=='en':
+	if avbotglobals.preferences['language']=='en':
 		if editData['type']=='blanking':
 			type=u'Blanking'
 		elif editData['type']=='vandalism':
@@ -258,7 +265,7 @@ def resumeTranslator(preferences,editData):
 		elif editData['test']=='test':
 			type=u'Test'
 		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (type, editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-	elif preferences['language']=='es':
+	elif avbotglobals.preferences['language']=='es':
 		if editData['type']=='blanking':
 			type=u'Blanqueo'
 		elif editData['type']=='vandalism':
@@ -269,9 +276,51 @@ def resumeTranslator(preferences,editData):
 	
 	return resume
 
-def getParameters(preferences, parameters):
+def getParameters():
 	#mirar en replace.py
-	if len(parameters)>=2:
-		preferences['language']=parameters[1]
-	
-	return preferences
+	pass
+
+def getTime():
+	return time.strftime('%H:%M:%S')
+	#return time.ctime()
+
+def encodeLine(line):
+	try:
+		line2=unicode(line,'utf-8')
+	except UnicodeError:
+		try:
+			line2=unicode(line,'iso8859-1')
+		except UnicodeError:
+			print u'Unknown codification'
+			return ''
+	return line2
+
+def getUserClass(userData, editData):
+	userClass='anon'
+	if userData['admins'].count(editData['author'])!=0:
+		userClass='admin'
+	elif userData['bots'].count(editData['author'])!=0:
+		userClass='bot'
+	elif not re.search(avbotglobals.parserRegexps['ip'], editData['author']):
+		userClass='reg'
+	return userClass
+
+def cleanLine(line):
+	line=re.sub(ur'\x03\d{0,2}', ur'', line) #No colors
+	line=re.sub(ur'\x02\d{0,2}', ur'', line) #No bold
+	return line
+
+def updateUserDataIfNeeded(userData, editData):
+	if editData['userClass']!='anon':
+		if userData['edits'].has_key(editData['author']):
+			if not random.randint(0,10) or userData['edits'][editData['author']]<avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
+				userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
+				if not random.randint(0,10): 
+					avbotsave.saveEdits(userData['edits'])
+		else:
+			#Requesting edits number to server
+			userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
+			if not random.randint(0,10):
+				avbotsave.saveEdits(userData['edits'])
+		userData['edits'][editData['author']]
+	return userData

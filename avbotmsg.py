@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#############################################
 # AVBOT - Antivandal bot for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
@@ -15,27 +14,19 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#############################################
+
+## @package avbotload
+# Module for send messages to users
 
 import re
 import wikipedia
 import os
 
+# AVBOT modules
+import avbotglobals
 import avbotcomb
 
-def msgVandalismoEnCurso(dic_vand, author, userclass, site):
-	#hasta que lo arregle, lo comento
-	"""#archivamos
-	if not random.randint(0,4): #afirmativo si sale cero
-		archivado=avbotcomb.archiveVEC(site)
-		if archivado:
-			wikipedia.output(u"\03{lightblue}Archivando WP:VEC\03{default}")
-	
-	#purge
-	os.system('wget "http://es.wikipedia.org/w/index.php?title=Wikipedia:Vandalismo_en_curso&action=purge" -O wpvec.html')
-	os.system('rm wpvec.html')
-	"""
-	
+def msgVandalismoEnCurso(dic_vand, author, userclass):
 	artis=u""
 	for k, v in dic_vand.items():
 		if k!='avisos':
@@ -43,7 +34,7 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 			wtitle_=re.sub(" ", "_", wtitle)
 			artis+=u"[http://es.wikipedia.org/w/index.php?title=%s&diff=%s&oldid=prev %s], " % (wtitle_, k, wtitle)
 	wikipedia.output(u"El usuario %s ha vandalizado varias veces" % author)
-	wii=wikipedia.Page(site, u"Wikipedia:Vandalismo en curso")
+	wii=wikipedia.Page(avbotglobals.preferences['site'], u"Wikipedia:Vandalismo en curso")
 	restopag=wii.get()
 	#evitamos avisar dos veces
 	if re.search(ur'(?i)\=\=\= *%s *\=\=\=' % author, restopag): #xiste ya un aviso
@@ -55,10 +46,10 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, site):
 		aviso+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, artis)
 	wii.put(u'%s\n\n%s' % (restopag, aviso), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]' % (author, author))
 
-def msgGenerico(author, site, wtitle, diff, n, tipo):
-	if site.lang!='es':
+def msgGenerico(author, wtitle, diff, n, tipo):
+	if avbotglobals.preferences['site'].lang!='es':
 		return
-	aviso=wikipedia.Page(site, u"User talk:%s" % author)
+	aviso=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
 	avisotexto=u""
 	wtitle2=wtitle
 	if re.search(ur'(?i)Categor(ía|y)\:', wtitle2):
@@ -74,50 +65,28 @@ def msgGenerico(author, site, wtitle, diff, n, tipo):
 	else:
 		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su %s en [[%s]] ha sido revertido (Aviso #%d)" % (author, author, tipo.lower(), wtitle, n))
 
-def msgBlanqueo(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Blanqueo')
+def msgBlanqueo(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Blanqueo')
 
-def msgVandalismo(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Vandalismo')
+def msgVandalismo(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Vandalismo')
 	
-def msgContenidoChocante(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Contenido chocante')
+def msgContenidoChocante(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Contenido chocante')
 
-def msgPrueba(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Prueba')
+def msgPrueba(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Prueba')
 
-def msgEnlaceIrrelevante(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Enlace irrelevante')
+def msgEnlaceIrrelevante(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Enlace irrelevante')
 
-def msgFechaImposible(author, site, wtitle, diff, n):
-	return msgGenerico(author, site, wtitle, diff, n, u'Fecha imposible')
+def msgFechaImposible(author, wtitle, diff, n):
+	return msgGenerico(author, wtitle, diff, n, u'Fecha imposible')
 
-def msgBloqueo(blocked, site, blocker):
-	aviso=wikipedia.Page(site, u"User talk:%s" % blocked)
+def msgBloqueo(blocked, blocker):
+	aviso=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % blocked)
 	avisotexto=u""
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
 	avisotexto+=u"{{subst:User:AVBOT/AvisoBloqueo|%s}}" % blocker
 	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))
-
-def msgImageHost(author, site, wtitle, diff):
-	aviso=wikipedia.Page(site, u"User talk:%s" % author)
-	avisotexto=u''
-	if aviso.exists() and not aviso.isRedirectPage():
-		avisotexto+=u'%s\n\n{{subst:User:AVBOT/AvisoImageshack|%s|%s}}' % (aviso.get(), wtitle, diff)
-	else:
-		avisotexto+=u'{{subst:User:AVBOT/AvisoImageshack|%s|%s}}' % (wtitle, diff)
-	if re.search(ur'(?i)Categor(ía|y)\:', wtitle):
-		wtitle=':%s' % wtitle
-	aviso.put(avisotexto, u'BOT - Avisando a [[Special:Contributions/%s|%s]] de cómo subir imágenes correctamente' % (author, author))
-	
-def msgFirma(p, author, site, wtitle, diff):
-	aviso=wikipedia.Page(site, u"User talk:%s" % author)
-	if p!=aviso: #evitamos avisar comentarios sin firmar en la discusion del menda
-		avisotexto=u''
-		if aviso.exists():
-			avisotexto+=u'%s\n\n{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (aviso.get(), wtitle, diff)
-		else:
-			avisotexto+=u'{{subst:User:AVBOT/AvisoNoFirmado|%s|%s}}' % (wtitle, diff)
-		aviso.put(avisotexto, u'BOT - Avisando a [[User:%s|%s]] de que su comentario en [[%s]] ha sido firmado' % (author, author, wtitle))
-		
