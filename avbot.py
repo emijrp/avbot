@@ -19,40 +19,44 @@
 # Main module
 
 # TODO:  revertir anidados por parte de varios usuarios, 
-# no ha introducido url alguna http://es.wikipedia.org/w/index.php?diff=16088818&oldid=prev&diffonly=1
 # comprobar que al revertir no se esta revirtiendo a un vandalismo de otro usuario
 # revierte prueba a edicion mala http://es.wikipedia.org/w/index.php?title=Aparato_circulatorio&diff=16610029&oldid=16610024
 # no revertir a una version en blanco http://es.wikipedia.org/w/index.php?title=Aristas&diff=prev&oldid=16807904
 #controlar eliminacion de categorias e iws en masa, deleted-lines http://es.wikipedia.org/w/index.php?title=Tik%C3%BAn_Olam&diff=prev&oldid=16896350
-#error frecuente: WARNING: No character set found.
+# error frecuente: WARNING: No character set found.
 
-# External modules
+""" External modules """
+""" Python modules """
 import os,sys,re
 import threading,thread
 import httplib,urllib,urllib2
 import time,datetime
 import string,math,random
+import random
+
+""" irclib modules """
 from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
-import random
+
+""" pywikipediabot modules """
 import wikipedia, difflib
 
-# AVBOT modules
-import avbotglobals
+""" AVBOT modules """
+import avbotglobals  #Shared info
 import avbotload     #Information and regexp loader
 import avbotsave     #
 import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
 import avbotcomb     #Trivia functions
 
-# Variables
+""" Variables """
 global imageneschocantes
 imageneschocantes={}
 global speed
 global timeStatsDic
 global currentYear
 
-edits={'admin':0,'bot':0,'reg':0,'anon':0}
+edits={'sysop':0,'bot':0,'reg':0,'anon':0}
 today=datetime.date.today()
 currentYear=today.year
 
@@ -77,37 +81,44 @@ header += u"Loading data for %s: language of %s project" % (avbotglobals.prefere
 wikipedia.output(header)
 
 """ Data loaders """
-userData               = {}
-userData['edits']      = avbotload.loadEdits()
-userData['admins']     = avbotload.loadAdmins()
-userData['bots']       = avbotload.loadBots()
+avbotload.loadEdits()
+avbotload.loadSysops()
+avbotload.loadBots()
 avbotload.loadExclusions()
 
 """Shocking images list """
 #[imageneschocantes, error]=avbotload.loadShockingImages()
 #wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
+"""Messages"""
+avbotload.loadMessages()
+wikipedia.output(u"Loaded %d messages..." % (len(avbotglobals.preferences['msg'].items())))
+
 """Regular expresions for vandalism edits """
-error=avbotload.loadVandalism()
+error=avbotload.loadRegexpList()
 wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
 
 wikipedia.output(u'Joining to recent changes IRC channel...\n')
 
 class BOT(SingleServerIRCBot):
+	""" Clase BOT """
 	""" BOT class """
 	
-	def __init__(self, userData):
-		self.userData      = userData
+	def __init__(self):
+		"""  """
+		"""  """
 		self.channel       = avbotglobals.preferences['channel']
 		self.nickname      = avbotglobals.preferences['nickname']
 		SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
 	
 	def on_welcome(self, c, e):
+		""" Se une al canal de IRC de Cambios recientes """
 		""" Joins to IRC channel with Recent changes """
 		
 		c.join(self.channel)
 	
 	def on_pubmsg(self, c, e):
+		""" Captura cada línea del canal de IRC """
 		""" Fetch and parse each line in the IRC channel """
 		
 		global speed
@@ -128,8 +139,10 @@ class BOT(SingleServerIRCBot):
 				editData['diff']      = m.group('diff')
 				editData['oldid']     = m.group('oldid')
 				editData['author']    = m.group('author')
-				editData['userClass'] = avbotcomb.getUserClass(self.userData, editData)
-				self.userData         = avbotcomb.updateUserDataIfNeeded(self.userData, editData)
+				editData['userClass'] = avbotcomb.getUserClass(editData)
+				
+				avbotcomb.updateUserDataIfNeeded(editData)
+				
 				nm=m.group('nm')
 				editData['new']       = editData['minor']=False
 				if re.search('N', nm):
@@ -140,16 +153,16 @@ class BOT(SingleServerIRCBot):
 				
 				#Reload vandalism regular expresions
 				if editData['pageTitle']==u'Usuario:Emijrp/Lista del bien y del mal.css':
-					avbotload.reloadVandalism(editData['author'], editData['diff'])
+					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list
 				if editData['pageTitle']==u'Usuario:Emijrp/Exclusiones.css':
 					avbotload.loadExclusions()
 				
-				avbotanalysis.incrementaStats('T')
+				avbotanalysis.updateStats('T')
 				speed   += 1
 				
-				thread.start_new_thread(avbotanalysis.editAnalysis,(self.userData,editData))
+				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 				
 				#Check resume for reverts
 				if re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!='Usuario:AVBOT/Errores/Automático':
@@ -166,7 +179,9 @@ class BOT(SingleServerIRCBot):
 				
 				editData['diff']=editData['oldid']=0
 				editData['author']=m.group('author')
-				editData['userClass'] = avbotcomb.getUserClass(userData, editData)
+				editData['userClass'] = avbotcomb.getUserClass(editData)
+				
+				avbotcomb.updateUserDataIfNeeded(editData)
 				
 				nm=m.group('nm')
 				editData['new']=True
@@ -179,9 +194,11 @@ class BOT(SingleServerIRCBot):
 				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
 					return #Exit
 				
+				avbotanalysis.updateStats('T')
+				speed   += 1
+				
 				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
-				thread.start_new_thread(avbotanalysis.editAnalysis,(self.userData,editData))
-				speed+=1
+				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 		elif re.search(avbotglobals.parserRegexps['block'], line):
 			match=avbotglobals.parserRegexps['block'].finditer(line)
 			for m in match:
@@ -217,8 +234,9 @@ class BOT(SingleServerIRCBot):
 				edit=m.group('edit')
 				move=m.group('move')
 				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
-				if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
-					thread.start_new_thread(avbotcomb.semiproteger,(pageTitle,protecter))
+				#http://es.wikipedia.org/w/index.php?oldid=23222363#Candados
+				#if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
+				#	thread.start_new_thread(avbotcomb.semiproteger,(pageTitle,protecter))
 		else:
 			wikipedia.output(u'No gestionada ---> %s' % line)
 			f=open('lineasnogestionadas.txt', 'a')
@@ -251,15 +269,16 @@ class BOT(SingleServerIRCBot):
 			avbotglobals.statsDic[period]['B']=avbotglobals.statsDic[period]['T']-avbotglobals.statsDic[period]['M']
 			
 			if time.time()-timeStatsDic[period]>=3600*period:
-				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])          #Saving statistics in Wikipedia pages for historical reasons
-				timeStatsDic[period]=time.time()                                    #Saving time begin
-				avbotglobals.statsDic[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0} #Blanking statistics for a new period
+				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site']) #Saving statistics in Wikipedia pages for historical reasons
+				timeStatsDic[period]=time.time()                                                     #Saving start time
+				avbotglobals.statsDic[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}     #Blanking statistics for a new period
 
-def main(userData):
+def main():
+	""" Crea un objeto BOT y lo lanza """
 	""" Creates and launches a bot object """
 	
-	bot = BOT(userData)
+	bot = BOT()
 	bot.start()
 
 if __name__ == '__main__':
-	main(userData)
+	main()

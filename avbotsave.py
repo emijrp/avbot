@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#############################################
 # AVBOT - Antivandal bot for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
@@ -15,13 +14,17 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#############################################
+
+## @package avbotsave
+# Module for data saving: user edits and stats
 
 # AVBOT modules
 import avbotglobals
 import wikipedia
 
 def saveEdits(ediciones):
+	""" Guarda el número de ediciones de los usuarios en un fichero """
+	""" Saves user edits number in a file """
 	f=open('ediciones.txt', 'w')
 	for k, v in ediciones.items():
 		try:
@@ -32,6 +35,8 @@ def saveEdits(ediciones):
 	f.close()
 
 def saveStats(stats, hours, site):
+	""" Guarda las estadístias en una página con motivos históricos """
+	""" Saves statistics in a page for historical purposes """
 	resumen=u'V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]' % (stats[hours]['V'], stats[hours]['BL'], stats[hours]['P'], stats[hours]['S'], stats[hours]['B'], stats[hours]['M'], stats[hours]['T'], stats[hours]['D'])
 	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
 	wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)

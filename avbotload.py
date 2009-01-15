@@ -23,23 +23,27 @@ import urllib
 import wikipedia
 import catlib
 
-# AVBOT modules
+""" AVBOT modules """
 import avbotglobals
 import avbotcomb
 
-def changedRegexpsList(list1, list2):
+def changedRegexpsList(dic1, dic2):
+	"""  """
+	"""  """
 	#funcion que devuelve si las dos listas de expresiones regualres son distintas
-	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadVandalism()
-	if len(list1)!=len(list2):
+	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadRegexpList()
+	if len(dic1.items())!=len(dic2.items()):
 		return True
 	else:
 		changed=False
-		for k, v in list1.items():
-			if not list2.has_key(k):
+		for k, v in dic1.items():
+			if not dic2.has_key(k):
 				return True
 	return False
 
 def loadEdits():
+	""" Carga fichero con número de ediciones """
+	""" Load user edits file """
 	newbie=avbotglobals.preferences['newbie']
 	ediciones={}
 	try:
@@ -68,9 +72,11 @@ def loadEdits():
 	
 	wikipedia.output(u"Loaded info for %d users..." % len(ediciones.items()))
 	
-	return ediciones
+	avbotglobals.userData['edits']=ediciones
 
 def loadUsers(type):
+	""" Captura lista de usuarios de Wikipedia según el tipo deseado """
+	""" Fetch user list by class """
 	users=[]
 	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:Listusers&limit=5000&group=%s" % type)
 	data=data.split('<!-- start content -->')
@@ -80,15 +86,41 @@ def loadUsers(type):
 	for i in m:
 		users.append(i.group(1))
 	wikipedia.output(u"Loaded info for %d %ss..." % (len(users), type))
-	return users
+	avbotglobals.userData[type]=users
 
-def loadAdmins():
-	return loadUsers('sysop')
+def loadSysops():
+	""" Carga lista de administradores """
+	""" Load sysops list """
+	loadUsers('sysop')
 
 def loadBots():
-	return loadUsers('bot')
+	""" Carga lista de bots """
+	""" Load bots list """
+	loadUsers('bot')
 
-def loadVandalism():
+def loadMessages():
+	"""  """
+	"""  """
+	wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Mensajes.css')
+	raw=''
+	if wiii.exists() and not wiii.isRedirectPage() and not wiii.isDisambig():
+		raw=wiii.get()
+	
+	avbotglobals.preferences['msg']={} #empty
+	for l in raw.splitlines():
+		if len(l)>=3: #evitamos lineas demasiado pequenas
+			if l[0]=='#' or l[0]=='<':
+				continue
+			trozos=l.split(';;')
+			type=trozos[0]
+			priority=int(trozos[1])
+			meaning=trozos[2]
+			template=trozos[3]
+			avbotglobals.preferences['msg'][type]={'priority': priority, 'meaning': meaning, 'template': template,}
+
+def loadRegexpList():
+	"""  """
+	"""  """
 	wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Lista del bien y del mal.css')
 	raw=''
 	if wiii.exists() and not wiii.isRedirectPage() and not wiii.isDisambig():
@@ -96,6 +128,7 @@ def loadVandalism():
 	
 	c=0
 	error=u''
+	avbotglobals.vandalRegexps={}
 	for l in raw.splitlines():
 		c+=1
 		if len(l)>=3: #evitamos regex demasiado pequenas
@@ -117,9 +150,11 @@ def loadVandalism():
 	
 	return error
 
-def reloadVandalism(author, diff):
+def reloadRegexpList(author, diff):
+	"""  """
+	"""  """
 	oldVandalRegexps=avbotglobals.vandalRegexps
-	error=loadVandalism(avbotglobals.preferences['context'], avbotglobals.preferences['site'])
+	error=loadRegexpList()
 	if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
 		wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:Emijrp/Lista del bien y del mal.css')
 		if error:
@@ -135,6 +170,8 @@ def reloadVandalism(author, diff):
 	return
 
 def loadShockingImages():
+	"""  """
+	"""  """
 	imageneschocantes={'exceptions':[], 'images':{}}
 	
 	#todas las categorias deben ser de Commons
@@ -166,6 +203,8 @@ def loadShockingImages():
 	return imageneschocantes, error
 
 def loadUserEdits(author):
+	"""  """
+	"""  """
 	author_=re.sub(' ', '_', author)
 	try:
 		rawdata=avbotglobals.preferences['site'].getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(author_))
@@ -183,6 +222,8 @@ def loadUserEdits(author):
 		return avbotglobals.preferences['newbie']+1
 
 def loadExclusions():
+	""" Carga lista de páginas excluidas """
+	""" Load excluded pages list """
 	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Exclusiones.css')
 	raw=''
 	if p.exists() and not p.isRedirectPage() and not p.isDisambig():

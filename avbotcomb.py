@@ -31,6 +31,8 @@ import avbotload
 import avbotsave
 
 def bloqueo(blocker, blocked, castigo):
+	"""  """
+	"""  """
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
@@ -78,6 +80,8 @@ def bloqueo(blocker, blocked, castigo):
 			
 
 def semiproteger(titulo, protecter):
+	"""  """
+	"""  """
 	p=wikipedia.Page(avbotglobals.preferences['site'], titulo)
 	if p.exists():
 		if p.isRedirectPage() or p.namespace()!=0:
@@ -91,12 +95,16 @@ def semiproteger(titulo, protecter):
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
 
 def traslado(usuario, origen, destino):
+	"""  """
+	"""  """
 	#es un traslado vandálico?
-	"""if usuario==u'Emijrp':
-		p=wikipedia.Page(avbotglobals.preferences['site'], destino)
-		p.move(origen, reason=u'BOT - Probando módulo antitraslados')"""
+	#if usuario==u'Emijrp':
+	#	p=wikipedia.Page(avbotglobals.preferences['site'], destino)
+	#	p.move(origen, reason=u'BOT - Probando módulo antitraslados')
 
 def vtee(text, resumen):
+	"""  """
+	"""  """
 	newtext=text
 	newtext=re.sub(ur'(?i)=(\s*)(v[íi]nculos?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Enlaces externos\3=', newtext)
 	newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv]i[ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Véase también\3=', newtext)
@@ -106,6 +114,8 @@ def vtee(text, resumen):
 		return newtext, u"%s VT && EE," % resumen
 
 def cosmetic(text, resumen):
+	"""  """
+	"""  """
 	newtext=text
 	#nada por ahora, cosmetic_changes.py puede ser util
 	
@@ -115,6 +125,8 @@ def cosmetic(text, resumen):
 		return newtext, u"%s cosméticos," % resumen
 
 def magicInterwiki(page, resumen, idioma):
+	"""  """
+	"""  """
 	wtext=page.get()
 	wtitle=page.title()
 	
@@ -168,6 +180,8 @@ def magicInterwiki(page, resumen, idioma):
 		return nuevo, resumen
 
 def mes(num):
+	"""  """
+	"""  """
 	if num==1:
 		return 'Enero'
 	elif num==2:
@@ -258,21 +272,9 @@ def resumeTranslator(editData):
 	type=editData['type']
 	
 	if avbotglobals.preferences['language']=='en':
-		if editData['type']=='blanking':
-			type=u'Blanking'
-		elif editData['type']=='vandalism':
-			type=u'Vandalism'
-		elif editData['test']=='test':
-			type=u'Test'
-		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (type, editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	elif avbotglobals.preferences['language']=='es':
-		if editData['type']=='blanking':
-			type=u'Blanqueo'
-		elif editData['type']=='vandalism':
-			type=u'Vandalismo'
-		elif editData['type']=='test':
-			type=u'Prueba'
-		resume=u'BOT - %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (type, editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	
 	return resume
 
@@ -295,11 +297,11 @@ def encodeLine(line):
 			return ''
 	return line2
 
-def getUserClass(userData, editData):
+def getUserClass(editData):
 	userClass='anon'
-	if userData['admins'].count(editData['author'])!=0:
-		userClass='admin'
-	elif userData['bots'].count(editData['author'])!=0:
+	if avbotglobals.userData['sysop'].count(editData['author'])!=0:
+		userClass='sysop'
+	elif avbotglobals.userData['bot'].count(editData['author'])!=0:
 		userClass='bot'
 	elif not re.search(avbotglobals.parserRegexps['ip'], editData['author']):
 		userClass='reg'
@@ -310,17 +312,37 @@ def cleanLine(line):
 	line=re.sub(ur'\x02\d{0,2}', ur'', line) #No bold
 	return line
 
-def updateUserDataIfNeeded(userData, editData):
+def updateUserDataIfNeeded(editData):
 	if editData['userClass']!='anon':
-		if userData['edits'].has_key(editData['author']):
-			if not random.randint(0,10) or userData['edits'][editData['author']]<avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
-				userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
+		if avbotglobals.userData['edits'].has_key(editData['author']):
+			if not random.randint(0,10) or avbotglobals.userData['edits'][editData['author']]<avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
+				avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
 				if not random.randint(0,10): 
-					avbotsave.saveEdits(userData['edits'])
+					avbotsave.saveEdits(avbotglobals.userData['edits'])
 		else:
 			#Requesting edits number to server
-			userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
+			avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
 			if not random.randint(0,10):
-				avbotsave.saveEdits(userData['edits'])
-		userData['edits'][editData['author']]
-	return userData
+				avbotsave.saveEdits(avbotglobals.userData['edits'])
+
+def checkBlockInEnglishWikipedia(editData):
+	comment=""
+	isProxy=False
+	if re.search(ur'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', editData['author']): #es ip?
+		enwiki=wikipedia.Site('en', 'wikipedia')
+		
+		data=enwiki.getUrl("/w/index.php?title=Special:BlockList&ip=%s" % editData['author'])
+		data=data.split('<!-- start content -->')
+		data=data[1].split('<!-- end content -->')[0]
+		
+		data=data.split('<li>')
+		if len(data)>1:
+			m=re.compile(ur"</span> *\((?P<expires>[^<]*?)\) *<span class=\"comment\">\((?P<comment>[^<]*?)\)</span>").finditer(data[1])
+			for i in m:
+				comment=u"''Bloqueado en Wikipedia en inglés ([http://en.wikipedia.org/w/index.php?title=Special:BlockList&ip=%s bloqueo vigente], [http://en.wikipedia.org/w/index.php?title=Special:Log&type=block&page=User:%s historial de bloqueos]): %s''" % (editData['author'], editData['author'], i.group("expires"))
+				if re.search(ur'(?i)proxy', i.group('comment')):
+					isProxy=True
+				break #con el primero basta
+	
+	return comment, isProxy
+

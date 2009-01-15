@@ -39,12 +39,13 @@ preferences = {
 	'newbie':     25,                   #Who is a newbie user? How many edits?
 	'statsDelay': 60,
 	'colors':     {
-		'admin': 'lightblue',
+		'sysop': 'lightblue',
 		'bot':   'lightpurple',
 		'reg':   'lightgreen',
 		'anon':  'lightyellow',
 	},
 	'context':    ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
+	'msg':        {},
 }
 avbotcomb.getParameters()
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
@@ -77,7 +78,7 @@ parserRegexps={
 	'destruir':       re.compile(ur'(?i)\{\{ *destruir'),
 	#diffstylebegin y end va relacionado
 	'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),
-	'diffstyleend':   re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)([^<]*?)</(ins|span)>'),
+	'diffstyleend':   re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
 	'ip':             re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),
 	'firmas1':        re.compile(ur'<td class="diff-addedline"><div>([^<]*?)</div>'),
 	#sin title
@@ -94,3 +95,6 @@ parserRegexps={
 	#[[Especial:Log/move]] move  * Dhidalgo *  [[Macizo Etíope]] ha sido trasladado a [[Macizo etíope]]
 	'traslado':       re.compile(ur'(?i)\[\[Especial:Log/move\]\] +move +\* +(?P<usuario>.*?) +\* +\[\[(?P<origen>.*?)\]\] +ha sido trasladado a +\[\[(?P<destino>.*?)\]\]'),
 	}
+
+global userData
+userData={}
