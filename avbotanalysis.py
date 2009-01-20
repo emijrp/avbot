@@ -160,7 +160,7 @@ def revertAllEditsByUser(editData, userClass, regexlist):
 			avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 			
 			#guardamos log
-			log=open('/home/emijrp/logs/avbot/%s.txt' % datetime.date.today(), 'a')
+			log=open('%s%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
 			logentry=u'\n%s\nArtículo: [[%s]]\nFecha: %s\nPuntuación: %d\nExpresiones regulares:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
 			log.write(logentry.encode('utf-8'))
 			log.close()
@@ -184,7 +184,7 @@ def mustBeReverted(editData, cleandata, userClass):
 	reverted=False
 	
 	#blanking edit?
-	if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): # 1/7 es un buen numero?
+	if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): # 1/7 es un buen numero
 		editData['type']='BL'
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''

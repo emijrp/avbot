@@ -21,6 +21,7 @@
 import re
 import wikipedia
 import os
+import sys
 
 # AVBOT modules
 import avbotglobals
@@ -71,9 +72,21 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		wtext=talkpage.get()
 	
 	if n==3: #If n>3, no more messages
-		avisotexto+=u"{{subst:%sInminente|%s|%s}}" % (avbotglobals.preferences['msg'][tipo]['template'], wtitle2, diff)
+		template=u"%sInminente.css" % avbotglobals.preferences['msg'][tipo]['template']
+		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
+		if templatepage.exists():
+			avisotexto+=u"{{subst:%s|%s|%s}}" % (template, wtitle2, diff)
+		else:
+			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff' % template)
+			sys.exit()
 	elif n<3:
-		avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (avbotglobals.preferences['msg'][tipo]['template'], wtitle2, diff, n)
+		template=u"%s.css" % avbotglobals.preferences['msg'][tipo]['template']
+		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
+		if templatepage.exists():
+			avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (template, wtitle2, diff, n)
+		else:
+			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
+			sys.exit()
 	
 	if avisotexto:
 		if wtext:

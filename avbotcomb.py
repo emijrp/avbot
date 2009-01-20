@@ -23,6 +23,7 @@ import re
 import datetime
 import time
 import random
+import sys
 
 # AVBOT modules
 import avbotglobals
@@ -280,7 +281,49 @@ def resumeTranslator(editData):
 
 def getParameters():
 	#mirar en replace.py
-	pass
+	args=sys.argv
+	
+	for arg in args[1:]:
+		if arg.startswith('-lang'):
+			if len(arg) == 5:
+				avbotglobals.preferences['language'] = wikipedia.input(u'Please enter the language (es, en, de, fr, ...):')
+			else:
+				avbotglobals.preferences['language'] = arg[6:]
+		elif arg.startswith('-family'):
+			if len(arg) == 7:
+				avbotglobals.preferences['family'] = wikipedia.input(u'Please enter the family project (wikipedia, wiktionary, ...):')
+			else:
+				avbotglobals.preferences['family'] = arg[8:]
+		elif arg.startswith('-newbie'):
+			if len(arg) == 7:
+				avbotglobals.preferences['newbie'] = int(wikipedia.input(u'Please enter the number of edits for newbie users:'))
+			else:
+				avbotglobals.preferences['newbie'] = int(arg[8:])
+		elif arg.startswith('-botnick'):
+			if len(arg) == 8:
+				avbotglobals.preferences['botNick'] = wikipedia.input(u'Please enter bot username:')
+			else:
+				avbotglobals.preferences['botNick'] = arg[9:]
+		elif arg.startswith('-statsdelay'):
+			if len(arg) == 11:
+				avbotglobals.preferences['statsDelay'] = int(wikipedia.input(u'Please enter stats delay (in seconds):'))
+			else:
+				avbotglobals.preferences['statsDelay'] = int(arg[12:])
+		elif arg.startswith('-network'):
+			if len(arg) == 8:
+				avbotglobals.preferences['network'] = wikipedia.input(u'Please enter IRC network:')
+			else:
+				avbotglobals.preferences['network'] = arg[9:]
+		elif arg.startswith('-channel'):
+			if len(arg) == 8:
+				avbotglobals.preferences['channel'] = wikipedia.input(u'Please enter IRC channel (with #):')
+			else:
+				avbotglobals.preferences['channel'] = arg[9:]
+		elif arg.startswith('-ownernick'):
+			if len(arg) == 10:
+				avbotglobals.preferences['ownerNick'] = wikipedia.input(u'Please enter owner username:')
+			else:
+				avbotglobals.preferences['ownerNick'] = arg[11:]
 
 def getTime():
 	return time.strftime('%H:%M:%S')

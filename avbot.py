@@ -71,13 +71,14 @@ header += u"This is free software, and you are welcome to redistribute it\n"
 header += u"under certain conditions; type `show c' for details.\n\n"
 header += u"############################################################################\n"
 header += u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
-header += u"# Version: 0.7                                                             #\n"
+header += u"# Version: 0.8                                                             #\n"
 header += u"# Tasks:   To revert vandalism, blanking and test edits                    #\n"
 header += u"#          To improve new articles                                         #\n"
-header += u"#          Anti-birthday protection                                        #\n"
-header += u"#          Shocking images control                                         #\n"
+header += u"#          Soon: Anti-birthday protection                                  #\n"
+header += u"#          Soon: Shocking images control                                   #\n"
 header += u"############################################################################\n\n"
-header += u"Loading data for %s: language of %s project" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
+header += u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
+header += u"%s edits for newbie users" % avbotglobals.preferences['newbie']
 wikipedia.output(header)
 
 """ Data loaders """
@@ -152,11 +153,11 @@ class BOT(SingleServerIRCBot):
 				editData['resume']    = m.group('resume')
 				
 				#Reload vandalism regular expresions
-				if editData['pageTitle']==u'Usuario:Emijrp/Lista del bien y del mal.css':
+				if re.search(ur'%s\/Lista del bien y del mal\.css' % avbotglobals.preferences['ownerNick'], editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list
-				if editData['pageTitle']==u'Usuario:Emijrp/Exclusiones.css':
+				if re.search(ur'%s\/Exclusiones\.css' % avbotglobals.preferences['ownerNick'], editData['pageTitle']):
 					avbotload.loadExclusions()
 				
 				avbotanalysis.updateStats('T')
@@ -238,7 +239,7 @@ class BOT(SingleServerIRCBot):
 				#if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
 				#	thread.start_new_thread(avbotcomb.semiproteger,(pageTitle,protecter))
 		else:
-			wikipedia.output(u'No gestionada ---> %s' % line)
+			#wikipedia.output(u'No gestionada ---> %s' % line)
 			f=open('lineasnogestionadas.txt', 'a')
 			line=u'%s\n' % line
 			try:

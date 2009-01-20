@@ -28,29 +28,35 @@ import avbotcomb
 """ Default bot preferences """
 global preferences
 preferences = {
-	'botNick':    u'AVBOT',             #Bot name
-	'language':   u'es',                #Default language is Spanish
-	'family':     u'wikipedia',         #Default project family is Wikipedia
-	'site':       0,
-	'network':    u'irc.wikimedia.org', #IRC network where is the IRC channel with recent changes
-	'channel':    0,                    #RSS channel for recent changes in Wikipedia
-	'nickname':   0,                    #Bot nick in channel, with random numbers to avoid nick collisions
-	'port':       6667,                 #Port number
-	'newbie':     25,                   #Who is a newbie user? How many edits?
-	'statsDelay': 60,
-	'colors':     {
+	'botNick':       u'AVBOT',             #Bot name
+	'ownerNick':     u'Owner',             #Owner nick
+	'language':      u'es',                #Default language is Spanish
+	'family':        u'wikipedia',         #Default project family is Wikipedia
+	'site':          0,
+	'network':       u'irc.wikimedia.org', #IRC network where is the IRC channel with recent changes
+	'channel':       0,                    #RSS channel for recent changes in Wikipedia
+	'nickname':      0,                    #Bot nick in channel, with random numbers to avoid nick collisions
+	'port':          6667,                 #Port number
+	'logsDirectory': 'botlogs/',
+	'newbie':        25,                   #Who is a newbie user? How many edits?
+	'statsDelay':    60,
+	'colors':        {
 		'sysop': 'lightblue',
 		'bot':   'lightpurple',
 		'reg':   'lightgreen',
 		'anon':  'lightyellow',
 	},
-	'context':    ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
-	'msg':        {},
+	'context':       ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
+	'msg':           {},
 }
 avbotcomb.getParameters()
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
-preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
-preferences['nickname'] = '%s%s' % (preferences['botNick'], str(random.randint(1000, 9999)))
+testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
+testEdit.put(str(random.randint(1000, 9999)), u'BOT - Testing edit')
+if not preferences['channel']:
+	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
+if not preferences['nickname']:
+	preferences['nickname'] = '%s%s' % (preferences['botNick'], str(random.randint(1000, 9999)))
 
 global statsDic
 statsDic={}
