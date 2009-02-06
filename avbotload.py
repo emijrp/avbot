@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbotload
-# Module for data loads: user edits list, admins list, bots list, regexp list and excludedPages list
+# Module for data loads: user edits list, admins list, bots list, regexp list and excluded pages list\n
+# Módulo para carga de datos: lista de usuarios por número de ediciones, administradores, bots, lista de expresiones regulares y de páginas excluidas
 
 import re
 import urllib
@@ -29,10 +30,8 @@ import avbotglobals
 import avbotcomb
 
 def changedRegexpsList(dic1, dic2):
-	"""  """
-	"""  """
-	#funcion que devuelve si las dos listas de expresiones regualres son distintas
-	#se sabe que las listas son en realidad diccionarios, y su clave es la expresion regular. Mas detalles en loadRegexpList()
+	""" ¿Los dos diccionarios de expresiones regulares son distintos? """
+	""" Check if both dictionaries are the same """
 	if len(dic1.items())!=len(dic2.items()):
 		return True
 	else:
@@ -100,8 +99,8 @@ def loadBots():
 	loadUsers('bot')
 
 def loadMessages():
-	"""  """
-	"""  """
+	""" Carga preferencias sobre mensajes """
+	""" Load messages preferences """
 	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
 	raw=''
 	if p.exists():
@@ -127,8 +126,8 @@ def loadMessages():
 			avbotglobals.preferences['msg'][type]={'priority': priority, 'meaning': meaning, 'template': template,}
 
 def loadRegexpList():
-	"""  """
-	"""  """
+	""" Carga lista de expresiones regulares """
+	""" Load regular expression list """
 	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
 	raw=''
 	if p.exists():
@@ -164,60 +163,26 @@ def loadRegexpList():
 	return error
 
 def reloadRegexpList(author, diff):
-	"""  """
-	"""  """
+	""" Recarga lista de expresiones regulares """
+	""" Reload regular expression list """
 	oldVandalRegexps=avbotglobals.vandalRegexps
 	error=loadRegexpList()
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
 	if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
-		p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
 		if error:
 			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 		else:
 			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 	else:
-		p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
 		if error:
 			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 		else:
 			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 	return
 
-def loadShockingImages():
-	"""  """
-	"""  """
-	imageneschocantes={'exceptions':[], 'images':{}}
-	
-	#todas las categorias deben ser de Commons
-	cats=[u'Anal sex', u'Anus', u'Doggy style positions', u'Fisting', u'Intramammal sex', u'Man-on-top positions', u'Missionary positions', u'Multiple penetration', u'Mutual masturbation', u'Oral sex', u'Penis', u'Rear-entry positions', u'Side-by-side positions', u'Sitting sex positions', u'Spooning positions', u'Standing sex positions', u'Tribadic positions', u'Woman-on-top positions']
-	
-	#excepciones
-	excepcat=catlib.Category(avbotglobals.preferences['site'], u'Category:Sexualidad')
-	imageneschocantes['exceptions']=excepcat.articlesList(recurse=1)
-	
-	error=u''
-	for cat in cats:
-		try:
-			raw=wikipedia.query.GetData({'action':'query', 'generator':'categorymembers', 'gcmtitle':'Category:%s' % cat, 'gcmprop':'title', 'gcmnamespace':'6', 'gcmlimit':'500'},site=wikipedia.Site('commons','commons'),useAPI=True)
-			
-			for k, v in raw['query']['pages'].items():
-				filename=v['title'].split('Image:')[1]
-				filename_=re.sub(ur'([\(\)\.\,\-\:\;\$\'\"\_\?\!\&\¿\¡\+])', ur'\\\1', filename)
-				filename__=re.sub(u' ', u'_', filename_)
-				regexp=u'(?i)(%s|%s)' % (filename_, filename__)
-				try:
-					imageneschocantes['images'][filename]=re.compile(regexp)
-					#wikipedia.output(filename)
-				except:
-					error+=u'Error al compilar: %s' % regexp
-		
-		except:
-			pass
-	
-	return imageneschocantes, error
-
 def loadUserEdits(author):
-	"""  """
-	"""  """
+	""" Carga númeor de ediciones de un usuario en concreto """
+	""" Load user edits number """
 	author_=re.sub(' ', '_', author)
 	try:
 		rawdata=avbotglobals.preferences['site'].getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(author_))

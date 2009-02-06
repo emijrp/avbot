@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbotsave
-# Module for data saving: user edits and stats
+# Module for data saving: user edits and stats\n
+# Módulo para guardar datos: ediciones de usuarios y estadísticas
 
 # AVBOT modules
 import avbotglobals
@@ -35,7 +36,7 @@ def saveEdits(ediciones):
 	f.close()
 
 def saveStats(stats, hours, site):
-	""" Guarda las estadístias en una página con motivos históricos """
+	""" Guarda las estadísticas en una página con motivos históricos """
 	""" Saves statistics in a page for historical purposes """
 	resumen=u'V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]' % (stats[hours]['V'], stats[hours]['BL'], stats[hours]['P'], stats[hours]['S'], stats[hours]['B'], stats[hours]['M'], stats[hours]['T'], stats[hours]['D'])
 	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))

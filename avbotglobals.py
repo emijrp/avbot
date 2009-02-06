@@ -16,12 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbotglobals
-# Module for shared variables
+# Module for shared variables\n
+# Módulo para variables compartidas
 
 import re
 import random
 import sys
 import wikipedia
+import time
 
 import avbotcomb
 
@@ -58,11 +60,21 @@ if not preferences['channel']:
 if not preferences['nickname']:
 	preferences['nickname'] = '%s%s' % (preferences['botNick'], str(random.randint(1000, 9999)))
 
+global namespaces
+namespaces={}
+namespaces[2] = avbotcomb.namespaceTranslator(2)
+
 global statsDic
 statsDic={}
 statsDic[2]  = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 statsDic[12] = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
 statsDic[24] = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+
+global statsTimersDic
+statsTimersDic={'speed':0, 2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
+
+global userData
+userData={}
 
 global vandalControl
 vandalControl={}
@@ -101,6 +113,3 @@ parserRegexps={
 	#[[Especial:Log/move]] move  * Dhidalgo *  [[Macizo Etíope]] ha sido trasladado a [[Macizo etíope]]
 	'traslado':       re.compile(ur'(?i)\[\[Especial:Log/move\]\] +move +\* +(?P<usuario>.*?) +\* +\[\[(?P<origen>.*?)\]\] +ha sido trasladado a +\[\[(?P<destino>.*?)\]\]'),
 	}
-
-global userData
-userData={}

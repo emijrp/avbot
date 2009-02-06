@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbotmsg
-# Module for send messages to users
+# Module for send messages\n
+# Módulo para enviar mensajes
 
 import re
 import wikipedia
@@ -28,8 +29,8 @@ import avbotglobals
 import avbotcomb
 
 def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia):
-	"""  """
-	"""  """
+	""" Gestiona la página de Vandaliso en curso """
+	""" Manage Vandalismo en curso page """
 	explanation=u""
 	report=u''
 	resume=u''
@@ -58,8 +59,8 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 	wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
 
 def sendMessage(author, wtitle, diff, n, tipo):
-	"""  """
-	"""  """
+	""" Envía mensajes de advertencia a un usuario """
+	""" Send messages to an user  """
 	if avbotglobals.preferences['site'].lang!='es':
 		return
 	talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
@@ -94,27 +95,12 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		wtext+=avisotexto
 		talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n))
 
-def msgContenidoChocante(author, wtitle, diff, n):
-	"""  """
-	"""  """
-	return sendMessage(author, wtitle, diff, n, u'Contenido chocante')
-
-def msgEnlaceIrrelevante(author, wtitle, diff, n):
-	"""  """
-	"""  """
-	return sendMessage(author, wtitle, diff, n, u'Enlace irrelevante')
-
-def msgFechaImposible(author, wtitle, diff, n):
-	"""  """
-	"""  """
-	return sendMessage(author, wtitle, diff, n, u'Fecha imposible')
-
-def msgBloqueo(blocked, blocker):
-	"""  """
-	"""  """
+def msgBlock(blocked, blocker):
+	""" Envía mensaje de bloqueo a un usuario """
+	""" Send block message to an user """
 	aviso=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % blocked)
 	avisotexto=u""
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
-	avisotexto+=u"{{subst:User:AVBOT/AvisoBloqueo|%s}}" % blocker
+	avisotexto+=u"{{subst:User:%s/AvisoBloqueo.css|%s}}" % (avbotglobals.preferences['ownerNick'], blocker)
 	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))

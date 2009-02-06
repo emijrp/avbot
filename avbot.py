@@ -16,14 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbot
-# Main module
-
-# TODO:  revertir anidados por parte de varios usuarios, 
-# comprobar que al revertir no se esta revirtiendo a un vandalismo de otro usuario
-# revierte prueba a edicion mala http://es.wikipedia.org/w/index.php?title=Aparato_circulatorio&diff=16610029&oldid=16610024
-# no revertir a una version en blanco http://es.wikipedia.org/w/index.php?title=Aristas&diff=prev&oldid=16807904
-#controlar eliminacion de categorias e iws en masa, deleted-lines http://es.wikipedia.org/w/index.php?title=Tik%C3%BAn_Olam&diff=prev&oldid=16896350
-# error frecuente: WARNING: No character set found.
+# Main module\n
+# Módulo principal
 
 """ External modules """
 """ Python modules """
@@ -44,39 +38,25 @@ import wikipedia, difflib
 """ AVBOT modules """
 import avbotglobals  #Shared info
 import avbotload     #Information and regexp loader
-import avbotsave     #
+import avbotsave     #Saving info in files
 import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
 import avbotcomb     #Trivia functions
 
-""" Variables """
-global imageneschocantes
-imageneschocantes={}
-global speed
-global timeStatsDic
-global currentYear
-
 edits={'sysop':0,'bot':0,'reg':0,'anon':0}
-today=datetime.date.today()
-currentYear=today.year
-
-""" Statistics """
-speed        = 0
-timeStatsDic = {2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
 
 """ Header message """
 header  = u"\nAVBOT Copyright (C) 2008 Emilio José Rodríguez Posada\n"
-header += u"This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
+header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
 header += u"This is free software, and you are welcome to redistribute it\n"
-header += u"under certain conditions; type `show c' for details.\n\n"
+header += u"under certain conditions. See license.\n\n"
 header += u"############################################################################\n"
 header += u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
-header += u"# Version: 0.8                                                             #\n"
+header += u"# Version: 1.0                                                             #\n"
 header += u"# Tasks:   To revert vandalism, blanking and test edits                    #\n"
 header += u"#          To improve new articles                                         #\n"
-header += u"#          Soon: Anti-birthday protection                                  #\n"
-header += u"#          Soon: Shocking images control                                   #\n"
 header += u"############################################################################\n\n"
+header += u"Parameters available (* obligatory): -lang, -family, -newbie, -botnick, -statsdelay, -network, -channel, -ownernick*\n\n"
 header += u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
 header += u"%s edits for newbie users" % avbotglobals.preferences['newbie']
 wikipedia.output(header)
@@ -86,10 +66,6 @@ avbotload.loadEdits()
 avbotload.loadSysops()
 avbotload.loadBots()
 avbotload.loadExclusions()
-
-"""Shocking images list """
-#[imageneschocantes, error]=avbotload.loadShockingImages()
-#wikipedia.output(u"Cargadas %d imágenes chocantes y %d excepciones...%s" % (len(imageneschocantes['images'].items()), len(imageneschocantes['exceptions']), error))
 
 """Messages"""
 avbotload.loadMessages()
@@ -122,9 +98,6 @@ class BOT(SingleServerIRCBot):
 		""" Captura cada línea del canal de IRC """
 		""" Fetch and parse each line in the IRC channel """
 		
-		global speed
-		global timeStatsDic
-		
 		editData={}
 		
 		line = (e.arguments()[0])
@@ -152,16 +125,20 @@ class BOT(SingleServerIRCBot):
 					editData['minor'] = True
 				editData['resume']    = m.group('resume')
 				
+				avbotanalysis.updateStats('T')
+				avbotglobals.statsTimersDic['speed'] += 1
+				
+				# Avoid to check our edits
+				if editData['author'] == avbotglobals.preferences['botNick']: 
+					return #Exit
+				
 				#Reload vandalism regular expresions
-				if re.search(ur'%s\/Lista del bien y del mal\.css' % avbotglobals.preferences['ownerNick'], editData['pageTitle']):
+				if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list
-				if re.search(ur'%s\/Exclusiones\.css' % avbotglobals.preferences['ownerNick'], editData['pageTitle']):
+				if re.search(ur'%s\:%s\/Exclusiones\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 					avbotload.loadExclusions()
-				
-				avbotanalysis.updateStats('T')
-				speed   += 1
 				
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 				
@@ -196,7 +173,7 @@ class BOT(SingleServerIRCBot):
 					return #Exit
 				
 				avbotanalysis.updateStats('T')
-				speed   += 1
+				avbotglobals.statsTimersDic['speed'] += 1
 				
 				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
@@ -207,7 +184,7 @@ class BOT(SingleServerIRCBot):
 				blocked=m.group('blocked')
 				block=m.group('block')
 				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) ha sido bloqueado por [[User:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
-				thread.start_new_thread(avbotcomb.bloqueo,(blocker,blocked,block))
+				thread.start_new_thread(avbotcomb.blockedUser,(blocker,blocked,block))
 		elif re.search(avbotglobals.parserRegexps['nuevousuario'], line):
 			match=avbotglobals.parserRegexps['nuevousuario'].finditer(line)
 			for m in match:
@@ -226,7 +203,6 @@ class BOT(SingleServerIRCBot):
 				origen=m.group('origen')
 				destino=m.group('destino')
 				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido trasladado a [[%s]] por [[User:%s]]\03{default}' % (origen, destino, usuario))
-				thread.start_new_thread(avbotcomb.traslado,(usuario,origen,destino))
 		elif re.search(avbotglobals.parserRegexps['protegida'], line):
 			match=avbotglobals.parserRegexps['protegida'].finditer(line)
 			for m in match:
@@ -237,7 +213,7 @@ class BOT(SingleServerIRCBot):
 				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
 				#http://es.wikipedia.org/w/index.php?oldid=23222363#Candados
 				#if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
-				#	thread.start_new_thread(avbotcomb.semiproteger,(pageTitle,protecter))
+				#	thread.start_new_thread(avbotcomb.semiprotect,(pageTitle,protecter))
 		else:
 			#wikipedia.output(u'No gestionada ---> %s' % line)
 			f=open('lineasnogestionadas.txt', 'a')
@@ -252,27 +228,27 @@ class BOT(SingleServerIRCBot):
 			f.close()
 		
 		#Calculating and showing statistics
-		if time.time()-timeStatsDic['tvel']>=avbotglobals.preferences['statsDelay']: #Showing information in console every 60 seconds
-			intervalo = int(time.time()-timeStatsDic['tvel'])
+		if time.time()-avbotglobals.statsTimersDic['tvel']>=avbotglobals.preferences['statsDelay']: #Showing information in console every 60 seconds
+			intervalo = int(time.time()-avbotglobals.statsTimersDic['tvel'])
 			wikipedia.output(u'\03{lightgreen}AVBOT working for %s: language of %s project\03{default}' % (avbotglobals.preferences['language'], avbotglobals.preferences['family']))
-			wikipedia.output(u'\03{lightgreen}Average speed: %d edits/minute\03{default}' % int(speed/(intervalo/60.0)))
+			wikipedia.output(u'\03{lightgreen}Average speed: %d edits/minute\03{default}' % int(avbotglobals.statsTimersDic['speed']/(intervalo/60.0)))
 			wikipedia.output(u'\03{lightgreen}Last 2 hours: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (avbotglobals.statsDic[2]['V'], avbotglobals.statsDic[2]['BL'], avbotglobals.statsDic[2]['P'], avbotglobals.statsDic[2]['S'], avbotglobals.statsDic[2]['B'], avbotglobals.statsDic[2]['M'], avbotglobals.statsDic[2]['T'], avbotglobals.statsDic[2]['D']))
 			legend=u''
 			for k,v in avbotglobals.preferences['colors'].items():
 				legend+=u'\03{%s}%s\03{default}, ' % (v, k)
 			wikipedia.output(u'Legend: %s...' % legend)
-			timeStatsDic['tvel'] = time.time()
-			speed                = 0
+			avbotglobals.statsTimersDic['tvel'] = time.time()
+			avbotglobals.statsTimersDic['speed'] = 0
 		
 		#Recalculating statistics
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
 			avbotglobals.statsDic[period]['M']=avbotglobals.statsDic[period]['V']+avbotglobals.statsDic[period]['BL']+avbotglobals.statsDic[period]['P']+avbotglobals.statsDic[period]['S']
 			avbotglobals.statsDic[period]['B']=avbotglobals.statsDic[period]['T']-avbotglobals.statsDic[period]['M']
 			
-			if time.time()-timeStatsDic[period]>=3600*period:
-				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site']) #Saving statistics in Wikipedia pages for historical reasons
-				timeStatsDic[period]=time.time()                                                     #Saving start time
-				avbotglobals.statsDic[period]={'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}     #Blanking statistics for a new period
+			if time.time()-avbotglobals.statsTimersDic[period]>=3600*period:
+				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
+				avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
+				avbotglobals.statsDic[period]       = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0} #Blanking statistics for a new period
 
 def main():
 	""" Crea un objeto BOT y lo lanza """

@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## @package avbotcomb
-# Module for miscellany functions
+# Module for miscellany functions\n
+# Módulo para funciones varias
 
 import wikipedia
 import re
@@ -31,13 +32,13 @@ import avbotmsg
 import avbotload
 import avbotsave
 
-def bloqueo(blocker, blocked, castigo):
-	"""  """
-	"""  """
+def blockedUser(blocker, blocked, castigo):
+	""" Carga Vandalismo en curso y gestionar bloqueo  """
+	""" Load Vandalismo en curso and manage block """
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
-	#avbotmsg.msgBloqueo(blocked, blocker) #Send message to vandal's talk page
+	#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
 	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
 	if pvec.exists():
 		if pvec.isRedirectPage():
@@ -80,9 +81,9 @@ def bloqueo(blocker, blocked, castigo):
 				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
 			
 
-def semiproteger(titulo, protecter):
-	"""  """
-	"""  """
+def semiprotect(titulo, protecter):
+	""" Pone la plantilla {{semiprotegido}} si no la tiene ya """
+	""" Put {{semiprotegido}} if it doesn't exist """
 	p=wikipedia.Page(avbotglobals.preferences['site'], titulo)
 	if p.exists():
 		if p.isRedirectPage() or p.namespace()!=0:
@@ -95,17 +96,9 @@ def semiproteger(titulo, protecter):
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
 
-def traslado(usuario, origen, destino):
-	"""  """
-	"""  """
-	#es un traslado vandálico?
-	#if usuario==u'Emijrp':
-	#	p=wikipedia.Page(avbotglobals.preferences['site'], destino)
-	#	p.move(origen, reason=u'BOT - Probando módulo antitraslados')
-
 def vtee(text, resumen):
-	"""  """
-	"""  """
+	""" Algunos cambios menores según el manual de estilo """
+	""" Minor changes from style manual """
 	newtext=text
 	newtext=re.sub(ur'(?i)=(\s*)(v[íi]nculos?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Enlaces externos\3=', newtext)
 	newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv]i[ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Véase también\3=', newtext)
@@ -114,20 +107,9 @@ def vtee(text, resumen):
 	else:
 		return newtext, u"%s VT && EE," % resumen
 
-def cosmetic(text, resumen):
-	"""  """
-	"""  """
-	newtext=text
-	#nada por ahora, cosmetic_changes.py puede ser util
-	
-	if text==newtext:
-		return newtext, resumen
-	else:
-		return newtext, u"%s cosméticos," % resumen
-
 def magicInterwiki(page, resumen, idioma):
-	"""  """
-	"""  """
+	""" Buscar interwikis que pueden venirle bien al artículo """
+	""" Check for userful interwikis """
 	wtext=page.get()
 	wtitle=page.title()
 	
@@ -180,95 +162,23 @@ def magicInterwiki(page, resumen, idioma):
 	else:
 		return nuevo, resumen
 
-def mes(num):
-	"""  """
-	"""  """
-	if num==1:
-		return 'Enero'
-	elif num==2:
-		return 'Febrero'
-	elif num==5:
-		return 'Mayo'
-	elif num==6:
-		return 'Junio'
-	elif num==7:
-		return 'Julio'
-	elif num==8:
-		return 'Agosto'
-	elif num==9:
-		return 'Septiembre'
-	elif num==10:
-		return 'Octubre'
-	elif num==11:
-		return 'Noviembre'
-	elif num==12:
-		return 'Diciembre'
-	else:
-		return 'Mes desconocido'
-	
-
-def archiveVEC():
-	minimo=5 #archivar cuando haya x informes resueltos o mas
-	
-	#calculo de fecha
-	mesactual=mes(datetime.date.today().month)
-	anyoactual=datetime.date.today().year
-	
-	vec=wikipedia.Page(avbotglobals.preferences['site'], u"Wikipedia:Vandalismo en curso")
-	vectext=vec.get()
-	
-	trozos=vectext.split('===')
-	cabecera=trozos[0]
-	avisos=trozos[1:]
-	
-	if len(avisos) % 2 !=0:
-		return False
-	
-	c=0
-	archivo=[]
-	vecactual=[]
-	for i in avisos:
-		if c % 2 == 0:
-			if re.search(ur'(?i)Acción administrativa.*?%d' % anyoactual, avisos[c+1]):
-				archivo.append(avisos[c])
-				archivo.append(avisos[c+1])
-			else:
-				vecactual.append(avisos[c])
-				vecactual.append(avisos[c+1])
-		c+=1
-	
-	if len(archivo)>=minimo*2: #archivamos cuando haya x resueltos
-		vecnewtext=u'%s\n' % cabecera
-		for i in vecactual:
-			vecnewtext+=u'===%s' % i
-		archivotext=u''
-		for i in archivo:
-			archivotext+=u'===%s' % i
-		
-		cuantos=len(archivo)/2
-		
-		vec.put(vecnewtext, u'BOT - Archivando %d avisos resueltos en [[%s]] (bot en pruebas)' % (cuantos, arctitle))
-		arctitle=u"Wikipedia:Vandalismo en curso/%s %s" % (mesactual, anyoactual)
-		arc=wikipedia.Page(avbotglobals.preferences['site'], arctitle)
-		arc.put(u'%s\n%s' % (arc.get(), archivotext), u'BOT - Archivando %d avisos resueltos de [[Wikipedia:Vandalismo en curso]] (bot en pruebas)' % (cuantos))
-		
-		return True
-	
-	return False
-
 def namespaceTranslator(namespace):
+	""" Carga espacios de nombres por idioma """
+	""" Load namespace per language """
 	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges&limit=0")
 	data=data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
 	m=re.compile(ur'<option value="([1-9]\d*)">(.*?)</option>').finditer(data)
 	wikipedianm=u''
 	for i in m:
-		number=i.group(1)
+		number=int(i.group(1))
 		name=i.group(2)
-		if number=='%s' % namespace:
+		if number==namespace:
 			wikipedianm+=name
 	return wikipedianm
 
 def resumeTranslator(editData):
+	""" Traductor de resúmenes de edición primitivo """
+	""" Beta summaries translator """
 	resume=u''
 	type=editData['type']
 	
@@ -280,7 +190,8 @@ def resumeTranslator(editData):
 	return resume
 
 def getParameters():
-	#mirar en replace.py
+	""" Gestionar parámetros capturados de la consola """
+	""" Manage console parameters """
 	args=sys.argv
 	
 	for arg in args[1:]:
@@ -326,10 +237,14 @@ def getParameters():
 				avbotglobals.preferences['ownerNick'] = arg[11:]
 
 def getTime():
+	""" Coge la hora del sistema """
+	""" Get system time """
 	return time.strftime('%H:%M:%S')
-	#return time.ctime()
 
 def encodeLine(line):
+	""" Codifica una cadena en UTF-8 a poder ser """
+	""" Encode string into UTF-8 """
+	
 	try:
 		line2=unicode(line,'utf-8')
 	except UnicodeError:
@@ -341,6 +256,9 @@ def encodeLine(line):
 	return line2
 
 def getUserClass(editData):
+	""" Averigua el tipo de usuario del que se trata """
+	""" Check user class """
+	
 	userClass='anon'
 	if avbotglobals.userData['sysop'].count(editData['author'])!=0:
 		userClass='sysop'
@@ -351,6 +269,9 @@ def getUserClass(editData):
 	return userClass
 
 def cleanLine(line):
+	""" Limpia una línea de IRC de basura """
+	""" Clean IRC line """
+	
 	line=re.sub(ur'\x03\d{0,2}', ur'', line) #No colors
 	line=re.sub(ur'\x02\d{0,2}', ur'', line) #No bold
 	return line
