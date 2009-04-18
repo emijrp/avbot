@@ -54,7 +54,7 @@ preferences = {
 avbotcomb.getParameters()
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-testEdit.put(str(random.randint(1000, 9999)), u'BOT - Testing edit')
+testEdit.put(str(random.randint(1000, 9999)), u'BOT - Arrancando robot')
 if not preferences['channel']:
 	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
 if not preferences['nickname']:

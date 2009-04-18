@@ -23,6 +23,8 @@ import re
 import wikipedia
 import os
 import sys
+import time
+import random
 
 # AVBOT modules
 import avbotglobals
@@ -58,19 +60,43 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 		report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
 	wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
 
+def haveIRevertedThisVandalism(wtitle, diff):
+	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
+	""" Check if this bot has reverted this vandalism """
+	vandalisedPage=wikipedia.Page(avbotglobals.preferences['site'], wtitle)
+	vandalisedPageHistory=vandalisedPage.getVersionHistory(revCount=10)
+	c=0
+	while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
+		c+=1
+	if c>0 and vandalisedPageHistory[c-1][2]==avbotglobals.preferences['botNick']:
+		return True
+	else:
+		return False
+
 def sendMessage(author, wtitle, diff, n, tipo):
 	""" Envía mensajes de advertencia a un usuario """
 	""" Send messages to an user  """
+	#esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
+	time.sleep(random.randint(5,10))
+	
 	if avbotglobals.preferences['site'].lang!='es':
 		return
 	talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
+	
 	avisotexto=u""
 	wtitle2=wtitle
 	wtext=u""
 	if re.search(ur'(?i)Categor(ía|y)\:', wtitle2):
 		wtitle2=u':%s' % wtitle2
-	if talkpage.exists():
+	if talkpage.exists() and not talkpage.isRedirectPage():
 		wtext=talkpage.get()
+	
+	#he revertido yo u otro usuario?
+	if not haveIRevertedThisVandalism(wtitle, diff):
+		return
+	#evitamos avisar dos veces
+	if re.search(ur'(?im)%s' % diff, wtext): #existe ya un aviso para esta oldid?
+		return
 	
 	if n==3: #If n>3, no more messages
 		template=u"%sInminente.css" % avbotglobals.preferences['msg'][tipo]['template']
