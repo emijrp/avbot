@@ -46,13 +46,14 @@ def loadEdits():
 	""" Load user edits file """
 	newbie=avbotglobals.preferences['newbie']
 	ediciones={}
+	filename="ediciones.txt"
 	try:
-		f=open("ediciones.txt", "r")
+		f=open(filename, "r")
 	except:
-		f=open("ediciones.txt", "w")
+		f=open(filename, "w")
 		f.write('')
 		f.close()
-		f=open("ediciones.txt", "r")
+		f=open(filename, "r")
 	l=ur""
 	l=f.readline()
 	while l:
@@ -70,7 +71,7 @@ def loadEdits():
 		l=f.readline()
 	f.close()
 	
-	wikipedia.output(u"Loaded info for %d users..." % len(ediciones.items()))
+	wikipedia.output(u"Loaded info for %d users from \"%s\"" % (len(ediciones.items()), filename))
 	
 	avbotglobals.userData['edits']=ediciones
 
@@ -85,7 +86,7 @@ def loadUsers(type):
 	m=re.compile(ur" title=\"%s:(.*?)\">" % namespace).finditer(data)
 	for i in m:
 		users.append(i.group(1))
-	wikipedia.output(u"Loaded info for %d %ss..." % (len(users), type))
+	wikipedia.output(u"Loaded info for %d %ss from [[Special:Listusers]]" % (len(users), type))
 	avbotglobals.userData[type]=users
 
 def loadSysops():
@@ -101,14 +102,15 @@ def loadBots():
 def loadMessages():
 	""" Carga preferencias sobre mensajes """
 	""" Load messages preferences """
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
+	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Mensajes.css')
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
 			raw=p.get()
 	else:
 		botOwner=avbotglobals.preferences['botOwner']
-		wikipedia.output(u'A preferences page is needed in %s' % p.title())
+		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
 		wikipedia.output(u'<pre>\n\n#Introduce a message per line.\n\nV;;100;;Vandalismo;;User:%s/AvisoVandalismo.css;;\nBL;;50;;Blanqueo;;User:%s/AvisoBlanqueo.css;;\nP;;10;;Prueba;;User:%s/AvisoPrueba.css;;\n#dummie\nC;;-100;;Contrapeso;;User:%s/AvisoContrapeso.css;;\n\n</pre>' % (botOwner, botOwner, botOwner, botOwner))
 		wikipedia.output('A preferences page is needed. Please, look last bot edits.')
 		sys.exit()
@@ -119,7 +121,7 @@ def loadMessages():
 			if l[0]=='#' or l[0]=='<':
 				continue
 			trozos=l.split(';;')
-			type=trozos[0]
+			type=trozos[0].lower()
 			priority=int(trozos[1])
 			meaning=trozos[2]
 			template=trozos[3]
@@ -128,37 +130,47 @@ def loadMessages():
 def loadRegexpList():
 	""" Carga lista de expresiones regulares """
 	""" Load regular expression list """
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
+	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Lista del bien y del mal.css')
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
 			raw=p.get()
 	else:
-		wikipedia.output(u'A preferences page is needed in %s' % p.title())
-		wikipedia.output(u'#Introduce a regex per line. Format: CLASS;;REGEXP;;POINTS;;')
+		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
+		wikipedia.output(u'#Introduce one regexp per line. Format: CLASS;;REGEXP;;POINTS;;')
 		sys.exit()
 		
 	c=0
 	error=u''
 	avbotglobals.vandalRegexps={}
+	dontsort=[]
+	dosort=[]
 	for l in raw.splitlines():
 		c+=1
-		if len(l)>=3: #evitamos regex demasiado pequenas
-			if l[0]=='#' or l[0]=='<':
+		if len(l)>=12: #Avoid short dangerous regexps
+			if l=='<pre>' or l=='</pre>': #Skip preformatted labels
 				continue
-			trozos=l.split(';;')
-			type=trozos[0]
-			reg=trozos[1]
-			score=int(trozos[2])
-			regex=ur'%s%s%s' % (avbotglobals.preferences['context'], reg, avbotglobals.preferences['context'])
+			if l[0]=='#' or l[0]=='<': #Skip no regexps lines
+				dontsort.append(l)
+				continue
+			l=l.lower() #Be careful with LoadMessages(), always lower or always upper
+			dosort.append(l)
 			try:
+				l=re.sub(ur"(?im)^(.*?[^\\])\#.*?$", ur"\1", l)#Clean inline comments
+				t=l.split(';;')
+				type=t[2]
+				reg=t[0]
+				score=int(t[1])
+				regex=ur'%s%s%s' % (avbotglobals.preferences['context'], reg, avbotglobals.preferences['context'])
 				avbotglobals.vandalRegexps[reg]={'type':type, 'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
 			except:
-				error+=u'=== Error en regexp ===\n'
-				error+=u'* Línea: %d' % c
-				error+=u'\n* Regexp errónea: %s' % reg
-				error+=u'\n* Regexp errónea (con contexto): %s' % regex
-				error+=u'\n* Puntuación: %d\n\n' % score
+				error+=u'** Error en regexp: Línea: %d\n' % c
+	
+	#Sorting list
+	dosort.sort()
+	ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:AVBOT/Lista del bien y del mal.css')
+	ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
 	return error
 
@@ -167,17 +179,19 @@ def reloadRegexpList(author, diff):
 	""" Reload regular expression list """
 	oldVandalRegexps=avbotglobals.vandalRegexps
 	error=loadRegexpList()
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
-	if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
-		if error:
-			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s%s' % (author, avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+	ownerNick=avbotglobals.preferences['ownerNick']
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % ownerNick)
+	if p.exists() and not re.search(ur"%s" % diff, p.get()):
+		if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
+			if error:
+				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+			else:
+				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 		else:
-			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n\n%s' % (author, avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
-	else:
-		if error:
-			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
-		else:
-			p.put(u'== {{subst:LOCALDAYNAME}}, {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC) ==\n{{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], avbotglobals.preferences['ownerNick'], diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+			if error:
+				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+			else:
+				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 	return
 
 def loadUserEdits(author):
@@ -202,13 +216,14 @@ def loadUserEdits(author):
 def loadExclusions():
 	""" Carga lista de páginas excluidas """
 	""" Load excluded pages list """
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Exclusiones.css' % avbotglobals.preferences['ownerNick'])
+	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Exclusiones.css' % avbotglobals.preferences['ownerNick'])
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Exclusiones.css')
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
 			raw=p.get()
 	else:
-		wikipedia.output('A preferences page is needed in %s' % p.title())
+		wikipedia.output('A preferences page is needed in [[%s]]' % p.title())
 		wikipedia.output('Introduce an excluded page per line. Without [[]]')
 		sys.exit()
 	

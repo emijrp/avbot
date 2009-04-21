@@ -36,7 +36,8 @@ def sameOldid(editData):
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid'])
 		return editData
 	else:
-		editData['stableText']=editData['oldText']
+		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&limit=6&action=history
+		editData['stableText']=editData['page'].getOldVersion(editData['stableid'])
 		return editData
 
 def isSameVandalism(regexlistold, regexlistnew):
@@ -92,7 +93,7 @@ def isRubbish(editData):
 						destruir=True
 						motive=u'Demasiado corto'
 		if destruir:
-			updateStats('D')
+			updateStats('d')
 			editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
 			return True, motive
 	return False, motive
@@ -118,30 +119,36 @@ def improveNewArticle(editData):
 					return True, resumen
 	return False, u''
 
-def revertAllEditsByUser(editData, userClass, regexlist):
+def revertAllEditsByUser(editData, userClass, regexplist):
 	""" Revierte todas las ediciones de un usuario en un mismo artículo """
 	""" Revert all edits in a same article by a same author """
 	
 	#añadimos al control de vandalismos
 	if avbotglobals.vandalControl.has_key(editData['author']):
-		avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexlist]
+		avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexplist]
 	else:
-		avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexlist]}
+		avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexplist]}
 	
 	c=0
 	for i in editData['pageHistory']:
 		if i[2]!=editData['author']: 
-			if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja
-				if editData['type']=='BL':
-					#para blanqueos no comprobamos si tiene la misma lista de regex (regexlist) que el anterior blanqueo, sino cual fue la logintud que tenia el texto final del blanqueo anterior
-					if len(editData['pageHistory'])-1>=c+1 and avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]) and avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][1]==editData['score']: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
-						#evitamos revertir dos veces el mismo blanqueo, misma puntuacion
-						break
-				if editData['type']=='V' or editData['type']=='P':
-					regexlist=avbotglobals.vandalControl[editData['author']][editData['diff']][2]
-					if len(editData['pageHistory'])-1>=c+1 and avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]) and isSameVandalism(avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][2], regexlist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
-						#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, excepto si es muy baja
-						break
+			if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja, CUIDADO CON LOS CLONES!!!
+				#excepto si es un blanqueo distinto del anterior
+				if editData['type']=='bl':
+					#para blanqueos no comprobamos si tiene la misma lista de regexp (regexplist) que el anterior blanqueo, sino cual fue la logintud que tenia el texto final del blanqueo anterior
+					if len(editData['pageHistory'])-1>=c+1:
+						if avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]):
+							if avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][1]==editData['score']: #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
+								#evitamos revertir dos veces el mismo blanqueo, misma puntuacion
+								break
+				#excepto si es un vandalismo con otras palabras
+				if editData['type']=='v' or editData['type']=='p':
+					regexplist=avbotglobals.vandalControl[editData['author']][editData['diff']][2]
+					if len(editData['pageHistory'])-1>=c+1:
+						if avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]):
+							if isSameVandalism(avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][2], regexplist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
+								#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, excepto si es muy baja
+								break
 			
 			editData['stableid']=i[0]
 			editData['stableAuthor']=i[2]
@@ -182,16 +189,15 @@ def mustBeReverted(editData, cleandata, userClass):
 	
 	#blanking edit?
 	if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): # 1/7 es un buen numero
-		editData['type']='BL'
+		editData['type']='bl'
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''
 		
 		#revertimos todas las ediciones del usuario
 		return revertAllEditsByUser(editData, userClass, regexplist)
 	
-	
 	#vandalism or test edit?
-	editData['type']='C' #dummie, contrapeso
+	editData['type']='c' #dummie, contrapeso
 	editData['details']=u''
 	
 	for k, v in avbotglobals.vandalRegexps.items():
@@ -206,7 +212,7 @@ def mustBeReverted(editData, cleandata, userClass):
 				editData['details']+=u'%s\n' % (k)
 				added=True
 	
-	if editData['score']<0 and ((editData['score']>-5 and len(cleandata)<editData['score']*-150) or editData['score']<-4): #en fase de pruebas, densidad len(data)<score*-100
+	if editData['score']<0 and ((editData['score']>-5 and len(cleandata)<editData['score']*-150) or editData['score']<-4): #densidad
 		#revertimos todas las ediciones del usuario en esa página
 		return revertAllEditsByUser(editData, userClass, regexplist)
 	
@@ -346,12 +352,12 @@ def editAnalysis(editData):
 		except:
 			return #No diff, exit
 		
-		cleandata=cleandiff(editData['pageTitle'], data) #To clean diff text
+		cleandata=cleandiff(editData['pageTitle'], data) #To clean diff text and to extract inserted lines and words
 		
 		#Vandalism analysis
 		[reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
 		if reverted: 
-			wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, editData['type'], editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
+			wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, avbotglobals.preferences['msg'][editData['type']]['meaning'].lower(), editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
 			return
 	else:
 		wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])

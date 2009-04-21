@@ -25,6 +25,7 @@ import datetime
 import time
 import random
 import sys
+import urllib
 
 # AVBOT modules
 import avbotglobals
@@ -194,6 +195,7 @@ def getParameters():
 	""" Manage console parameters """
 	args=sys.argv
 	
+	obligatory=2
 	for arg in args[1:]:
 		if arg.startswith('-lang'):
 			if len(arg) == 5:
@@ -215,6 +217,7 @@ def getParameters():
 				avbotglobals.preferences['botNick'] = wikipedia.input(u'Please enter bot username:')
 			else:
 				avbotglobals.preferences['botNick'] = arg[9:]
+			obligatory-=1
 		elif arg.startswith('-statsdelay'):
 			if len(arg) == 11:
 				avbotglobals.preferences['statsDelay'] = int(wikipedia.input(u'Please enter stats delay (in seconds):'))
@@ -235,6 +238,11 @@ def getParameters():
 				avbotglobals.preferences['ownerNick'] = wikipedia.input(u'Please enter owner username:')
 			else:
 				avbotglobals.preferences['ownerNick'] = arg[11:]
+			obligatory-=1
+	
+	if obligatory:
+		wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
+		sys.exit()
 
 def getTime():
 	""" Coge la hora del sistema """
@@ -279,15 +287,15 @@ def cleanLine(line):
 def updateUserDataIfNeeded(editData):
 	if editData['userClass']!='anon':
 		if avbotglobals.userData['edits'].has_key(editData['author']):
-			if not random.randint(0,10) or avbotglobals.userData['edits'][editData['author']]<avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
+			if not random.randint(0,25) or avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
 				avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
-				if not random.randint(0,10): 
-					avbotsave.saveEdits(avbotglobals.userData['edits'])
 		else:
 			#Requesting edits number to server
 			avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
-			if not random.randint(0,10):
-				avbotsave.saveEdits(avbotglobals.userData['edits'])
+		
+		#Saving user edits file...
+		if not random.randint(0,200):
+			avbotsave.saveEdits(avbotglobals.userData['edits'])
 
 def checkBlockInEnglishWikipedia(editData):
 	comment=""
@@ -309,4 +317,19 @@ def checkBlockInEnglishWikipedia(editData):
 				break #con el primero basta
 	
 	return comment, isProxy
+
+def checkForUpdates():
+	svn='https://forja.rediris.es/svn/cusl3-avbot/'
+	f=urllib.urlopen(svn)
+	html=f.read()
+	m=re.compile(ur"\<file name\=\"([^\"]+?\.py)\" href\=\"\1\" \/\>").finditer(html)
+	for i in m:
+		filename=i.group(1)
+		g=open(filename, 'r')
+		h=urllib.urlopen(svn+filename)
+		if g.read()!=h.read():
+			wikipedia.output(u"%s has changed" % filename)
+			return True
+	f.close()
+	return False
 

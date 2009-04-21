@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#TODO
+#sameoldid, evitar que cargue siempr y aproveche el oldtext anterior
+#evitar guerras de edicion por clones de avbot, sol: pagina que liste los clones? lin 135 avbotanalysis
+#subpaginas centralizadas y sin centralizar en el avbotload
+#que no conflicteen las subpáginas de estadisticas
+#que se baje el codigo de rediris y lo compruebe con los fucheros locales
+#hacer independiente de verdad lo de 'v', 'bl', 'c', etc
+
 ## @package avbot
 # Main module\n
 # Módulo principal
@@ -43,21 +51,8 @@ import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
 import avbotcomb     #Trivia functions
 
-edits={'sysop':0,'bot':0,'reg':0,'anon':0}
-
-""" Header message """
-header  = u"\nAVBOT Copyright (C) 2008 Emilio José Rodríguez Posada\n"
-header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
-header += u"This is free software, and you are welcome to redistribute it\n"
-header += u"under certain conditions. See license.\n\n"
-header += u"############################################################################\n"
-header += u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
-header += u"# Version: 1.0                                                             #\n"
-header += u"# Tasks:   To revert vandalism, blanking and test edits                    #\n"
-header += u"#          To improve new articles                                         #\n"
-header += u"############################################################################\n\n"
-header += u"Parameters available (* obligatory): -lang, -family, -newbie, -botnick, -statsdelay, -network, -channel, -ownernick*\n\n"
-header += u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
+""" Continue header message """
+header =  u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
 header += u"%s edits for newbie users" % avbotglobals.preferences['newbie']
 wikipedia.output(header)
 
@@ -125,7 +120,7 @@ class BOT(SingleServerIRCBot):
 					editData['minor'] = True
 				editData['resume']    = m.group('resume')
 				
-				avbotanalysis.updateStats('T')
+				avbotanalysis.updateStats('t')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
 				# Avoid to check our edits
@@ -172,7 +167,7 @@ class BOT(SingleServerIRCBot):
 				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
 					return #Exit
 				
-				avbotanalysis.updateStats('T')
+				avbotanalysis.updateStats('t')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
 				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
@@ -228,32 +223,44 @@ class BOT(SingleServerIRCBot):
 			f.close()
 		
 		#Calculating and showing statistics
-		if time.time()-avbotglobals.statsTimersDic['tvel']>=avbotglobals.preferences['statsDelay']: #Showing information in console every 60 seconds
+		if time.time()-avbotglobals.statsTimersDic['tvel']>=avbotglobals.preferences['statsDelay']: #Showing information in console every X seconds
 			intervalo = int(time.time()-avbotglobals.statsTimersDic['tvel'])
-			wikipedia.output(u'\03{lightgreen}AVBOT working for %s: language of %s project\03{default}' % (avbotglobals.preferences['language'], avbotglobals.preferences['family']))
+			wikipedia.output(u'\03{lightgreen}%s working for %s: language of %s project\03{default}' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['language'], avbotglobals.preferences['family']))
 			wikipedia.output(u'\03{lightgreen}Average speed: %d edits/minute\03{default}' % int(avbotglobals.statsTimersDic['speed']/(intervalo/60.0)))
-			wikipedia.output(u'\03{lightgreen}Last 2 hours: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (avbotglobals.statsDic[2]['V'], avbotglobals.statsDic[2]['BL'], avbotglobals.statsDic[2]['P'], avbotglobals.statsDic[2]['S'], avbotglobals.statsDic[2]['B'], avbotglobals.statsDic[2]['M'], avbotglobals.statsDic[2]['T'], avbotglobals.statsDic[2]['D']))
+			wikipedia.output(u'\03{lightgreen}Last 2 hours: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (avbotglobals.statsDic[2]['v'], avbotglobals.statsDic[2]['bl'], avbotglobals.statsDic[2]['p'], avbotglobals.statsDic[2]['s'], avbotglobals.statsDic[2]['b'], avbotglobals.statsDic[2]['m'], avbotglobals.statsDic[2]['t'], avbotglobals.statsDic[2]['d']))
 			legend=u''
 			for k,v in avbotglobals.preferences['colors'].items():
 				legend+=u'\03{%s}%s\03{default}, ' % (v, k)
-			wikipedia.output(u'Legend: %s...' % legend)
+			wikipedia.output(u'Colors meaning: %s...' % legend)
 			avbotglobals.statsTimersDic['tvel'] = time.time()
 			avbotglobals.statsTimersDic['speed'] = 0
 		
 		#Recalculating statistics
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
-			avbotglobals.statsDic[period]['M']=avbotglobals.statsDic[period]['V']+avbotglobals.statsDic[period]['BL']+avbotglobals.statsDic[period]['P']+avbotglobals.statsDic[period]['S']
-			avbotglobals.statsDic[period]['B']=avbotglobals.statsDic[period]['T']-avbotglobals.statsDic[period]['M']
+			avbotglobals.statsDic[period]['m']=avbotglobals.statsDic[period]['v']+avbotglobals.statsDic[period]['bl']+avbotglobals.statsDic[period]['p']+avbotglobals.statsDic[period]['s']
+			avbotglobals.statsDic[period]['b']=avbotglobals.statsDic[period]['t']-avbotglobals.statsDic[period]['m']
 			
 			if time.time()-avbotglobals.statsTimersDic[period]>=3600*period:
 				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
 				avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
-				avbotglobals.statsDic[period]       = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0} #Blanking statistics for a new period
+				avbotglobals.statsDic[period]       = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0} #Blanking statistics for a new period
+		
+		#Creating existence file
+		if time.time()-avbotglobals.existenceTimer>=avbotglobals.existenceDelay:
+			existenceFile=open(avbotglobals.existFile, 'w')
+			existenceFile.close()
+			existenceTimer=time.time()
 
 def main():
 	""" Crea un objeto BOT y lo lanza """
 	""" Creates and launches a bot object """
 	
+	#Writing PID
+	PID=open(avbotglobals.pidFile, 'w')
+	PID.write(str(os.getpid()))
+	PID.close()
+	
+	#Starting bot...
 	bot = BOT()
 	bot.start()
 

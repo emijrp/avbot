@@ -19,29 +19,32 @@
 # Module for shared variables\n
 # Módulo para variables compartidas
 
+""" External modules """
+""" Python modules """
 import re
 import random
 import sys
 import wikipedia
 import time
 
+""" AVBOT modules """
 import avbotcomb
 
 """ Default bot preferences """
 global preferences
 preferences = {
-	'botNick':       u'AVBOT',             #Bot name
+	'botNick':       u'Bot',             #Bot name
 	'ownerNick':     u'Owner',             #Owner nick
 	'language':      u'es',                #Default language is Spanish
 	'family':        u'wikipedia',         #Default project family is Wikipedia
-	'site':          0,
+	'site':          0,                    #Empty var
 	'network':       u'irc.wikimedia.org', #IRC network where is the IRC channel with recent changes
 	'channel':       0,                    #RSS channel for recent changes in Wikipedia
 	'nickname':      0,                    #Bot nick in channel, with random numbers to avoid nick collisions
 	'port':          6667,                 #Port number
-	'logsDirectory': 'botlogs/',
+	'logsDirectory': 'botlogs/',           #Directory reverts logs
 	'newbie':        25,                   #Who is a newbie user? How many edits?
-	'statsDelay':    60,
+	'statsDelay':    60,                   #How man seconds between showing stats in screen
 	'colors':        {
 		'sysop': 'lightblue',
 		'bot':   'lightpurple',
@@ -51,10 +54,33 @@ preferences = {
 	'context':       ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
 	'msg':           {},
 }
+
+""" Header message """
+header  = u"\nAVBOT Copyright (C) 2008 Emilio José Rodríguez Posada\n"
+header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
+header += u"This is free software, and you are welcome to redistribute it\n"
+header += u"under certain conditions. See license.\n\n"
+header += u"############################################################################\n"
+header += u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
+header += u"# Version: 1.1                                                             #\n"
+header += u"# Tasks:   To revert vandalism, blanking and test edits                    #\n"
+header += u"#          To report vandalism waves attacks to admins                     #\n"
+header += u"#          To improve new articles (magic interwikis)                      #\n"
+header += u"#          To mark for deletion rubbish articles                           #\n"
+header += u"############################################################################\n\n"
+header += u"Parameters available (* obligatory): -lang, -family, -newbie, -botnick*, -statsdelay, -network, -channel, -ownernick*\n"
+header += u"Example: python avbot.py -botnick:MyBot -ownernick:MyUser\n"
+wikipedia.output(header)
+
 avbotcomb.getParameters()
+
+if avbotcomb.checkForUpdates():
+	wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from https://forja.rediris.es/svn/cusl3-avbot/")
+	#sys.exit()
+
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-testEdit.put(str(random.randint(1000, 9999)), u'BOT - Arrancando robot')
+testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
 if not preferences['channel']:
 	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
 if not preferences['nickname']:
@@ -66,12 +92,22 @@ namespaces[2] = avbotcomb.namespaceTranslator(2)
 
 global statsDic
 statsDic={}
-statsDic[2]  = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-statsDic[12] = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
-statsDic[24] = {'V':0,'BL':0,'P':0,'S':0,'B':0,'M':0,'T':0,'D':0}
+statsDic[2]  = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
+statsDic[12] = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
+statsDic[24] = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
 
 global statsTimersDic
 statsTimersDic={'speed':0, 2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
+
+global existenceTimer
+existenceTimer = time.time()
+global existenceDelay
+existenceDelay = 60*10
+
+global existFile
+existFile = 'iexist.txt'
+global pidFile
+pidFile = 'mypid.txt'
 
 global userData
 userData={}
