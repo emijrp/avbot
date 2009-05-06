@@ -213,8 +213,11 @@ def mustBeReverted(editData, cleandata, userClass):
 				added=True
 	
 	if editData['score']<0 and ((editData['score']>-5 and len(cleandata)<editData['score']*-150) or editData['score']<-4): #densidad
-		#revertimos todas las ediciones del usuario en esa página
-		return revertAllEditsByUser(editData, userClass, regexplist)
+		if avbotglobals.preferences['testmode']:
+			return True, editData
+		else:
+			#revertimos todas las ediciones del usuario en esa página
+			return revertAllEditsByUser(editData, userClass, regexplist)
 	
 	return reverted, editData
 

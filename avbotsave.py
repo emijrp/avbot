@@ -38,7 +38,7 @@ def saveEdits(ediciones):
 def saveStats(stats, hours, site):
 	""" Guarda las estadísticas en una página con motivos históricos """
 	""" Saves statistics in a page for historical purposes """
-	resumen=u'V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]' % (stats[hours]['V'], stats[hours]['BL'], stats[hours]['P'], stats[hours]['S'], stats[hours]['B'], stats[hours]['M'], stats[hours]['T'], stats[hours]['D'])
+	resumen=u'V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]' % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['p'], stats[hours]['s'], stats[hours]['b'], stats[hours]['m'], stats[hours]['t'], stats[hours]['d'])
 	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
 	wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
-	wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['V'], stats[hours]['BL'], stats[hours]['P'], stats[hours]['S'], stats[hours]['B'], stats[hours]['M'], stats[hours]['T'], stats[hours]['D']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen))
+	wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['p'], stats[hours]['s'], stats[hours]['b'], stats[hours]['m'], stats[hours]['t'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen))

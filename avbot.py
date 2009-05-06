@@ -89,6 +89,17 @@ class BOT(SingleServerIRCBot):
 		
 		c.join(self.channel)
 	
+	def on_privmsg(self, c, e):
+		line = (e.arguments()[0])
+		line = avbotcomb.encodeLine(line)
+		nick = nm_to_n(e.source())
+		
+		f=open('privados.txt', 'a')
+		timestamp=time.strftime('%X %x')
+		line=timestamp+' '+nick+' > '+line+'\n'
+		f.write(line.encode('utf-8'))
+		f.close()
+	
 	def on_pubmsg(self, c, e):
 		""" Captura cada línea del canal de IRC """
 		""" Fetch and parse each line in the IRC channel """

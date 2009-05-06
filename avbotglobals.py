@@ -53,6 +53,7 @@ preferences = {
 	},
 	'context':       ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
 	'msg':           {},
+	'testmode':      False,
 }
 
 """ Header message """

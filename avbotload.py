@@ -169,7 +169,7 @@ def loadRegexpList():
 	
 	#Sorting list
 	dosort.sort()
-	ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:AVBOT/Lista del bien y del mal.css')
+	ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['botNick'])
 	ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
 	return error
