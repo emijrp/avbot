@@ -23,6 +23,7 @@
 #que se baje el codigo de rediris y lo compruebe con los fucheros locales
 #hacer independiente de verdad lo de 'v', 'bl', 'c', etc
 
+
 ## @package avbot
 # Main module\n
 # Módulo principal
