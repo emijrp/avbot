@@ -76,7 +76,7 @@ wikipedia.output(header)
 avbotcomb.getParameters()
 
 if avbotcomb.checkForUpdates():
-	wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from https://forja.rediris.es/svn/cusl3-avbot/")
+	wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
 	#sys.exit()
 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])

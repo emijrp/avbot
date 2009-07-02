@@ -319,7 +319,7 @@ def checkBlockInEnglishWikipedia(editData):
 	return comment, isProxy
 
 def checkForUpdates():
-	svn='https://forja.rediris.es/svn/cusl3-avbot/'
+	svn='http://avbot.googlecode.com/svn/trunk/'
 	f=urllib.urlopen(svn)
 	html=f.read()
 	m=re.compile(ur"\<file name\=\"([^\"]+?\.py)\" href\=\"\1\" \/\>").finditer(html)
