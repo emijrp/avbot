@@ -26,6 +26,7 @@ import time
 import random
 import sys
 import urllib
+import os
 
 # AVBOT modules
 import avbotglobals
@@ -333,3 +334,10 @@ def checkForUpdates():
 	f.close()
 	return False
 
+def existenceFile():
+	while True:
+		if not os.path.isfile(avbotglobals.existFile):
+			existFile=open(avbotglobals.existFile, 'w')
+			existFile.write(str("hi"))
+			existFile.close()
+		time.sleep(60) # debe ser menor que el time del cron / 2

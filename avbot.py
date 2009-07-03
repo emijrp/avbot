@@ -57,22 +57,6 @@ header =  u"Loading data for %s: language of %s project\n" % (avbotglobals.prefe
 header += u"%s edits for newbie users" % avbotglobals.preferences['newbie']
 wikipedia.output(header)
 
-""" Data loaders """
-avbotload.loadEdits()
-avbotload.loadSysops()
-avbotload.loadBots()
-avbotload.loadExclusions()
-
-"""Messages"""
-avbotload.loadMessages()
-wikipedia.output(u"Loaded %d messages..." % (len(avbotglobals.preferences['msg'].items())))
-
-"""Regular expresions for vandalism edits """
-error=avbotload.loadRegexpList()
-wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
-
-wikipedia.output(u'Joining to recent changes IRC channel...\n')
-
 class BOT(SingleServerIRCBot):
 	""" Clase BOT """
 	""" BOT class """
@@ -82,6 +66,23 @@ class BOT(SingleServerIRCBot):
 		"""  """
 		self.channel       = avbotglobals.preferences['channel']
 		self.nickname      = avbotglobals.preferences['nickname']
+		
+		""" Data loaders """
+		avbotload.loadEdits()
+		avbotload.loadSysops()
+		avbotload.loadBots()
+		avbotload.loadExclusions()
+		
+		"""Messages"""
+		avbotload.loadMessages()
+		wikipedia.output(u"Loaded %d messages..." % (len(avbotglobals.preferences['msg'].items())))
+		
+		"""Regular expresions for vandalism edits """
+		error=avbotload.loadRegexpList()
+		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
+		
+		wikipedia.output(u'Joining to recent changes IRC channel...\n')
+		
 		SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
 	
 	def on_welcome(self, c, e):
@@ -256,21 +257,31 @@ class BOT(SingleServerIRCBot):
 				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
 				avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
 				avbotglobals.statsDic[period]       = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0} #Blanking statistics for a new period
-		
-		#Creating existence file
-		if time.time()-avbotglobals.existenceTimer>=avbotglobals.existenceDelay:
-			existenceFile=open(avbotglobals.existFile, 'w')
-			existenceFile.close()
-			existenceTimer=time.time()
 
 def main():
 	""" Crea un objeto BOT y lo lanza """
 	""" Creates and launches a bot object """
 	
-	#Writing PID
-	PID=open(avbotglobals.pidFile, 'w')
-	PID.write(str(os.getpid()))
-	PID.close()
+	if os.path.isfile(avbotglobals.existFile):
+		os.system("rm %s" % avbotglobals.existFile)
+		wikipedia.output(u"Eliminado fichero %s" % avbotglobals.existFile)
+		sys.exit()
+	else:
+		try:
+			PID=open(avbotglobals.pidFile, 'r')
+			oldpid=PID.read(str(os.getpid()))
+			PID.close()
+			os.system("kill -9 %s" % oldpid)
+		except:
+			wikipedia.output(u"Hubo un error al intentar matar el proceso anterior")
+		
+		#Writing current PID
+		PID=open(avbotglobals.pidFile, 'w')
+		PID.write(str(os.getpid()))
+		PID.close()
+	
+	#launching existence file generator
+	thread.start_new_thread(avbotcomb.existenceFile,())
 	
 	#Starting bot...
 	bot = BOT()

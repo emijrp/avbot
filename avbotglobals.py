@@ -100,15 +100,10 @@ statsDic[24] = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
 global statsTimersDic
 statsTimersDic={'speed':0, 2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
 
-global existenceTimer
-existenceTimer = time.time()
-global existenceDelay
-existenceDelay = 60*10
-
 global existFile
-existFile = 'iexist.txt'
+existFile = 'avbotiexist.txt'
 global pidFile
-pidFile = 'mypid.txt'
+pidFile = 'avbotmypid.txt'
 
 global userData
 userData={}
