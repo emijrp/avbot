@@ -64,9 +64,9 @@ def watch(editData):
 	""" ¿Debe ser analizada esta página? """
 	""" Check if it may watch and analysis edit in editData """
 	
-	author=re.sub('_', ' ', editData['author']
+	author=re.sub('_', ' ', editData['author'])
 	pageTitle=re.sub('_', ' ', editData['pageTitle'])
-	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author), pageTitle))):
+	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author, pageTitle))):
 		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True
 	return False
@@ -195,16 +195,16 @@ def mustBeReverted(editData, cleandata, userClass):
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''
 		
-		#revertimos todas las ediciones del usuario
-		return revertAllEditsByUser(editData, userClass, regexplist)
+		return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 	
 	#vandalism or test edit?
+	regexplist=[]
 	editData['type']='c' #dummie, contrapeso
 	editData['details']=u''
 	
 	for k, v in avbotglobals.vandalRegexps.items():
 		m=v['compiled'].finditer(cleandata)
-		added=False #para que no se desborde el log
+		added=False #Avoid duplicate entries in the log
 		for i in m:
 			if avbotglobals.preferences['msg'][v['type']]['priority']>avbotglobals.preferences['msg'][editData['type']]['priority']:
 				editData['type']=v['type']
@@ -218,8 +218,58 @@ def mustBeReverted(editData, cleandata, userClass):
 		if avbotglobals.preferences['testmode']:
 			return True, editData
 		else:
-			#revertimos todas las ediciones del usuario en esa página
-			return revertAllEditsByUser(editData, userClass, regexplist)
+			return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+	
+	#anti-birthday
+	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', editData['pageTitle']):
+		if editData['namespace']==0:
+			regexplist=[]
+			enlaceexiste=False
+			anyoactual=datetime.date.today().year
+			sections=editData['newText'].split("==")
+			births=""
+			deaths=""
+			c=0
+			for section in sections:
+				if re.sub(ur"[ =]", ur"", section).lower()=="nacimientos" and len(sections)>c+1:
+					births=sections[c+1]
+				if re.sub(ur"[ =]", ur"", section).lower()=="fallecimientos" and len(sections)>c+1:
+					deaths=sections[c+1]
+				c+=1
+			
+			if births:
+				m=re.compile(ur'(?i)\* *\[?\[?(\d{4})\]?\]? *?[\:\-] *?[^\[]*?\[\[([^\|\]]*?)(\|[^\]]*?)?\]\]').finditer(cleandata)
+				for i in m: #controlar si se ha metido mas de un cumpleaños?
+					anyo=i.group(1)
+					enlace=i.group(2)
+					wikipedia.output(u'--->[[%s]] - [[%s]]' % (anyo, enlace))
+					wii={}
+					wii['es']=wikipedia.Page(avbotglobals.preferences['site'], u'%s' % enlace)
+					try:
+						if wii['es'].exists():
+							enlaceexiste=True
+					except:
+						pass
+				
+					if not enlaceexiste and (re.search(u'(?i)%s.*%s' % (anyo, enlace), births) or re.search(u'(?i)%s.*%s' % (anyo, enlace), deaths)): #poner anyos futuros en los acontecimientos es posible
+						if int(anyo)>int(anyoactual):
+							return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+							motivo=u'Fecha imposible (Año %s)' % anyo
+			
+					if not enlaceexiste and re.search(u'(?i)%s.*%s' % (anyo, enlace), births):
+						if int(anyo)>=int(anyoactual)-20:
+							#que chico mas precoz, comprobemos su relevancia
+							wii['en']=wikipedia.Page(wikipedia.Site('en', 'wikipedia'), u'%s' % enlace)
+							#wii['de']=wikipedia.Page(wikipedia.Site('de', 'wikipedia'), u'%s' % enlace)
+							#wii['fr']=wikipedia.Page(wikipedia.Site('fr', 'wikipedia'), u'%s' % enlace)
+							
+							#la inglesa da error a veces, gestionamos la excepcion
+							try:
+								if not wii['en'].exists():
+									return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+									motivo=u'Posible efeméride irrelevante'
+							except:
+								pass
 	
 	return reverted, editData
 
@@ -312,7 +362,7 @@ def editAnalysis(editData):
 		
 		# Must be analysed?
 		if not watch(editData):
-			wikipedia.output(u'[[%s]] no debe ser analizada' % editData['pageTitle'])
+			wikipedia.output(u'La edición en [[%s]] no debe ser analizada' % editData['pageTitle'])
 			return #Exit
 		
 		# Avoid analysis of excluded pages
