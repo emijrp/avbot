@@ -282,7 +282,7 @@ def cleanLine(line):
 def updateUserDataIfNeeded(editData):
 	if editData['userClass']!='anon':
 		if avbotglobals.userData['edits'].has_key(editData['author']):
-			if not random.randint(0,25) or avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']: #10 faces dice, true if zero or newbie
+			if not random.randint(0,25) or avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']: #X faces dice, true if zero or newbie
 				avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
 		else:
 			#Requesting edits number to server
