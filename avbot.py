@@ -46,7 +46,7 @@ import wikipedia, difflib
 
 """ AVBOT modules """
 import avbotglobals  #Shared info
-import avbotload     #Information and regexp loader
+import avbotload     #Data and regexp loader
 import avbotsave     #Saving info in files
 import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
@@ -54,7 +54,7 @@ import avbotcomb     #Trivia functions
 
 """ Continue header message """
 header =  u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
-header += u"%s edits for newbie users" % avbotglobals.preferences['newbie']
+header += u"Newbie users are those who have done %s edits or less" % avbotglobals.preferences['newbie']
 wikipedia.output(header)
 
 class BOT(SingleServerIRCBot):
@@ -82,7 +82,6 @@ class BOT(SingleServerIRCBot):
 		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
 		
 		wikipedia.output(u'Joining to recent changes IRC channel...\n')
-		
 		SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
 	
 	def on_welcome(self, c, e):

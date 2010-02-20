@@ -26,6 +26,7 @@ import random
 import sys
 import wikipedia
 import time
+import os
 
 """ AVBOT modules """
 import avbotcomb
@@ -42,7 +43,7 @@ preferences = {
 	'channel':       0,                    #RSS channel for recent changes in Wikipedia
 	'nickname':      0,                    #Bot nick in channel, with random numbers to avoid nick collisions
 	'port':          6667,                 #Port number
-	'logsDirectory': 'botlogs/',           #Directory reverts logs
+	'logsDirectory': 'botlogs',            #Directory reverts logs
 	'newbie':        25,                   #Who is a newbie user? How many edits?
 	'statsDelay':    60,                   #How man seconds between showing stats in screen
 	'colors':        {
@@ -148,3 +149,11 @@ parserRegexps={
 	#[[Especial:Log/move]] move  * Dhidalgo *  [[Macizo Etíope]] ha sido trasladado a [[Macizo etíope]]
 	'traslado':       re.compile(ur'(?i)\[\[Especial:Log/move\]\] +move +\* +(?P<usuario>.*?) +\* +\[\[(?P<origen>.*?)\]\] +ha sido trasladado a +\[\[(?P<destino>.*?)\]\]'),
 	}
+#Check logs directory
+if not os.path.exists(preferences['logsDirectory']):
+	wikipedia.output(u"Creating logs directory...")
+	os.system("mkdir %s" % (preferences['logsDirectory']))
+	if not os.path.exists(preferences['logsDirectory']):
+		wikipedia.output(u"Error creating directory")
+	
+

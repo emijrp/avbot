@@ -31,7 +31,7 @@ import avbotcomb
 
 def changedRegexpsList(dic1, dic2):
 	""" ¿Los dos diccionarios de expresiones regulares son distintos? """
-	""" Check if both dictionaries are the same """
+	""" Check if both dictionaries are not equal """
 	if len(dic1.items())!=len(dic2.items()):
 		return True
 	else:
