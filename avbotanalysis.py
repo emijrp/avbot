@@ -223,7 +223,7 @@ def mustBeReverted(editData, cleandata, userClass):
 	#anti-birthday
 	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', editData['pageTitle']):
 		if editData['namespace']==0:
-			regexplist=[]
+			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona?
 			enlaceexiste=False
 			anyoactual=datetime.date.today().year
 			sections=editData['newText'].split("==")
