@@ -64,7 +64,9 @@ def watch(editData):
 	""" ¿Debe ser analizada esta página? """
 	""" Check if it may watch and analysis edit in editData """
 	
-	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % re.sub('_', ' ', editData['author']), re.sub('_', ' ', editData['pageTitle'])))):
+	author=re.sub('_', ' ', editData['author']
+	pageTitle=re.sub('_', ' ', editData['pageTitle'])
+	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author), pageTitle))):
 		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True
 	return False
@@ -123,7 +125,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 	""" Revierte todas las ediciones de un usuario en un mismo artículo """
 	""" Revert all edits in a same article by a same author """
 	
-	#añadimos al control de vandalismos
+	#Add to vandalism control log
 	if avbotglobals.vandalControl.has_key(editData['author']):
 		avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexplist]
 	else:
@@ -147,7 +149,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 					if len(editData['pageHistory'])-1>=c+1:
 						if avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]):
 							if isSameVandalism(avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][2], regexplist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
-								#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, excepto si es muy baja
+								#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, ¿excepto si es muy baja?
 								break
 			
 			editData['stableid']=i[0]
@@ -156,23 +158,23 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			
 			updateStats(editData['type'])
 			
-			#restauramos version estable del articulo
+			#Restore previous version of page
 			editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 			
-			#avisamos al usuario
+			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1
 			avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 			
-			#guardamos log
+			#Save log for depuration purposes
 			log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
 			logentry=u'\n%s\nPage: [[%s]]\nDate: %s\nPoints: %d\nRegular expressions:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
 			log.write(logentry.encode('utf-8'))
 			log.close()
 			
-			#avisamos en WP:VEC
+			#Send message to admins board
 			blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
 			if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
-				#dentro de esta funcion se evita avisar mas de 1 vez
+				#Not send the message if vandals have been reported before
 				avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
 			
 			return True, editData
@@ -313,7 +315,7 @@ def editAnalysis(editData):
 			wikipedia.output(u'[[%s]] no debe ser analizada' % editData['pageTitle'])
 			return #Exit
 		
-		#Avoid analysis of excluded pages
+		# Avoid analysis of excluded pages
 		if avbotglobals.excludedPages.has_key(editData['pageTitle']):
 			wikipedia.output(u'[[%s]] está en la lista de exclusión' % editData['pageTitle'])
 			return #Exit
@@ -364,3 +366,4 @@ def editAnalysis(editData):
 			return
 	else:
 		wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
+

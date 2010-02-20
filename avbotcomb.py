@@ -37,6 +37,7 @@ import avbotsave
 def blockedUser(blocker, blocked, castigo):
 	""" Carga Vandalismo en curso y gestionar bloqueo  """
 	""" Load Vandalismo en curso and manage block """
+	
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
@@ -59,16 +60,9 @@ def blockedUser(blocker, blocked, castigo):
 				c+=1
 			
 			#reunimos los trozos de nuevo con ===
-			newvectext=u''
-			c=0
-			for trozo in trozos2:
-				if c!=0:
-					newvectext+=u'===%s' % trozo
-				else:
-					newvectext+=trozo
-				c+=1
+			newvectext="===".join(trozos2)
 			
-			#enviamos
+			#Updating vandalism board
 			if newvectext!=vectext:
 				#wikipedia.showDiff(vectext, newvectext)
 				pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
@@ -301,7 +295,7 @@ def updateUserDataIfNeeded(editData):
 def checkBlockInEnglishWikipedia(editData):
 	comment=""
 	isProxy=False
-	if re.search(ur'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', editData['author']): #es ip?
+	if re.search(ur'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', editData['author']): #Is it an IP?
 		enwiki=wikipedia.Site('en', 'wikipedia')
 		
 		data=enwiki.getUrl("/w/index.php?title=Special:BlockList&ip=%s" % editData['author'])

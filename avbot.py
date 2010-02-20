@@ -135,7 +135,7 @@ class BOT(SingleServerIRCBot):
 				avbotanalysis.updateStats('t')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
-				# Avoid to check our edits
+				#Avoid to check our edits
 				if editData['author'] == avbotglobals.preferences['botNick']: 
 					return #Exit
 				
