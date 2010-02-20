@@ -43,7 +43,7 @@ preferences = {
 	'channel':       0,                    #RSS channel for recent changes in Wikipedia
 	'nickname':      0,                    #Bot nick in channel, with random numbers to avoid nick collisions
 	'port':          6667,                 #Port number
-	'logsDirectory': 'botlogs',            #Directory reverts logs
+	'logsDirectory': 'botlogs',            #Directory reverts logs, not ending in /
 	'newbie':        25,                   #Who is a newbie user? How many edits?
 	'statsDelay':    60,                   #How man seconds between showing stats in screen
 	'colors':        {

@@ -164,8 +164,8 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 			
 			#guardamos log
-			log=open('%s%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
-			logentry=u'\n%s\nArtículo: [[%s]]\nFecha: %s\nPuntuación: %d\nExpresiones regulares:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
+			log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
+			logentry=u'\n%s\nPage: [[%s]]\nDate: %s\nPoints: %d\nRegular expressions:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
 			log.write(logentry.encode('utf-8'))
 			log.close()
 			
