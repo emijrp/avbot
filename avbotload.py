@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ def loadEdits():
 	""" Load user edits file """
 	newbie=avbotglobals.preferences['newbie']
 	ediciones={}
-	filename="ediciones.txt"
+	filename=avbotglobals.preferences['editsFilename']
 	try:
 		f=open(filename, "r")
 	except:
@@ -103,17 +103,18 @@ def loadMessages():
 	""" Carga preferencias sobre mensajes """
 	""" Load messages preferences """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Mensajes.css')
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Mensajes.css') #Fijo a Emijrp para los clones de es:
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
 			raw=p.get()
 	else:
-		botOwner=avbotglobals.preferences['botOwner']
+		ownerNick=avbotglobals.preferences['ownerNick']
 		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
-		wikipedia.output(u'<pre>\n\n#Introduce a message per line.\n\nV;;100;;Vandalismo;;User:%s/AvisoVandalismo.css;;\nBL;;50;;Blanqueo;;User:%s/AvisoBlanqueo.css;;\nP;;10;;Prueba;;User:%s/AvisoPrueba.css;;\n#dummie\nC;;-100;;Contrapeso;;User:%s/AvisoContrapeso.css;;\n\n</pre>' % (botOwner, botOwner, botOwner, botOwner))
+		wikipedia.output(u'<pre>\n\n#Introduce a message per line.\n\nV;;100;;Vandalismo;;User:%s/AvisoVandalismo.css;;\nBL;;50;;Blanqueo;;User:%s/AvisoBlanqueo.css;;\nP;;10;;Prueba;;User:%s/AvisoPrueba.css;;\n#dummie\nC;;-100;;Contrapeso;;User:%s/AvisoContrapeso.css;;\n\n</pre>' % (ownerNick, ownerNick, ownerNick, ownerNick))
 		wikipedia.output('A preferences page is needed. Please, look last bot edits.')
-		sys.exit()
+		if not avbotglobals.preferences['force']:
+			sys.exit()
 	
 	avbotglobals.preferences['msg']={} #empty
 	for l in raw.splitlines():
@@ -139,7 +140,8 @@ def loadRegexpList():
 	else:
 		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
 		wikipedia.output(u'#Introduce one regexp per line. Format: CLASS;;REGEXP;;POINTS;;')
-		sys.exit()
+		if not avbotglobals.preferences['force']:
+			sys.exit()
 		
 	c=0
 	error=u''
@@ -170,6 +172,7 @@ def loadRegexpList():
 	#Sorting list
 	#dejo de funcionar con la api?
 	#dosort.sort()
+	#if not avbotglobals.preferences['nosave']:
 	#ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['botNick'])
 	#ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
@@ -182,17 +185,18 @@ def reloadRegexpList(author, diff):
 	error=loadRegexpList()
 	ownerNick=avbotglobals.preferences['ownerNick']
 	p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % ownerNick)
-	if p.exists() and not re.search(ur"%s" % diff, p.get()):
-		if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
-			if error:
-				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+	if not avbotglobals.preferences['nosave']:
+		if p.exists() and not re.search(ur"%s" % diff, p.get()):
+			if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
+				if error:
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+				else:
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 			else:
-				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
-		else:
-			if error:
-				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
-			else:
-				p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+				if error:
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+				else:
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 	return
 
 def loadUserEdits(author):
@@ -226,7 +230,9 @@ def loadExclusions():
 	else:
 		wikipedia.output('A preferences page is needed in [[%s]]' % p.title())
 		wikipedia.output('Introduce an excluded page per line. Without [[]]')
-		sys.exit()
+		wikipedia.output('You can skip this with -force parameter')
+		if not avbotglobals.preferences['force']:
+			sys.exit()
 	
 	for l in raw.splitlines():
 		if len(l)>=1:

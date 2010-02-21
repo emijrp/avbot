@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,6 +55,9 @@ preferences = {
 	'context':       ur'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]',
 	'msg':           {},
 	'testmode':      False,
+	'nosave':        False,
+	'force':         False,
+	'editsFilename': 'edits.txt',
 }
 
 """ Header message """
@@ -63,14 +66,14 @@ header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
 header += u"This is free software, and you are welcome to redistribute it\n"
 header += u"under certain conditions. See license.\n\n"
 header += u"############################################################################\n"
-header += u"# Name:    AVBOT (AntiVandal BOT)                                          #\n"
-header += u"# Version: 1.1                                                             #\n"
+header += u"# Name:    AVBOT (Anti-Vandalism BOT)                                      #\n"
+header += u"# Version: 1.2                                                             #\n"
 header += u"# Tasks:   To revert vandalism, blanking and test edits                    #\n"
 header += u"#          To report vandalism waves attacks to admins                     #\n"
 header += u"#          To improve new articles (magic interwikis)                      #\n"
 header += u"#          To mark for deletion rubbish articles                           #\n"
 header += u"############################################################################\n\n"
-header += u"Parameters available (* obligatory): -lang, -family, -newbie, -botnick*, -statsdelay, -network, -channel, -ownernick*\n"
+header += u"Available parameters (* obligatory): -lang, -family, -newbie, -botnick*, -statsdelay, -network, -channel, -ownernick*, -nosave, -force\n"
 header += u"Example: python avbot.py -botnick:MyBot -ownernick:MyUser\n"
 wikipedia.output(header)
 
@@ -81,15 +84,18 @@ if avbotcomb.checkForUpdates():
 	#sys.exit()
 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
-testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
-testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
-testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
+if not preferences['nosave']:
+	testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
+	testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
 
 if not preferences['channel']:
 	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
 if not preferences['nickname']:
 	preferences['nickname'] = '%s%s' % (preferences['botNick'], str(random.randint(1000, 9999)))
+
+preferences['editsFilename']='%s-%s-edits.txt' % (preferences['language'], preferences['family'])
 
 global namespaces
 namespaces={}
@@ -105,9 +111,9 @@ global statsTimersDic
 statsTimersDic={'speed':0, 2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}
 
 global existFile
-existFile = 'avbotiexist.txt'
+existFile = '%s-%s-%s-exist.txt' % (preferences['language'], preferences['family'], preferences['botNick'])
 global pidFile
-pidFile = 'avbotmypid.txt'
+pidFile = '%s-%s-%s-mypid.txt' % (preferences['language'], preferences['family'], preferences['botNick'])
 
 global userData
 userData={}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,8 +31,10 @@ import avbotglobals
 import avbotcomb
 
 def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia):
-	""" Gestiona la página de Vandaliso en curso """
+	""" Gestiona la página de Vandalismo en curso """
 	""" Manage Vandalismo en curso page """
+	if avbotglobals.preferences['site'].lang!='es':
+		return
 	explanation=u""
 	report=u''
 	resume=u''
@@ -58,7 +60,8 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 			explanation+=u" (Posible proxy)"
 			resume+=u" (Posible proxy)"
 		report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
-	wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
+	if not avbotglobals.preferences['nosave']:
+		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
 
 def haveIRevertedThisVandalism(wtitle, diff):
 	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
@@ -119,14 +122,18 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		if wtext:
 			wtext+="\n\n"
 		wtext+=avisotexto
-		talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n))
+		if not avbotglobals.preferences['nosave']:
+			talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n))
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """
 	""" Send block message to an user """
+	if avbotglobals.preferences['site'].lang!='es':
+		return
 	aviso=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % blocked)
 	avisotexto=u""
 	if aviso.exists():
 		avisotexto+=u"%s\n\n" % aviso.get()
 	avisotexto+=u"{{subst:User:%s/AvisoBloqueo.css|%s}}" % (avbotglobals.preferences['ownerNick'], blocker)
-	aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))
+	if not avbotglobals.preferences['nosave']:
+		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))

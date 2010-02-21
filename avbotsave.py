@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import wikipedia
 def saveEdits(ediciones):
 	""" Guarda el número de ediciones de los usuarios en un fichero """
 	""" Saves user edits number in a file """
-	f=open('ediciones.txt', 'w')
+	f=open(avbotglobals.preferences['editsFilename'], 'w')
 	for k, v in ediciones.items():
 		try:
 			linea=u"%s;%s;\n" % (k, v)
@@ -40,5 +40,6 @@ def saveStats(stats, hours, site):
 	""" Saves statistics in a page for historical purposes """
 	resumen=u'V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]' % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['p'], stats[hours]['s'], stats[hours]['b'], stats[hours]['m'], stats[hours]['t'], stats[hours]['d'])
 	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
-	wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
-	wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['p'], stats[hours]['s'], stats[hours]['b'], stats[hours]['m'], stats[hours]['t'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen))
+	if not avbotglobals.preferences['nosave']:
+		wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
+		wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['p'], stats[hours]['s'], stats[hours]['b'], stats[hours]['m'], stats[hours]['t'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen))

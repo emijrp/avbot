@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,8 @@ def isRubbish(editData):
 						motive=u'Demasiado corto'
 		if destruir:
 			updateStats('d')
-			editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+			if not avbotglobals.preferences['nosave']:
+				editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
 			return True, motive
 	return False, motive
 
@@ -117,7 +118,8 @@ def improveNewArticle(editData):
 						pass
 				[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
 				if len(newnewText)>len(newText):
-					editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
+					if not avbotglobals.preferences['nosave']:
+						editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
 					return True, resumen
 	return False, u''
 
@@ -159,7 +161,8 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			updateStats(editData['type'])
 			
 			#Restore previous version of page
-			editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
+			if not avbotglobals.preferences['nosave']:
+				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 			
 			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1

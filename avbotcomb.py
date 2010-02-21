@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Antivandal bot for MediaWiki projects
+# AVBOT - Anti-Vandalism BOT for MediaWiki projects
 # Copyright (C) 2008 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ def blockedUser(blocker, blocked, castigo):
 			#Updating vandalism board
 			if newvectext!=vectext:
 				#wikipedia.showDiff(vectext, newvectext)
-				pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+				if not avbotglobals.preferences['nosave']:
+					pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
 				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
 			else:
 				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
@@ -73,7 +74,8 @@ def blockedUser(blocker, blocked, castigo):
 			#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
 			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
 				userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
-				userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
+				if not avbotglobals.preferences['nosave']:
+					userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
 				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
 			
 
@@ -87,7 +89,8 @@ def semiprotect(titulo, protecter):
 		else:
 			semitext=p.get()
 			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Pp\-semi\-template)', semitext):
-				p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
+				if not avbotglobals.preferences['nosave']:
+					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
 				wikipedia.output(u'\03{lightblue}Aviso: Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
@@ -234,6 +237,10 @@ def getParameters():
 			else:
 				avbotglobals.preferences['ownerNick'] = arg[11:]
 			obligatory-=1
+		elif arg.startswith('-nosave'):
+			avbotglobals.preferences['nosave'] = True
+		elif arg.startswith('-force'):
+			avbotglobals.preferences['force'] = True
 	
 	if obligatory:
 		wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
