@@ -139,7 +139,7 @@ def loadRegexpList():
 			raw=p.get()
 	else:
 		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
-		wikipedia.output(u'#Introduce one regexp per line. Format: CLASS;;REGEXP;;POINTS;;')
+		wikipedia.output(u'#Introduce one regexp per line. Format: REGEXP;;POINTS;;CLASS;;')
 		if not avbotglobals.preferences['force']:
 			sys.exit()
 		
