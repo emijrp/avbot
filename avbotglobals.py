@@ -128,11 +128,13 @@ parserRegexps={
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
 	#'borrado': re.compile(ur'(?i)\[\[...(?P<pageTitle>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
 	'borrado':        re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +«(?P<pageTitle>.*?)»\:'),
+	'categories':     re.compile(ur'(?i)\[\[ *(Category|Categoría) *\: *[^\]\n\r]+? *\]\]'),
 	'conflictivos':   re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *\}\}'),
 	'destruir':       re.compile(ur'(?i)\{\{ *destruir'),
 	#diffstylebegin y end va relacionado
 	'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),
 	'diffstyleend':   re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
+	'interwikis':     re.compile(ur'(?i)\[\[ *[a-z]{2} *\: *[^\]\|\n\r]+? *\]\]'),
 	'ip':             re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),
 	'firmas1':        re.compile(ur'<td class="diff-addedline"><div>([^<]*?)</div>'),
 	#sin title
@@ -155,5 +157,3 @@ if not os.path.exists(preferences['logsDirectory']):
 	os.system("mkdir %s" % (preferences['logsDirectory']))
 	if not os.path.exists(preferences['logsDirectory']):
 		wikipedia.output(u"Error creating directory")
-	
-

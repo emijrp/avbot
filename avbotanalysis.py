@@ -144,7 +144,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 								#evitamos revertir dos veces el mismo blanqueo, misma puntuacion
 								break
 				#excepto si es un vandalismo con otras palabras
-				if editData['type']=='v' or editData['type']=='p':
+				elif editData['type']=='v' or editData['type']=='p':
 					regexplist=avbotglobals.vandalControl[editData['author']][editData['diff']][2]
 					if len(editData['pageHistory'])-1>=c+1:
 						if avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]):
@@ -214,7 +214,20 @@ def mustBeReverted(editData, cleandata, userClass):
 			return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 		"""
 	#TODO: Blanking line like this, All glory to the hypnoto
+	
+	#Interwiki and categories blanking. Example: http://es.wikipedia.org/w/index.php?title=Reciclaje&diff=34127808&oldid=34116543
+	oldCategoriesNumber=len(re.findall(avbotglobals.parserRegexps['categories'], editData['oldText']))
+	newCategoriesNumber=len(re.findall(avbotglobals.parserRegexps['categories'], editData['newText']))
+	oldInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['oldText']))
+	newInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['newText']))
+	
+	if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2: #10 es un número conservador?
+		editData['type']='bl'
+		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
+		editData['details']=u''
 		
+		return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+	
 	#Vandalism or test edit?
 	regexplist=[]
 	editData['type']='c' #dummie, contrapeso
@@ -238,10 +251,10 @@ def mustBeReverted(editData, cleandata, userClass):
 		else:
 			return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 	
-	#anti-birthday
+	#Anti-birthday
 	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', editData['pageTitle']):
 		if editData['namespace']==0:
-			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona?
+			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona? o depende del editData['type']?
 			enlaceexiste=False
 			anyoactual=datetime.date.today().year
 			sections=editData['newText'].split("==")
