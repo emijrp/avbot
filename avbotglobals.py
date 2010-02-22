@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # AVBOT - Anti-Vandalism BOT for MediaWiki projects
-# Copyright (C) 2008 Emilio José Rodríguez Posada
+# Copyright (C) 2008-2010 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,7 @@ preferences = {
 }
 
 """ Header message """
-header  = u"\nAVBOT Copyright (C) 2008 Emilio José Rodríguez Posada\n"
+header  = u"\nAVBOT Copyright (C) 2008-2010 Emilio José Rodríguez Posada\n"
 header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
 header += u"This is free software, and you are welcome to redistribute it\n"
 header += u"under certain conditions. See license.\n\n"
@@ -100,6 +100,7 @@ preferences['editsFilename']='%s-%s-edits.txt' % (preferences['language'], prefe
 global namespaces
 namespaces={}
 namespaces[2] = avbotcomb.namespaceTranslator(2)
+namespaces[3] = avbotcomb.namespaceTranslator(3)
 
 global statsDic
 statsDic={}

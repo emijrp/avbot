@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # AVBOT - Anti-Vandalism BOT for MediaWiki projects
-# Copyright (C) 2008 Emilio José Rodríguez Posada
+# Copyright (C) 2008-2010 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -195,7 +195,12 @@ def getParameters():
 	
 	obligatory=2
 	for arg in args[1:]:
-		if arg.startswith('-lang'):
+		if arg.startswith('-language'):
+			if len(arg) == 9:
+				avbotglobals.preferences['language'] = wikipedia.input(u'Please enter the language (es, en, de, fr, ...):')
+			else:
+				avbotglobals.preferences['language'] = arg[10:]
+		elif arg.startswith('-lang'):
 			if len(arg) == 5:
 				avbotglobals.preferences['language'] = wikipedia.input(u'Please enter the language (es, en, de, fr, ...):')
 			else:
@@ -238,9 +243,14 @@ def getParameters():
 				avbotglobals.preferences['ownerNick'] = arg[11:]
 			obligatory-=1
 		elif arg.startswith('-nosave'):
-			avbotglobals.preferences['nosave'] = True
+			if len(arg) == 7:
+				avbotglobals.preferences['nosave'] = True
+		elif arg.startswith('-notsave'):
+			if len(arg) == 8:
+				avbotglobals.preferences['nosave'] = True
 		elif arg.startswith('-force'):
-			avbotglobals.preferences['force'] = True
+			if len(arg) == 6:
+				avbotglobals.preferences['force'] = True
 	
 	if obligatory:
 		wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")

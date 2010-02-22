@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # AVBOT - Anti-Vandalism BOT for MediaWiki projects
-# Copyright (C) 2008 Emilio José Rodríguez Posada
+# Copyright (C) 2008-2010 Emilio José Rodríguez Posada
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -132,7 +132,10 @@ def loadRegexpList():
 	""" Carga lista de expresiones regulares """
 	""" Load regular expression list """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Lista del bien y del mal.css')
+	goodandevil=u'Lista del bien y del mal.css'
+	if avbotglobals.preferences['site'].lang=='en':
+		goodandevil=u'Good and evil list.css'
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil))
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -176,6 +179,8 @@ def loadRegexpList():
 	#ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['botNick'])
 	#ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
+	wikipedia.output(u'%s\n Loaded %s regular expresions\n%s' % ('-'*50, len(avbotglobals.vandalRegexps.items()), '-'*50))
+	
 	return error
 
 def reloadRegexpList(author, diff):
@@ -184,8 +189,11 @@ def reloadRegexpList(author, diff):
 	oldVandalRegexps=avbotglobals.vandalRegexps
 	error=loadRegexpList()
 	ownerNick=avbotglobals.preferences['ownerNick']
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User talk:%s/Lista del bien y del mal.css' % ownerNick)
-	if not avbotglobals.preferences['nosave']:
+	goodandevil=u'Lista del bien y del mal.css'
+	if avbotglobals.preferences['site'].lang=='en':
+		goodandevil=u'Good and evil list.css'
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil))
+	if not avbotglobals.preferences['nosave'] and avbotglobals.preferences['site'].lang=='es':
 		if p.exists() and not re.search(ur"%s" % diff, p.get()):
 			if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
 				if error:

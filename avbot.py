@@ -140,7 +140,12 @@ class BOT(SingleServerIRCBot):
 					return #Exit
 				
 				#Reload vandalism regular expresions
-				if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
+				goodandevil=u'Lista del bien y del mal.css'
+				if avbotglobals.preferences['site'].lang=='en':
+					goodandevil=u'Good and evil list.css'
+				#if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
+				#	avbotload.reloadRegexpList(editData['author'], editData['diff'])
+				if re.search(ur'%s\:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil), editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list
