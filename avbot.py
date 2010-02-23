@@ -22,7 +22,7 @@
 #que no conflicteen las subpáginas de estadisticas
 #que se baje el codigo de rediris y lo compruebe con los fucheros locales
 #hacer independiente de verdad lo de 'v', 'bl', 'c', etc
-
+#detectar SO para evitar los errores cuando intenta hacer rm
 
 ## @package avbot
 # Main module\n
