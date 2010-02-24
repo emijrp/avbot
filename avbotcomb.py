@@ -164,7 +164,7 @@ def magicInterwiki(page, resumen, idioma):
 def namespaceTranslator(namespace):
 	""" Carga espacios de nombres por idioma """
 	""" Load namespace per language """
-	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges&limit=0")
+	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges")
 	data=data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
 	m=re.compile(ur'<option value="([1-9]\d*)">(.*?)</option>').finditer(data)
 	wikipedianm=u''
