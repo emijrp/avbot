@@ -346,7 +346,7 @@ def cleandiff(pageTitle, data):
 	""" Extrae el texto que ha sido insertado en la edición """
 	""" Clean downloaded diff page """
 	
-	marker=';;;'
+	marker=' ; '
 	clean=marker
 	
 	trozos=data.split('<tr>')[2:] #el 1 contiene el numero de linea, nos lo saltamos
@@ -370,7 +370,7 @@ def cleandiff(pageTitle, data):
 		except:
 			wikipedia.output(u'ERROR: %s' % trozo)
 	
-	clean=re.sub(ur'[\n\r]', marker, clean)
+	clean=re.sub(ur'[\n\r]', ur' ', clean) #no new lines
 	
 	#if len(clean)<3000:
 	#	wikipedia.output(clean)
