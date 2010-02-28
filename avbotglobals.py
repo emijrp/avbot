@@ -57,6 +57,7 @@ preferences = {
 	'testmode':      False,
 	'nosave':        False,
 	'force':         False,
+	'trial':         False,
 	'editsFilename': 'edits.txt',
 }
 

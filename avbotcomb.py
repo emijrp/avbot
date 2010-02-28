@@ -182,7 +182,7 @@ def resumeTranslator(editData):
 	type=editData['type']
 	
 	if avbotglobals.preferences['language']=='en':
-		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+		resume=u'BOT - Possible %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	elif avbotglobals.preferences['language']=='es':
 		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	
@@ -251,6 +251,9 @@ def getParameters():
 		elif arg.startswith('-force'):
 			if len(arg) == 6:
 				avbotglobals.preferences['force'] = True
+		elif arg.startswith('-trial'):
+			if len(arg) == 6:
+				avbotglobals.preferences['trial'] = True
 	
 	if obligatory:
 		wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
@@ -352,3 +355,9 @@ def existenceFile():
 			existFile.write(str("hi"))
 			existFile.close()
 		time.sleep(60) # debe ser menor que el time del cron / 2
+
+"""
+def put(pageobject, newtext, summary):
+	if not avbotglobals.preferences['nosave']:
+		pageobject.put(newtext, summary)
+"""

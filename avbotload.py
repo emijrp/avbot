@@ -103,7 +103,10 @@ def loadMessages():
 	""" Carga preferencias sobre mensajes """
 	""" Load messages preferences """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Mensajes.css') #Fijo a Emijrp para los clones de es:
+	tras="Mensajes"
+	if avbotglobals.preferences['language']!='es':
+		tras="Messages"
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/%s.css' % tras) #Fijo a Emijrp para los clones de es:
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -118,6 +121,7 @@ def loadMessages():
 	
 	avbotglobals.preferences['msg']={} #empty
 	for l in raw.splitlines():
+		l=l.strip()
 		if len(l)>=3: #evitamos lineas demasiado pequenas
 			if l[0]=='#' or l[0]=='<':
 				continue
@@ -153,6 +157,7 @@ def loadRegexpList():
 	dosort=[]
 	for l in raw.splitlines():
 		c+=1
+		l=l.strip()
 		if len(l)>=12: #Avoid short dangerous regexps
 			if l=='<pre>' or l=='</pre>': #Skip preformatted labels
 				continue
@@ -230,7 +235,10 @@ def loadExclusions():
 	""" Carga lista de páginas excluidas """
 	""" Load excluded pages list """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Exclusiones.css' % avbotglobals.preferences['ownerNick'])
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/Exclusiones.css')
+	tras="Exclusiones"
+	if avbotglobals.preferences['language']!='es':
+		tras="Exclusions"
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/%s.css' % tras)
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -243,6 +251,7 @@ def loadExclusions():
 			sys.exit()
 	
 	for l in raw.splitlines():
+		l=l.strip()
 		if len(l)>=1:
 			if l[0]=='#' or l[0]=='<':
 				continue

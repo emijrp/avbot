@@ -79,48 +79,50 @@ def isRubbish(editData):
 	motive=u'Otros'
 	score=0
 	
-	if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
-		if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
-			if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
-				for k, v in avbotglobals.vandalRegexps.items():
-					m=v['compiled'].finditer(editData['newText'])
-					for i in m:
-						score+=v['score']
-				
-				if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
-					destruir=True
-					motive=u'Vandalismo'
-				if len(editData['newText'])<=75 and not destruir:
-					if not re.search(ur'\[', editData['newText']):
+	if avbotglobals.preferences['language']=='es':
+		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
+			if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+				if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
+					for k, v in avbotglobals.vandalRegexps.items():
+						m=v['compiled'].finditer(editData['newText'])
+						for i in m:
+							score+=v['score']
+					
+					if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
 						destruir=True
-						motive=u'Demasiado corto'
-		if destruir:
-			updateStats('d')
-			if not avbotglobals.preferences['nosave']:
-				editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
-			return True, motive
+						motive=u'Vandalismo'
+					if len(editData['newText'])<=75 and not destruir:
+						if not re.search(ur'\[', editData['newText']):
+							destruir=True
+							motive=u'Demasiado corto'
+			if destruir:
+				updateStats('d')
+				if not avbotglobals.preferences['nosave']:
+					editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+				return True, motive
 	return False, motive
 
 def improveNewArticle(editData):
 	""" Intenta mejorar el artículo según unos consejos básicos del manual de estilo """
 	""" Make some changes in the new article to improve it """
 	
-	newText=editData['page'].get()
-	if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
-		if not re.search(ur'(?i)\{\{ *(destruir|plagio|copyvio)|redirect', newText): #descarta demasiado? destruir|plagio|copyvio
-			if len(newText)>=500:
-				resumen=u''
-				newnewText=u''
-				if not editData['page'].interwiki():
-					try:
-						[newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
-					except:
-						pass
-				[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
-				if len(newnewText)>len(newText):
-					if not avbotglobals.preferences['nosave']:
-						editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
-					return True, resumen
+	if avbotglobals.preferences['language']=='es':
+		newText=editData['page'].get()
+		if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+			if not re.search(ur'(?i)\{\{ *(destruir|plagio|copyvio)|redirect', newText): #descarta demasiado? destruir|plagio|copyvio
+				if len(newText)>=500:
+					resumen=u''
+					newnewText=u''
+					if not editData['page'].interwiki():
+						try:
+							[newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
+						except:
+							pass
+					[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
+					if len(newnewText)>len(newText):
+						if not avbotglobals.preferences['nosave']:
+							editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
+						return True, resumen
 	return False, u''
 
 def revertAllEditsByUser(editData, userClass, regexplist):
@@ -160,13 +162,14 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			
 			updateStats(editData['type'])
 			
-			#Restore previous version of page
+			#Restore previous version of the page
 			if not avbotglobals.preferences['nosave']:
 				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 			
 			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1
-			avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
+			if not avbotglobals.preferences['nosave']:
+				avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 			
 			#Save log for depuration purposes
 			log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
@@ -175,10 +178,18 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			log.close()
 			
 			#Send message to admins board
-			blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
-			if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
-				#Not send the message if vandals have been reported before
-				avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
+			if not avbotglobals.preferences['nosave']:
+				blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
+				if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
+					#Not send the message if vandals have been reported before
+					avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
+			
+			#Trial run?
+			if avbotglobals.preferences['trial']:
+				type=editData['type']
+				msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']))
+				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
 			
 			return True, editData
 		c+=1
@@ -233,7 +244,12 @@ def mustBeReverted(editData, cleandata, userClass):
 	
 	#Vandalism or test edit?
 	regexplist=[]
-	editData['type']='c' #dummie, contrapeso
+	editData['type']='' #dummie, contrapeso
+	priority=99999999
+	for type, msgprop in avbotglobals.preferences['msg'].items():
+		if msgprop['priority']<priority:
+			editData['type']=type
+			priority=msgprop['priority']
 	editData['details']=u''
 	
 	for k, v in avbotglobals.vandalRegexps.items():

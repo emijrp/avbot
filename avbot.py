@@ -149,13 +149,13 @@ class BOT(SingleServerIRCBot):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list
-				if re.search(ur'%s\:%s\/Exclusiones\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
+				if re.search(ur'%s\:%s\/(Exclusiones|Exclusions)\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 					avbotload.loadExclusions()
 				
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 				
 				#Check resume for reverts
-				if re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!='Usuario:AVBOT/Errores/Automático':
+				if avbotglobals.preferences['language']=='es' and re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!='Usuario:AVBOT/Errores/Automático':
 					if not avbotglobals.preferences['nosave']:
 						wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:AVBOT/Errores/Automático')
 						wiii.put(u'%s\n# [[%s]], {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, http://%s.wikipedia.org/w/index.php?diff=%s&oldid=%s, {{u|%s}}' % (wiii.get(), editData['pageTitle'], avbotglobals.preferences['language'], editData['diff'], editData['oldid'], editData['author']), u'BOT - Informe automático. [[User:%s|%s]] ha revertido a [[User:%s|%s]] en [[%s]]' % (editData['author'], editData['author'], avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick'], editData['pageTitle']))
@@ -165,8 +165,9 @@ class BOT(SingleServerIRCBot):
 				editData['pageTitle']=m.group('pageTitle')
 				
 				#Avoid analysis of excluded pages
-				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-					return #Exit
+				for exclusion, z in avbotglobals.excludedPages.items():
+					if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+						return #Exit
 				
 				editData['diff']=editData['oldid']=0
 				editData['author']=m.group('author')
