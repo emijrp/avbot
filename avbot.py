@@ -182,10 +182,6 @@ class BOT(SingleServerIRCBot):
 					editData['minor']=True
 				editData['resume']=u''
 				
-				#Avoid analysis of excluded pages
-				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-					return #Exit
-				
 				avbotanalysis.updateStats('t')
 				avbotglobals.statsTimersDic['speed'] += 1
 				

@@ -346,7 +346,7 @@ def cleandiff(pageTitle, data):
 	""" Extrae el texto que ha sido insertado en la edición """
 	""" Clean downloaded diff page """
 	
-	marker=' ; '
+	marker=' ; ' #no poner ;;; porque da falsos positivos con regexp de repetición de caracteres
 	clean=marker
 	
 	trozos=data.split('<tr>')[2:] #el 1 contiene el numero de linea, nos lo saltamos
@@ -416,9 +416,10 @@ def editAnalysis(editData):
 			return #Exit
 		
 		# Avoid analysis of excluded pages
-		if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-			wikipedia.output(u'[[%s]] está en la lista de exclusión' % editData['pageTitle'])
-			return #Exit
+		for exclusion, z in avbotglobals.excludedPages.items():
+			if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+				wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
+				return #Exit
 		
 		# Avoid to check our edits
 		if editData['author'] == avbotglobals.preferences['botNick']: 
