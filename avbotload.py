@@ -167,7 +167,7 @@ def loadRegexpList():
 			l=l.lower() #Be careful with LoadMessages(), always lower or always upper
 			dosort.append(l)
 			try:
-				l=re.sub(ur"(?im)^(.*?[^\\])\#.*?$", ur"\1", l)#Clean inline comments
+				l=re.sub(ur"(?im)^([^\#]*?)\#[^\n\r]*?$", ur"\1", l)#Clean inline comments
 				t=l.split(';;')
 				type=t[2]
 				reg=t[0]
@@ -255,6 +255,7 @@ def loadExclusions():
 		if len(l)>=1:
 			if l[0]=='#' or l[0]=='<':
 				continue
+			l=re.sub(ur"(?im)^([^\#]*?)\#[^\n\r]*?$", ur"\1", l)#Clean inline comments
 			t=l.split(';;')
 			exclusion=t[0]
 			if not avbotglobals.excludedPages.has_key(exclusion):
