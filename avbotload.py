@@ -162,7 +162,8 @@ def loadRegexpList():
 	avbotglobals.vandalRegexps={}
 	dontsort=[]
 	dosort=[]
-	for l in raw.splitlines():
+	rawlines=raw.splitlines()
+	for l in rawlines:
 		c+=1
 		l=l.strip()
 		if len(l)>=12: #Avoid short dangerous regexps
@@ -182,7 +183,7 @@ def loadRegexpList():
 				regex=ur'%s%s%s' % (avbotglobals.preferences['context'], reg, avbotglobals.preferences['context'])
 				avbotglobals.vandalRegexps[reg]={'type':type, 'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
 			except:
-				error+=u'** Regexp error: Line: %d\n' % c
+				error+=u'** Regexp error: Line: %d	%s\n' % (c, rawlines[c])
 	
 	#Sorting list
 	#dejo de funcionar con la api?
@@ -191,7 +192,7 @@ def loadRegexpList():
 	#ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['botNick'])
 	#ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
-	wikipedia.output(u'%s\n Loaded %s regular expresions\n%s' % ('-'*50, len(avbotglobals.vandalRegexps.items()), '-'*50))
+	wikipedia.output(u'\nLoaded %s regular expresions...' % (len(avbotglobals.vandalRegexps.items())))
 	
 	return error
 
