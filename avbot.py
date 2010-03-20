@@ -79,7 +79,7 @@ class BOT(SingleServerIRCBot):
 		
 		"""Regular expresions for vandalism edits """
 		error=avbotload.loadRegexpList()
-		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
+		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...\n%s" % (len(avbotglobals.vandalRegexps.items()), error))
 		
 		wikipedia.output(u'Joining to recent changes IRC channel...\n')
 		SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
@@ -148,7 +148,7 @@ class BOT(SingleServerIRCBot):
 				if re.search(ur'%s\:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil), editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
-				#Reload exclusion list
+				#Reload exclusion list #fix hacer independiente localization
 				if re.search(ur'%s\:%s\/(Exclusiones|Exclusions)\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 					avbotload.loadExclusions()
 				

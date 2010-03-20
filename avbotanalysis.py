@@ -66,6 +66,7 @@ def watch(editData):
 	
 	author=re.sub('_', ' ', editData['author'])
 	pageTitle=re.sub('_', ' ', editData['pageTitle'])
+	#cosas que no aparezcan en la lista de exclusiones pueden verse filtradas por este if, explicarlo en algún sitio? #fix
 	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author, pageTitle))):
 		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True

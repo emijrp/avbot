@@ -103,10 +103,15 @@ def loadMessages():
 	""" Carga preferencias sobre mensajes """
 	""" Load messages preferences """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Mensajes.css' % avbotglobals.preferences['ownerNick'])
-	tras="Mensajes"
-	if avbotglobals.preferences['language']!='es':
-		tras="Messages"
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/%s.css' % tras) #Fijo a Emijrp para los clones de es:
+	tras=u'Mensajes.css'
+	if avbotglobals.preferences['site'].lang=='en':
+		tras=u'Messages.css'
+	elif avbotglobals.preferences['site'].lang=='pt':
+		tras=u'Mensagens.css'
+	if avbotglobals.preferences['site'].lang=='es':
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:Emijrp/%s' % (avbotglobals.namespaces[2], tras)) #Fijo a Emijrp para los clones de es:
+	else:
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], tras)) 
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -139,6 +144,8 @@ def loadRegexpList():
 	goodandevil=u'Lista del bien y del mal.css'
 	if avbotglobals.preferences['site'].lang=='en':
 		goodandevil=u'Good and evil list.css'
+	elif avbotglobals.preferences['site'].lang=='pt':
+		goodandevil=u'Expressões.css'
 	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil))
 	raw=''
 	if p.exists():
@@ -175,7 +182,7 @@ def loadRegexpList():
 				regex=ur'%s%s%s' % (avbotglobals.preferences['context'], reg, avbotglobals.preferences['context'])
 				avbotglobals.vandalRegexps[reg]={'type':type, 'compiled':re.compile(ur'(?im)%s' % regex), 'score':score}
 			except:
-				error+=u'** Error en regexp: Línea: %d\n' % c
+				error+=u'** Regexp error: Line: %d\n' % c
 	
 	#Sorting list
 	#dejo de funcionar con la api?
@@ -197,7 +204,9 @@ def reloadRegexpList(author, diff):
 	goodandevil=u'Lista del bien y del mal.css'
 	if avbotglobals.preferences['site'].lang=='en':
 		goodandevil=u'Good and evil list.css'
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil))
+	elif avbotglobals.preferences['site'].lang=='pt':
+		goodandevil=u'Expressões.css'
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil)) #[3] porque es User talk:
 	if not avbotglobals.preferences['nosave'] and avbotglobals.preferences['site'].lang=='es':
 		if p.exists() and not re.search(ur"%s" % diff, p.get()):
 			if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
@@ -235,10 +244,13 @@ def loadExclusions():
 	""" Carga lista de páginas excluidas """
 	""" Load excluded pages list """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Exclusiones.css' % avbotglobals.preferences['ownerNick'])
-	tras="Exclusiones"
-	if avbotglobals.preferences['language']!='es':
-		tras="Exclusions"
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'User:Emijrp/%s.css' % tras)
+	tras=u'Exclusiones.css'
+	if avbotglobals.preferences['site'].lang=='en':
+		tras=u'Exclusions.css'
+	elif avbotglobals.preferences['site'].lang=='pt':
+		tras=u'Exclusões.css'
+	ownerNick=avbotglobals.preferences['ownerNick']
+	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], ownerNick, tras))
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
