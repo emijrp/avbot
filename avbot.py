@@ -23,6 +23,7 @@
 #que se baje el codigo de rediris y lo compruebe con los fucheros locales
 #hacer independiente de verdad lo de 'v', 'bl', 'c', etc
 #detectar SO para evitar los errores cuando intenta hacer rm
+#fix http://pt.wikipedia.org/w/index.php?title=Livro_Estrelas_cadentes&diff=19353599&oldid=19348430
 
 ## @package avbot
 # Main module\n

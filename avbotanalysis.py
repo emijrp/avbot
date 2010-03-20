@@ -413,7 +413,7 @@ def editAnalysis(editData):
 		
 		# Must be analysed?
 		if not watch(editData):
-			wikipedia.output(u'La edición en [[%s]] no debe ser analizada' % editData['pageTitle'])
+			wikipedia.output(u'[[%s]] edit must no be checked' % editData['pageTitle'])
 			return #Exit
 		
 		# Avoid analysis of excluded pages
