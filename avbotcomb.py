@@ -40,44 +40,48 @@ def blockedUser(blocker, blocked, castigo):
 	
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
-	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
-	#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
-	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
-	if pvec.exists():
-		if pvec.isRedirectPage():
-			return 0
-		else:
-			vectext=pvec.get()
-			trozos=trozos2=vectext.split('===')
-			c=0
-			for trozo in trozos:
-				if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
-					wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
-					arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
-					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
-						break
-				c+=1
-			
-			#reunimos los trozos de nuevo con ===
-			newvectext="===".join(trozos2)
-			
-			#Updating vandalism board
-			if newvectext!=vectext:
-				#wikipedia.showDiff(vectext, newvectext)
-				if not avbotglobals.preferences['nosave']:
-					pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
-				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
+	if avbotglobals.preferences['language']=='es':
+		#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
+		#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
+		pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
+		if pvec.exists():
+			if pvec.isRedirectPage():
+				return 0
 			else:
-				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
-			
-			#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
-			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
-				userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
-				if not avbotglobals.preferences['nosave']:
-					userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
-				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
-			
+				vectext=pvec.get()
+				trozos=trozos2=vectext.split('===')
+				c=0
+				for trozo in trozos:
+					if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
+						wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
+						arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
+						if re.search(arellenar, trozos2[c+1]):
+							trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
+							break
+					c+=1
+				
+				#reunimos los trozos de nuevo con ===
+				newvectext="===".join(trozos2)
+				
+				#Updating vandalism board
+				if newvectext!=vectext:
+					#wikipedia.showDiff(vectext, newvectext)
+					if not avbotglobals.preferences['nosave']:
+						pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+					wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
+				else:
+					wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
+				
+				#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
+				"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
+					userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
+					if not avbotglobals.preferences['nosave']:
+						userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
+					wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
+	elif avbotglobals.preferences['language']=='pt':
+		aaaaa=0
+		#here andré
+		
 
 def semiprotect(titulo, protecter):
 	""" Pone la plantilla {{semiprotegido}} si no la tiene ya """
