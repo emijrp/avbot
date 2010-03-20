@@ -42,7 +42,7 @@ def blockedUser(blocker, blocked, castigo):
 	blocked_=re.sub(u' ', u'_', blocked)
 	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
 	#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
-	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Pedidos a administradores/Pedidos de bloqueio')
+	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
 	if pvec.exists():
 		if pvec.isRedirectPage():
 			return 0
@@ -90,7 +90,7 @@ def semiprotect(titulo, protecter):
 			semitext=p.get()
 			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Pp\-semi\-template)', semitext):
 				if not avbotglobals.preferences['nosave']:
-					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Adicionando {{Semiprotegida|pequeño=sí}} a página recém semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
+					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
 				wikipedia.output(u'\03{lightblue}Aviso: Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
@@ -99,8 +99,8 @@ def vtee(text, resumen):
 	""" Algunos cambios menores según el manual de estilo """
 	""" Minor changes from style manual """
 	newtext=text
-	newtext=re.sub(ur'(?i)=(\s*)(L[íi]gações?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Ligações externas\3=', newtext)
-	newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv][ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Ver tambén\3=', newtext)
+	newtext=re.sub(ur'(?i)=(\s*)(v[íi]nculos?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Enlaces externos\3=', newtext)
+	newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv]i[ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Véase también\3=', newtext)
 	if text==newtext:
 		return newtext, resumen
 	else:
@@ -157,7 +157,7 @@ def magicInterwiki(page, resumen, idioma):
 	elif idioma=='de':
 		magicInterwiki(page, resumen, 'fr')
 	elif idioma=='fr':
-		magicInterwiki(page, resumen, 'es')
+		magicInterwiki(page, resumen, 'pt')
 	else:
 		return nuevo, resumen
 
@@ -181,10 +181,15 @@ def resumeTranslator(editData):
 	resume=u''
 	type=editData['type']
 
-	if avbotglobals.preferences['language']=='en':
-		resume=u'BOT - %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-	elif avbotglobals.preferences['language']=='es':
+	if avbotglobals.preferences['language']=='es':
 		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+	else:
+		resume=u'BOT - Possible %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+
+    if avbotglobals.preferences['language']=='pt':
+		resume=u'BOT - Possível %s de [[Special:Contributions/%s|%s]], revertendo para a ultima edição %s de [[User:%s|%s]]. ¿[[User:Aleph Bot/Erros|Ocorreu um erro?]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+	else:
+		resume=u'BOT - Possível %s por [[Special:Contributions/%s|%s]], revertendo para a edição %s de [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 
 	return resume
 
@@ -251,6 +256,9 @@ def getParameters():
 		elif arg.startswith('-force'):
 			if len(arg) == 6:
 				avbotglobals.preferences['force'] = True
+		elif arg.startswith('-trial'):
+			if len(arg) == 6:
+				avbotglobals.preferences['trial'] = True
 
 	if obligatory:
 		wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
@@ -323,7 +331,7 @@ def checkBlockInEnglishWikipedia(editData):
 		if len(data)>1:
 			m=re.compile(ur"</span> *\((?P<expires>[^<]*?)\) *<span class=\"comment\">\((?P<comment>[^<]*?)\)</span>").finditer(data[1])
 			for i in m:
-				comment=u"''Bloqueado na Wikipedia em inglés ([http://en.wikipedia.org/w/index.php?title=Special:BlockList&ip=%s bloqueo vigente], [http://en.wikipedia.org/w/index.php?title=Special:Log&type=block&page=User:%s historial de bloqueios]): %s''" % (editData['author'], editData['author'], i.group("expires"))
+				comment=u"''Bloqueado en Wikipedia en inglés ([http://en.wikipedia.org/w/index.php?title=Special:BlockList&ip=%s bloqueo vigente], [http://en.wikipedia.org/w/index.php?title=Special:Log&type=block&page=User:%s historial de bloqueos]): %s''" % (editData['author'], editData['author'], i.group("expires"))
 				if re.search(ur'(?i)proxy', i.group('comment')):
 					isProxy=True
 				break #con el primero basta
@@ -352,3 +360,9 @@ def existenceFile():
 			existFile.write(str("hi"))
 			existFile.close()
 		time.sleep(60) # debe ser menor que el time del cron / 2
+
+"""
+def put(pageobject, newtext, summary):
+	if not avbotglobals.preferences['nosave']:
+		pageobject.put(newtext, summary)
+"""
