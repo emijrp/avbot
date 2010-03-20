@@ -236,7 +236,7 @@ def mustBeReverted(editData, cleandata, userClass):
 	oldInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['oldText']))
 	newInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['newText']))
 	
-	if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2: #10 es un número conservador?
+	if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): #10 es un número conservador?
 		editData['type']='bl'
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''

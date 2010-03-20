@@ -247,7 +247,7 @@ class BOT(SingleServerIRCBot):
 			legend=u''
 			for k,v in avbotglobals.preferences['colors'].items():
 				legend+=u'\03{%s}%s\03{default}, ' % (v, k)
-			wikipedia.output(u'Colors meaning: %s...' % legend)
+			wikipedia.output(u'Colors meaning: \03{lightred}N\03{default}ew, \03{lightred}m\03{default}inor, %s...' % legend)
 			avbotglobals.statsTimersDic['tvel'] = time.time()
 			avbotglobals.statsTimersDic['speed'] = 0
 		
