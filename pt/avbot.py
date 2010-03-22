@@ -23,6 +23,7 @@
 #que se baje el codigo de rediris y lo compruebe con los fucheros locales
 #hacer independiente de verdad lo de 'v', 'bl', 'c', etc
 #detectar SO para evitar los errores cuando intenta hacer rm
+#fix http://pt.wikipedia.org/w/index.php?title=Livro_Estrelas_cadentes&diff=19353599&oldid=19348430
 
 ## @package avbot
 # Main module\n
@@ -79,7 +80,7 @@ class BOT(SingleServerIRCBot):
 
 		"""Regular expresions for vandalism edits """
 		error=avbotload.loadRegexpList()
-		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...%s" % (len(avbotglobals.vandalRegexps.items()), error))
+		wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...\n%s" % (len(avbotglobals.vandalRegexps.items()), error))
 
 		wikipedia.output(u'Joining to recent changes IRC channel...\n')
 		SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
@@ -140,24 +141,24 @@ class BOT(SingleServerIRCBot):
 					return #Exit
 
 				#Reload vandalism regular expresions
-				goodandevil=u'Lista del bien y del mal.css'
-				if avbotglobals.preferences['site'].lang=='pt':
-					goodandevil=u'Expressões.css'
+                # Misses add en, elif didn't work
+                goodandevil=u'Expressões.css'
+
 				#if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 				#	avbotload.reloadRegexpList(editData['author'], editData['diff'])
-				if re.search(ur'%s\:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil), editData['pageTitle']):
+                if re.search(ur'%s\:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil), editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 
-				#Reload exclusion list
-				if re.search(ur'%s\:%s\/Exclusiones\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
+				#Reload exclusion list #fix hacer independiente localization
+                if re.search(ur'%s\:%s\/(Exclusiones|Exclusions|Exclusões)\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 					avbotload.loadExclusions()
 
-				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
+                thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 
 				#Check resume for reverts
-				if re.search(ur'(?i)(Revertidas edições por.*%s.*para a última versão por|Desfeita a edição \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!='Usuario:AVBOT/Errores/Automático':
+                if avbotglobals.preferences['language']=='es' and re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!='Usuario:AVBOT/Errores/Automático':
 					if not avbotglobals.preferences['nosave']:
-						wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:Alpha_Bot/Erros/Automático')
+						wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:AVBOT/Errores/Automático')
 						wiii.put(u'%s\n# [[%s]], {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, http://%s.wikipedia.org/w/index.php?diff=%s&oldid=%s, {{u|%s}}' % (wiii.get(), editData['pageTitle'], avbotglobals.preferences['language'], editData['diff'], editData['oldid'], editData['author']), u'BOT - Informe automático. [[User:%s|%s]] ha revertido a [[User:%s|%s]] en [[%s]]' % (editData['author'], editData['author'], avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick'], editData['pageTitle']))
 		elif re.search(avbotglobals.parserRegexps['newpage'], line):
 			match=avbotglobals.parserRegexps['newpage'].finditer(line)
@@ -165,8 +166,9 @@ class BOT(SingleServerIRCBot):
 				editData['pageTitle']=m.group('pageTitle')
 
 				#Avoid analysis of excluded pages
-				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-					return #Exit
+				for exclusion, z in avbotglobals.excludedPages.items():
+					if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+						return #Exit
 
 				editData['diff']=editData['oldid']=0
 				editData['author']=m.group('author')
@@ -180,10 +182,6 @@ class BOT(SingleServerIRCBot):
 				if re.search('M', nm):
 					editData['minor']=True
 				editData['resume']=u''
-
-				#Avoid analysis of excluded pages
-				if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-					return #Exit
 
 				avbotanalysis.updateStats('t')
 				avbotglobals.statsTimersDic['speed'] += 1
@@ -202,7 +200,7 @@ class BOT(SingleServerIRCBot):
 			match=avbotglobals.parserRegexps['nuevousuario'].finditer(line)
 			for m in match:
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) acaba de registrar.\03{default}' % (usuario, len(usuario)))
+				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) se acaba de registrar.\03{default}' % (usuario, len(usuario)))
 		elif re.search(avbotglobals.parserRegexps['borrado'], line):
 			match=avbotglobals.parserRegexps['borrado'].finditer(line)
 			for m in match:
@@ -249,7 +247,7 @@ class BOT(SingleServerIRCBot):
 			legend=u''
 			for k,v in avbotglobals.preferences['colors'].items():
 				legend+=u'\03{%s}%s\03{default}, ' % (v, k)
-			wikipedia.output(u'Colors meaning: %s...' % legend)
+			wikipedia.output(u'Colors meaning: \03{lightred}N\03{default}ew, \03{lightred}m\03{default}inor, %s...' % legend)
 			avbotglobals.statsTimersDic['tvel'] = time.time()
 			avbotglobals.statsTimersDic['speed'] = 0
 
@@ -268,8 +266,8 @@ def main():
 	""" Creates and launches a bot object """
 
 	if os.path.isfile(avbotglobals.existFile):
-##		os.system("rm %s" % avbotglobals.existFile)
-		wikipedia.output(u"Eliminado ficheiro %s" % avbotglobals.existFile)
+		os.system("rm %s" % avbotglobals.existFile)
+		wikipedia.output(u"Eliminado fichero %s" % avbotglobals.existFile)
 		sys.exit()
 	else:
 		try:
@@ -278,7 +276,7 @@ def main():
 			PID.close()
 			os.system("kill -9 %s" % oldpid)
 		except:
-			wikipedia.output(u"ocorreu um erro ao terminar o processo anterior")
+			wikipedia.output(u"Hubo un error al intentar matar el proceso anterior")
 
 		#Writing current PID
 		PID=open(avbotglobals.pidFile, 'w')

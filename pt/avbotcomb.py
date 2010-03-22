@@ -40,43 +40,80 @@ def blockedUser(blocker, blocked, castigo):
 
 	blocker_=re.sub(u' ', u'_', blocker)
 	blocked_=re.sub(u' ', u'_', blocked)
-	#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
-	#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
-	pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
-	if pvec.exists():
-		if pvec.isRedirectPage():
-			return 0
-		else:
-			vectext=pvec.get()
-			trozos=trozos2=vectext.split('===')
-			c=0
-			for trozo in trozos:
-				if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
-					wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
-					arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
-					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
-						break
-				c+=1
-
-			#reunimos los trozos de nuevo con ===
-			newvectext="===".join(trozos2)
-
-			#Updating vandalism board
-			if newvectext!=vectext:
-				#wikipedia.showDiff(vectext, newvectext)
-				if not avbotglobals.preferences['nosave']:
-					pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
-				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
+	if avbotglobals.preferences['language']=='es':
+		#desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
+		#avbotmsg.msgBlock(blocked, blocker) #Send message to vandal's talk page
+		pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Vandalismo en curso')
+		if pvec.exists():
+			if pvec.isRedirectPage():
+				return 0
 			else:
-				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
+				vectext=pvec.get()
+				trozos=trozos2=vectext.split('===')
+				c=0
+				for trozo in trozos:
+					if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
+						wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
+						arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
+						if re.search(arellenar, trozos2[c+1]):
+							trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
+							break
+					c+=1
 
-			#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
-			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
-				userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
-				if not avbotglobals.preferences['nosave']:
-					userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
-				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
+				#reunimos los trozos de nuevo con ===
+				newvectext="===".join(trozos2)
+
+				#Updating vandalism board
+				if newvectext!=vectext:
+					#wikipedia.showDiff(vectext, newvectext)
+					if not avbotglobals.preferences['nosave']:
+						pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+					wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
+				else:
+					wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
+
+				#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
+				"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
+					userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
+					if not avbotglobals.preferences['nosave']:
+						userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
+					wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
+	elif avbotglobals.preferences['language']=='pt':
+            pvec=wikipedia.Page(avbotglobals.preferences['site'], u'Wikipedia:Pedidos a administradores/Pedidos de bloqueio')
+        if pvec.exists():
+			if pvec.isRedirectPage():
+				return 0
+			else:
+				vectext=pvec.get()
+				trozos=trozos2=vectext.split('===')
+				c=0
+				for trozo in trozos:
+					if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
+						wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
+						arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
+						if re.search(arellenar, trozos2[c+1]):
+							trozos2[c+1]=re.sub(arellenar, ur"{{!Predefinições de pedidos a administradores|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
+							break
+					c+=1
+
+				#reunimos los trozos de nuevo con ===
+				newvectext="===".join(trozos2)
+
+				#Updating vandalism board
+				if newvectext!=vectext:
+					#wikipedia.showDiff(vectext, newvectext)
+					if not avbotglobals.preferences['nosave']:
+						pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+					wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
+				else:
+					wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
+
+				#si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
+				"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
+					userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
+					if not avbotglobals.preferences['nosave']:
+						userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
+					wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
 
 
 def semiprotect(titulo, protecter):
@@ -88,9 +125,11 @@ def semiprotect(titulo, protecter):
 			return 0
 		else:
 			semitext=p.get()
-			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Pp\-semi\-template)', semitext):
+            # Added pt semi-protected tag
+			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Protegida-ip|Pp\-semi\-template)', semitext):
 				if not avbotglobals.preferences['nosave']:
-					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
+            # Changed predef to pt
+					p.put(u'{{Protegida-ip}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
 				wikipedia.output(u'\03{lightblue}Aviso: Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
@@ -99,8 +138,12 @@ def vtee(text, resumen):
 	""" Algunos cambios menores según el manual de estilo """
 	""" Minor changes from style manual """
 	newtext=text
-	newtext=re.sub(ur'(?i)=(\s*)(v[íi]nculos?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Enlaces externos\3=', newtext)
-	newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv]i[ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Véase también\3=', newtext)
+	if avbotglobals.preferences['language']=='es':
+	   newtext=re.sub(ur'(?i)=(\s*)(v[íi]nculos?\s*e[xs]ternos?|l[íi]gas?\s*e[xs]tern[oa]s?|l[íi]nks?\s*e[xs]tern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1Enlaces externos\3=', newtext)
+	   newtext=re.sub(ur'(?i)=(\s*)([vb]er\s*tam[bv]i[ée]n|[vb][ée]a[cs]e\s*t[aá]mbi[ée]n|vea\s*tambi[eé]n|\{\{ver\}\})(\s*)=', ur'=\1Véase también\3=', newtext)
+	elif avbotglobals.preferences['language']=='pt':
+            newtext=re.sub(ur'(?i)=(\s*)(Links?\s*externos?|links?|páginas?\s*extern[oa]s?|enla[cs]es\s*e[xs]ternos|external\s*links?)(\s*)=', ur'=\1LIgações externas\3=', newtext)
+            newtext=re.sub(ur'(?i)=(\s*)(Veja\s*tamb[eé]m\{\{ver\}\})(\s*)=', ur'=\1Ver também\3=', newtext)
 	if text==newtext:
 		return newtext, resumen
 	else:
@@ -183,13 +226,11 @@ def resumeTranslator(editData):
 
 	if avbotglobals.preferences['language']=='es':
 		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+
+        elif avbotglobals.preferences['language']=='pt':
+		resume=u'BOT - Posível %s de [[Special:Contributions/%s|%s]], para a edição %s de [[User:%s|%s]]. [[User:Aleph Bot/Errores|Errei]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	else:
 		resume=u'BOT - Possible %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-
-    if avbotglobals.preferences['language']=='pt':
-		resume=u'BOT - Possível %s de [[Special:Contributions/%s|%s]], revertendo para a ultima edição %s de [[User:%s|%s]]. ¿[[User:Aleph Bot/Erros|Ocorreu um erro?]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-	else:
-		resume=u'BOT - Possível %s por [[Special:Contributions/%s|%s]], revertendo para a edição %s de [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 
 	return resume
 

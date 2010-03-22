@@ -66,6 +66,7 @@ def watch(editData):
 
 	author=re.sub('_', ' ', editData['author'])
 	pageTitle=re.sub('_', ' ', editData['pageTitle'])
+	#cosas que no aparezcan en la lista de exclusiones pueden verse filtradas por este if, explicarlo en algún sitio? #fix
 	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author, pageTitle))):
 		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True
@@ -79,48 +80,50 @@ def isRubbish(editData):
 	motive=u'Otros'
 	score=0
 
-	if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
-		if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
-			if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
-				for k, v in avbotglobals.vandalRegexps.items():
-					m=v['compiled'].finditer(editData['newText'])
-					for i in m:
-						score+=v['score']
+	if avbotglobals.preferences['language']=='es':
+		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
+			if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+				if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
+					for k, v in avbotglobals.vandalRegexps.items():
+						m=v['compiled'].finditer(editData['newText'])
+						for i in m:
+							score+=v['score']
 
-				if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
-					destruir=True
-					motive=u'Vandalismo'
-				if len(editData['newText'])<=75 and not destruir:
-					if not re.search(ur'\[', editData['newText']):
+					if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
 						destruir=True
-						motive=u'Demasiado curto'
-		if destruir:
-			updateStats('d')
-			if not avbotglobals.preferences['nosave']:
-				editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
-			return True, motive
+						motive=u'Vandalismo'
+					if len(editData['newText'])<=75 and not destruir:
+						if not re.search(ur'\[', editData['newText']):
+							destruir=True
+							motive=u'Demasiado corto'
+			if destruir:
+				updateStats('d')
+				if not avbotglobals.preferences['nosave']:
+					editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+				return True, motive
 	return False, motive
 
 def improveNewArticle(editData):
 	""" Intenta mejorar el artículo según unos consejos básicos del manual de estilo """
 	""" Make some changes in the new article to improve it """
 
-	newText=editData['page'].get()
-	if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
-		if not re.search(ur'(?i)\{\{ *(er|esr|vda)|redirect', newText): #descarta demasiado? destruir|plagio|copyvio
-			if len(newText)>=500:
-				resumen=u''
-				newnewText=u''
-				if not editData['page'].interwiki():
-					try:
-						[newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
-					except:
-						pass
-				[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
-				if len(newnewText)>len(newText):
-					if not avbotglobals.preferences['nosave']:
-						editData['page'].put(newnewText, u'BOT - Aplicando %s... ao artigo recém criado' % resumen)
-					return True, resumen
+	if avbotglobals.preferences['language']=='es':
+		newText=editData['page'].get()
+		if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+			if not re.search(ur'(?i)\{\{ *(destruir|plagio|copyvio|vda|er)|redirect', newText): #descarta demasiado? destruir|plagio|copyvio
+				if len(newText)>=500:
+					resumen=u''
+					newnewText=u''
+					if not editData['page'].interwiki():
+						try:
+							[newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
+						except:
+							pass
+					[newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
+					if len(newnewText)>len(newText):
+						if not avbotglobals.preferences['nosave']:
+							editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
+						return True, resumen
 	return False, u''
 
 def revertAllEditsByUser(editData, userClass, regexplist):
@@ -160,13 +163,14 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 
 			updateStats(editData['type'])
 
-			#Restore previous version of page
+			#Restore previous version of the page
 			if not avbotglobals.preferences['nosave']:
 				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 
 			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1
-			avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
+			if not avbotglobals.preferences['nosave']:
+				avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 
 			#Save log for depuration purposes
 			log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
@@ -175,10 +179,18 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			log.close()
 
 			#Send message to admins board
-			blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
-			if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
-				#Not send the message if vandals have been reported before
-				avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
+			if not avbotglobals.preferences['nosave']:
+				blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
+				if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
+					#Not send the message if vandals have been reported before
+					avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
+
+			#Trial run?
+			if avbotglobals.preferences['trial']:
+				type=editData['type']
+				msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']))
+				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
 
 			return True, editData
 		c+=1
@@ -224,7 +236,7 @@ def mustBeReverted(editData, cleandata, userClass):
 	oldInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['oldText']))
 	newInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['newText']))
 
-	if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2: #10 es un número conservador?
+	if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): #10 es un número conservador?
 		editData['type']='bl'
 		editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
 		editData['details']=u''
@@ -233,7 +245,12 @@ def mustBeReverted(editData, cleandata, userClass):
 
 	#Vandalism or test edit?
 	regexplist=[]
-	editData['type']='c' #dummie, contrapeso
+	editData['type']='' #dummie, contrapeso
+	priority=99999999
+	for type, msgprop in avbotglobals.preferences['msg'].items():
+		if msgprop['priority']<priority:
+			editData['type']=type
+			priority=msgprop['priority']
 	editData['details']=u''
 
 	for k, v in avbotglobals.vandalRegexps.items():
@@ -255,7 +272,7 @@ def mustBeReverted(editData, cleandata, userClass):
 			return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 
 	#Anti-birthday
-	if re.search(ur'(?m)^\d{1,2} de (janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)$', editData['pageTitle']):
+	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', editData['pageTitle']):
 		if editData['namespace']==0:
 			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona? o depende del editData['type']?
 			enlaceexiste=False
@@ -265,9 +282,9 @@ def mustBeReverted(editData, cleandata, userClass):
 			deaths=""
 			c=0
 			for section in sections:
-				if re.sub(ur"[ =]", ur"", section).lower()=="nascimentos" and len(sections)>c+1:
+				if re.sub(ur"[ =]", ur"", section).lower()=="nacimientos" and len(sections)>c+1:
 					births=sections[c+1]
-				if re.sub(ur"[ =]", ur"", section).lower()=="falecimentos" and len(sections)>c+1:
+				if re.sub(ur"[ =]", ur"", section).lower()=="fallecimientos" and len(sections)>c+1:
 					deaths=sections[c+1]
 				c+=1
 
@@ -288,7 +305,7 @@ def mustBeReverted(editData, cleandata, userClass):
 					if not enlaceexiste and (re.search(u'(?i)%s.*%s' % (anyo, enlace), births) or re.search(u'(?i)%s.*%s' % (anyo, enlace), deaths)): #poner anyos futuros en los acontecimientos es posible
 						if int(anyo)>int(anyoactual):
 							return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-							motivo=u'Data impossivel (Ano %s)' % anyo
+							motivo=u'Fecha imposible (Año %s)' % anyo
 
 					if not enlaceexiste and re.search(u'(?i)%s.*%s' % (anyo, enlace), births):
 						if int(anyo)>=int(anyoactual)-20:
@@ -301,7 +318,7 @@ def mustBeReverted(editData, cleandata, userClass):
 							try:
 								if not wii['en'].exists():
 									return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-									motivo=u'Posivel efeméride irrelevante'
+									motivo=u'Posible efeméride irrelevante'
 							except:
 								pass
 
@@ -330,7 +347,7 @@ def cleandiff(pageTitle, data):
 	""" Extrae el texto que ha sido insertado en la edición """
 	""" Clean downloaded diff page """
 
-	marker=';;;'
+	marker=' ; ' #no poner ;;; porque da falsos positivos con regexp de repetición de caracteres
 	clean=marker
 
 	trozos=data.split('<tr>')[2:] #el 1 contiene el numero de linea, nos lo saltamos
@@ -354,7 +371,7 @@ def cleandiff(pageTitle, data):
 		except:
 			wikipedia.output(u'ERROR: %s' % trozo)
 
-	clean=re.sub(ur'[\n\r]', marker, clean)
+	clean=re.sub(ur'[\n\r]', ur' ', clean) #no new lines
 
 	#if len(clean)<3000:
 	#	wikipedia.output(clean)
@@ -389,20 +406,21 @@ def editAnalysis(editData):
 				if avbotglobals.userData['edits'][editData['author']]>avbotglobals.preferences['newbie']:
 					return #Exit
 			else:
-				wikipedia.output(u'Ocorreu um erro com o número de edições de [[User:%s]]' % editData['author'])
+				wikipedia.output(u'Ha habido un error con el número de ediciones de [[User:%s]]' % editData['author'])
 
 		if editData['page'].isRedirectPage(): #Do not analysis redirect pages
 			return #Exit
 
 		# Must be analysed?
 		if not watch(editData):
-			wikipedia.output(u'A edição em [[%s]] não deve ser analizada' % editData['pageTitle'])
+			wikipedia.output(u'[[%s]] edit must no be checked' % editData['pageTitle'])
 			return #Exit
 
 		# Avoid analysis of excluded pages
-		if avbotglobals.excludedPages.has_key(editData['pageTitle']):
-			wikipedia.output(u'[[%s]] está na lista de exclusão' % editData['pageTitle'])
-			return #Exit
+		for exclusion, z in avbotglobals.excludedPages.items():
+			if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+				wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
+				return #Exit
 
 		# Avoid to check our edits
 		if editData['author'] == avbotglobals.preferences['botNick']:
