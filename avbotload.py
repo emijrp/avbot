@@ -187,10 +187,12 @@ def loadRegexpList():
 	
 	#Sorting list
 	#dejo de funcionar con la api?
-	#dosort.sort()
-	#if not avbotglobals.preferences['nosave']:
-	#ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['botNick'])
-	#ordenada.put(u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort)), u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
+	dosort.sort()
+	if not avbotglobals.preferences['nosave']:
+		ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal/Sorted' % avbotglobals.preferences['botNick'])
+		output=u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort))
+		if ordenada.get()!=output:		
+			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
 	
 	wikipedia.output(u'\nLoaded %s regular expresions...' % (len(avbotglobals.vandalRegexps.items())))
 	
@@ -207,7 +209,7 @@ def reloadRegexpList(author, diff):
 		goodandevil=u'Good and evil list.css'
 	elif avbotglobals.preferences['site'].lang=='pt':
 		goodandevil=u'Expressões.css'
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil)) #[3] porque es User talk:
+	"""mientras arreglan el bug de no poder editar las propias .css p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil)) #[3] porque es User talk:
 	if not avbotglobals.preferences['nosave'] and avbotglobals.preferences['site'].lang=='es':
 		if p.exists() and not re.search(ur"%s" % diff, p.get()):
 			if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
@@ -219,7 +221,7 @@ def reloadRegexpList(author, diff):
 				if error:
 					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
 				else:
-					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))"""
 	return
 
 def loadUserEdits(author):
