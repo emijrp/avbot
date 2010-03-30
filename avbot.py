@@ -139,10 +139,6 @@ class BOT(SingleServerIRCBot):
 				avbotanalysis.updateStats('total')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
-				#Avoid to check our edits
-				if editData['author'] == avbotglobals.preferences['botNick']: 
-					return #Exit
-				
 				#Reload vandalism regular expresions if needed
 				#if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 				#	avbotload.reloadRegexpList(editData['author'], editData['diff'])

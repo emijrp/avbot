@@ -461,9 +461,11 @@ def editAnalysis(editData):
 					return #Exit
 			else:
 				wikipedia.output(u'Ha habido un error con el número de ediciones de [[User:%s]]' % editData['author'])
-		
+				return #Exit
+		t1=time.time()
 		if editData['page'].isRedirectPage(): #Do not analysis redirect pages
 			return #Exit
+		print 'r', time.time()-t1, editData['pageTitle']
 		
 		# Must be analysed?
 		if not watch(editData):
