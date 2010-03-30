@@ -303,6 +303,6 @@ def loadExclusions():
 			t=l.split(';;')
 			exclusion=t[0]
 			if not avbotglobals.excludedPages.has_key(exclusion):
-				avbotglobals.excludedPages[exclusion]=True
+				avbotglobals.excludedPages[exclusion]=re.compile(ur"(?m)^%s$" % exclusion)
 	
 	wikipedia.output(u"Loaded %d page excluded pages..." % (len(avbotglobals.excludedPages.items())))

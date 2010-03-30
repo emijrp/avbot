@@ -67,7 +67,7 @@ def watch(editData):
 	author=re.sub('_', ' ', editData['author'])
 	pageTitle=re.sub('_', ' ', editData['pageTitle'])
 	#cosas que no aparezcan en la lista de exclusiones pueden verse filtradas por este if, explicarlo en algún sitio? #fix
-	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(ur'\/', editData['pageTitle']) and not re.search(ur'(?i)%s' % author, pageTitle))):
+	if (editData['namespace'] in [0, 4, 10, 12, 14, 100, 102, 104] or (editData['namespace']==2 and not re.search(avbotglobals.parserRegexps['watch-1'], editData['pageTitle']) and not re.search(ur'(?i)%s' % author, pageTitle))):
 		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
 			return True
 	return False
@@ -425,7 +425,7 @@ def editAnalysis(editData):
 		
 		# Must be analysed?
 		if not watch(editData):
-			wikipedia.output(u'[[%s]] edit must no be checked' % editData['pageTitle'])
+			wikipedia.output(u'[[%s]] edit must not be checked' % editData['pageTitle'])
 			return #Exit
 		
 		# Avoid analysis of excluded pages

@@ -47,7 +47,10 @@ preferences = {
 	'newbie':        25,                   #Who is a newbie user? How many edits?
 	'statsDelay':    60,                   #How man seconds between showing stats in screen
 	'colors':        {
+		'steward': 'lightblue',
 		'sysop': 'lightblue',
+		'bureaucrat': 'lightblue',
+		'checkuser': 'lightblue',
 		'bot':   'lightpurple',
 		'reg':   'lightgreen',
 		'anon':  'lightyellow',
@@ -98,6 +101,18 @@ if not preferences['nickname']:
 
 preferences['editsFilename']='%s-%s-edits.txt' % (preferences['language'], preferences['family'])
 
+preferences['goodandevil']=u'Lista del bien y del mal.css'
+if preferences['site'].lang=='en':
+	preferences['goodandevil']=u'Good and evil list.css'
+elif preferences['site'].lang=='pt':
+	preferences['goodandevil']=u'Expressões.css'
+
+preferences['exclusions']=u'Exclusiones.css'
+if preferences['site'].lang=='en':
+	preferences['exclusions']=u'Exclusions.css'
+elif preferences['site'].lang=='pt':
+	preferences['exclusions']=u'Exclusões.css'
+
 global namespaces
 namespaces={}
 namespaces[2] = avbotcomb.namespaceTranslator(2)
@@ -136,6 +151,9 @@ parserRegexps={
 	'cleandiff-diff-addedline-div': re.compile(ur'<td class="diff-addedline"><div>'),
 	'cleandiff-diff-deletedline': re.compile(ur'diff-deletedline'),
 	'cleandiff-diffchange': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
+	'watch-1': re.compile(ur'\/'),
+	'goodandevillist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['goodandevil'])),
+	'exclusionslist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['exclusions'])),
 	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly
 	'block':          re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<block>.*?)\"'),
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac

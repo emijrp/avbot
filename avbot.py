@@ -143,17 +143,14 @@ class BOT(SingleServerIRCBot):
 				if editData['author'] == avbotglobals.preferences['botNick']: 
 					return #Exit
 				
-				#Reload vandalism regular expresions
-				goodandevil=u'Lista del bien y del mal.css'
-				if avbotglobals.preferences['site'].lang=='en':
-					goodandevil=u'Good and evil list.css'
+				#Reload vandalism regular expresions if needed
 				#if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 				#	avbotload.reloadRegexpList(editData['author'], editData['diff'])
-				if re.search(ur'%s\:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], goodandevil), editData['pageTitle']):
+				if re.search(avbotglobals.parserRegexps['goodandevillist'], editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list #fix hacer independiente localization
-				if re.search(ur'%s\:%s\/(Exclusiones|Exclusions)\.css' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
+				if re.search(avbotglobals.parserRegexps['exclusionslist'], editData['pageTitle']):
 					avbotload.loadExclusions()
 				
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
@@ -169,8 +166,8 @@ class BOT(SingleServerIRCBot):
 				editData['pageTitle']=m.group('pageTitle')
 				
 				#Avoid analysis of excluded pages
-				for exclusion, z in avbotglobals.excludedPages.items():
-					if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+				for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
+					if re.search(compiledexclusion, editData['pageTitle']):
 						return #Exit
 				
 				editData['diff']=editData['oldid']=0
