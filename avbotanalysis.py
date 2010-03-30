@@ -504,6 +504,7 @@ def editAnalysis(editData):
 		editData['oldText'] = threadOldid.getOldText()
 		threadDiff.join()
 		editData['newText'] = threadDiff.getNewText()
+		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
 		threadHTMLDiff.join()
 		editData['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
 		editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- start content -->')[1]
