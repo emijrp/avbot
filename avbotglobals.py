@@ -102,17 +102,17 @@ if not preferences['nickname']:
 preferences['editsFilename']='%s-%s-edits.txt' % (preferences['language'], preferences['family'])
 
 preferences['goodandevil']=u'Lista del bien y del mal.css'
+preferences['exclusions']=u'Exclusiones.css'
+preferences['messages']=u'Mensajes.css'
 if preferences['site'].lang=='en':
 	preferences['goodandevil']=u'Good and evil list.css'
+	preferences['exclusions']=u'Exclusions.css'
+	preferences['messages']=u'Messages.css'
 elif preferences['site'].lang=='pt':
 	preferences['goodandevil']=u'Expressões.css'
-
-preferences['exclusions']=u'Exclusiones.css'
-if preferences['site'].lang=='en':
-	preferences['exclusions']=u'Exclusions.css'
-elif preferences['site'].lang=='pt':
 	preferences['exclusions']=u'Exclusões.css'
-
+	preferences['messages']=u'Mensagens.css'
+	
 global namespaces
 namespaces={}
 namespaces[2] = avbotcomb.namespaceTranslator(2)
@@ -152,8 +152,9 @@ parserRegexps={
 	'cleandiff-diff-deletedline': re.compile(ur'diff-deletedline'),
 	'cleandiff-diffchange': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
 	'watch-1': re.compile(ur'\/'),
-	'goodandevillist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['goodandevil'])),
-	'exclusionslist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['exclusions'])),
+	'goodandevil': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['goodandevil'])),
+	'exclusions': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['exclusions'])),
+	'messages': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['messages'])),
 	'anti-birthday-es': re.compile(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$'),
 	'loaduseredits-editcount': re.compile(ur'editcount'),
 	'loaduseredits-editcount-d': re.compile(ur' editcount="(\d+)"'),

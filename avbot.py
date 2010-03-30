@@ -146,12 +146,16 @@ class BOT(SingleServerIRCBot):
 				#Reload vandalism regular expresions if needed
 				#if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
 				#	avbotload.reloadRegexpList(editData['author'], editData['diff'])
-				if re.search(avbotglobals.parserRegexps['goodandevillist'], editData['pageTitle']):
+				if re.search(avbotglobals.parserRegexps['goodandevil'], editData['pageTitle']):
 					avbotload.reloadRegexpList(editData['author'], editData['diff'])
 				
 				#Reload exclusion list #fix hacer independiente localization
-				if re.search(avbotglobals.parserRegexps['exclusionslist'], editData['pageTitle']):
+				if re.search(avbotglobals.parserRegexps['exclusions'], editData['pageTitle']):
 					avbotload.loadExclusions()
+				
+				#Reload messages list
+				if re.search(avbotglobals.parserRegexps['messages'], editData['pageTitle']):
+					avbotload.loadMessages()
 				
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 				
