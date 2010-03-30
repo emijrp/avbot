@@ -67,7 +67,7 @@ def haveIRevertedThisVandalism(wtitle, diff):
 	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
 	""" Check if this bot has reverted this vandalism """
 	vandalisedPage=wikipedia.Page(avbotglobals.preferences['site'], wtitle)
-	vandalisedPageHistory=vandalisedPage.getVersionHistory(revCount=10)
+	vandalisedPageHistory=vandalisedPage.getVersionHistory(revCount=10) #con 10 creo que es suficiente, no van a haber editado tanto desde que se revirtió
 	c=0
 	while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
 		c+=1

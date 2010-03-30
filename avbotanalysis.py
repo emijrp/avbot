@@ -445,11 +445,13 @@ def editAnalysis(editData):
 			return
 		
 		# To get history
-		editData['oldText']=editData['newText']=u''
+		editData['oldText']=u''
+		editData['newText']=u''
 		try:
-			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars
-			editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
-			editData['newText']     = editData['page'].get() #Current text
+			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
+			#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
+			editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
+			editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
 		except:
 			return #No previous text? New? Exit
 		
@@ -465,6 +467,7 @@ def editAnalysis(editData):
 			wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
 			return
 		
+		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix
 		try: #Try to catch diff
 			data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
 			data=data.split('<!-- start content -->')[1]
