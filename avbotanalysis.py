@@ -81,7 +81,7 @@ def isRubbish(editData):
 	score=0
 	
 	if avbotglobals.preferences['language']=='es':
-		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):
+		if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):#repetido ? #fix
 			if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
 				if not re.search(ur'(?i)\{\{|redirect', editData['newText']):
 					for k, v in avbotglobals.vandalRegexps.items():
@@ -89,7 +89,7 @@ def isRubbish(editData):
 						for i in m:
 							score+=v['score']
 					
-					if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()?
+					if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()? #fix
 						destruir=True
 						motive=u'Vandalismo'
 					if len(editData['newText'])<=75 and not destruir:
@@ -275,7 +275,7 @@ def mustBeReverted(editData, cleandata, userClass):
 			return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 	
 	#Anti-birthday
-	if re.search(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$', editData['pageTitle']):
+	if re.search(avbotglobals.parserRegexps['anti-birthday-es'], editData['pageTitle']):
 		if editData['namespace']==0:
 			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona? o depende del editData['type']?
 			enlaceexiste=False
@@ -308,14 +308,15 @@ def mustBeReverted(editData, cleandata, userClass):
 					if enlaceexiste:
 						wikipedia.output(u"El artículo al que apunta la efeméride sí existe  : )")
 					else:
+						anyoenlacecompiled=re.compile(ur'(?i)%d.*%s' % (anyo, enlace))
 						if anyo>anyoactual: #poner anyos futuros en los acontecimientos es posible, pero no en births o deaths
-							if re.search(u'(?i)%d.*%s' % (anyo, enlace), births) or re.search(u'(?i)%d.*%s' % (anyo, enlace), deaths): 
+							if re.search(anyoenlacecompiled, births) or re.search(anyoenlacecompiled, deaths): 
 								editData['type']='nn'
 								return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 								motivo=u'Fecha imposible (Año %d)' % anyo
 								wikipedia.output(motivo)
 				
-						elif re.search(u'(?i)%d.*%s' % (anyo, enlace), births):
+						elif re.search(anyoenlacecompiled, births):
 							if anyo>=anyoactual-20:
 								#que chico mas precoz, comprobemos su relevancia
 								wii['en']=wikipedia.Page(wikipedia.Site('en', 'wikipedia'), enlace)
@@ -429,8 +430,8 @@ def editAnalysis(editData):
 			return #Exit
 		
 		# Avoid analysis of excluded pages
-		for exclusion, z in avbotglobals.excludedPages.items():
-			if re.search(ur"(?i)%s" % exclusion, editData['pageTitle']):
+		for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
+			if re.search(compiledexclusion, editData['pageTitle']):
 				wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
 				return #Exit
 		

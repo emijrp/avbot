@@ -154,6 +154,9 @@ parserRegexps={
 	'watch-1': re.compile(ur'\/'),
 	'goodandevillist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['goodandevil'])),
 	'exclusionslist': re.compile(ur'%s:%s/%s' % (namespaces[2], preferences['ownerNick'], preferences['exclusions'])),
+	'anti-birthday-es': re.compile(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$'),
+	'loaduseredits-editcount': re.compile(ur'editcount'),
+	'loaduseredits-editcount-d': re.compile(ur' editcount="(\d+)"'),
 	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly
 	'block':          re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<block>.*?)\"'),
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
@@ -166,7 +169,7 @@ parserRegexps={
 	'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),
 	'diffstyleend':   re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
 	'interwikis':     re.compile(ur'(?i)\[\[ *[a-z]{2} *\: *[^\]\|\n\r]+? *\]\]'),
-	'ip':             re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),
+	'ip':             re.compile(ur'(?im)^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'),
 	'firmas1':        re.compile(ur'<td class="diff-addedline"><div>([^<]*?)</div>'),
 	#sin title
 	#'edit': re.compile(ur'(?i)\[\[(?P<pageTitle>.*?)\]\] +(?P<nm>.*?) +http\://%s\.wikipedia\.org/w/index\.php\?title\=.*?diff\=(?P<diff>\d+)\&oldid\=(?P<oldid>\d+) +\* +(?P<author>.*?) +\* +\(.*?\) +(?P<resume>.*)' % preferences['language']),

@@ -321,7 +321,7 @@ def updateUserDataIfNeeded(editData):
 def checkBlockInEnglishWikipedia(editData):
 	comment=""
 	isProxy=False
-	if re.search(ur'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', editData['author']): #Is it an IP?
+	if re.search(avbotglobals.parserRegexps['ip'], editData['author']): #Is it an IP?
 		enwiki=wikipedia.Site('en', 'wikipedia')
 		
 		data=enwiki.getUrl("/w/index.php?title=Special:BlockList&ip=%s" % editData['author'])

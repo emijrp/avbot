@@ -254,13 +254,13 @@ def reloadRegexpList(author, diff):
 	return
 
 def loadUserEdits(author):
-	""" Carga númeor de ediciones de un usuario en concreto """
+	""" Carga número de ediciones de un usuario en concreto """
 	""" Load user edits number """
 	author_=re.sub(' ', '_', author)
 	try:
 		rawdata=avbotglobals.preferences['site'].getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(author_))
-		if re.search(u"editcount", rawdata):
-			m=re.compile(ur' editcount="(\d+)"').finditer(rawdata)
+		if re.search(avbotglobals.parserRegexps['loaduseredits-editcount'], rawdata):
+			m=avbotglobals.parserRegexps['loaduseredits-editcount-d'].finditer(rawdata)
 			for i in m:
 				editsnum=int(i.group(1))
 				if editsnum<1:
