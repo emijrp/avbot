@@ -33,11 +33,11 @@ def sameOldid(editData):
 	""" Are both the same oldid? """
 	""" ¿Es el mismo oldid? """
 	if editData['oldid']!=editData['stableid']:
-		editData['stableText']=editData['page'].getOldVersion(editData['stableid'])
+		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso? pero no queda otra
 		return editData
 	else:
-		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&limit=6&action=history
-		editData['stableText']=editData['page'].getOldVersion(editData['stableid'])
+		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&offset=20090507213843&limit=10&action=history
+		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso?
 		return editData
 
 def isSameVandalism(regexlistold, regexlistnew):
@@ -253,7 +253,7 @@ def mustBeReverted(editData, cleandata, userClass):
 			priority=msgprop['priority']
 	editData['details']=u''
 	
-	for k, v in avbotglobals.vandalRegexps.items():
+	for k, v in avbotglobals.vandalRegexps.items(): #fix mirar si en la revisión anterior ya había tales palabras malsonantes? (evitamos que un copia/pega desplazado se considere como texto nuevo) no contar las positivas de la anterior
 		m=v['compiled'].finditer(cleandata)
 		added=False #Avoid duplicate entries in the log
 		for i in m:
@@ -447,7 +447,7 @@ def editAnalysis(editData):
 		# To get history
 		editData['oldText']=u''
 		editData['newText']=u''
-		try:
+		try: #costoso? pero no queda otra
 			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
 			#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
 			editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
@@ -467,7 +467,7 @@ def editAnalysis(editData):
 			wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
 			return
 		
-		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix
+		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
 		try: #Try to catch diff
 			data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
 			data=data.split('<!-- start content -->')[1]
