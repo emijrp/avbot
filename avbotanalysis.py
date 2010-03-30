@@ -30,25 +30,30 @@ import avbotmsg
 import avbotcomb
 
 class Diegus(threading.Thread):
-	def __init__(self, page, fun, value):
+	def __init__(self, page, fun, oldid, diff, revcount):
 		threading.Thread.__init__(self)
 		self.page=page
 		self.fun=fun
-		self.value=value
+		self.oldid=oldid
+		self.diff=diff
+		self.revcount=revcount
 		self.oldText=""
 		self.newText=""
 		self.pageHistory=[]
+		self.HTMLdiff=""
 		
 	def run(self):
 		#print self.page.title(), self.fun
 		if self.fun=='getOldVersionOldid':
-			self.oldText = self.page.getOldVersion(self.value, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+			self.oldText = self.page.getOldVersion(self.oldid, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
 			#print 'oldText', self.value, len(self.oldText)
 		elif self.fun=='getOldVersionDiff':
-			self.newText = self.page.getOldVersion(self.value, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+			self.newText = self.page.getOldVersion(self.diff, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
 			#print 'newText', self.value, len(self.newText)
 		elif self.fun=='getVersionHistory':
-			self.pageHistory = self.page.getVersionHistory(revCount=self.value)
+			self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
+		elif self.fun=='getUrl':
+			self.HTMLDiff = avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
 	
 	def getOldText(self):
 		return self.oldText
@@ -58,6 +63,9 @@ class Diegus(threading.Thread):
 		
 	def getPageHistory(self):
 		return self.pageHistory
+	
+	def getHTMLDiff(self):
+		return self.HTMLDiff
 	
 
 def sameOldid(editData):
@@ -480,34 +488,42 @@ def editAnalysis(editData):
 		# To get history
 		editData['oldText']=u''
 		editData['newText']=u''
-		try: #costoso? pero no queda otra
-			t1=time.time()
-			threadHistory=Diegus(editData['page'], 'getVersionHistory', 10)
-			threadOldid=Diegus(editData['page'], 'getOldVersionOldid', editData['oldid'])
-			threadDiff=Diegus(editData['page'], 'getOldVersionDiff', editData['diff'])
-			threadHistory.start()
-			threadOldid.start()
-			threadDiff.start()
-			threadHistory.join()
-			editData['pageHistory'] = threadHistory.getPageHistory()
-			threadOldid.join()
-			editData['oldText'] = threadOldid.getOldText()
-			threadDiff.join()
-			editData['newText'] = threadDiff.getNewText()
-			print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText'])
-			
-			"""t1=time.time()
-			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
-			#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
-			print 1, editData['pageTitle'], time.time()-t1
-			t1=time.time()
-			editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
-			print 2, editData['pageTitle'], time.time()-t1
-			t1=time.time()
-			editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
-			print 3, editData['pageTitle'], time.time()-t1"""
-		except:
-			return #No previous text? New? Exit
+		#try: #costoso? pero no queda otra
+		t1=time.time()
+		threadHistory=Diegus(editData['page'], 'getVersionHistory', editData['oldid'], editData['diff'], 10)
+		threadOldid=Diegus(editData['page'], 'getOldVersionOldid', editData['oldid'], editData['diff'], 10)
+		threadDiff=Diegus(editData['page'], 'getOldVersionDiff', editData['oldid'], editData['diff'], 10)
+		threadHTMLDiff=Diegus(editData['page'], 'getUrl', editData['oldid'], editData['diff'], 10)
+		threadHistory.start()
+		threadOldid.start()
+		threadDiff.start()
+		threadHTMLDiff.start()
+		threadHistory.join()
+		editData['pageHistory'] = threadHistory.getPageHistory()
+		threadOldid.join()
+		editData['oldText'] = threadOldid.getOldText()
+		threadDiff.join()
+		editData['newText'] = threadDiff.getNewText()
+		threadHTMLDiff.join()
+		editData['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
+		editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- start content -->')[1]
+		editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- end content -->')[0] #No change
+		cleandata=cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
+		print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText']), len(editData['HTMLDiff'])
+		
+		"""t1=time.time()
+		editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
+		#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
+		print 1, editData['pageTitle'], time.time()-t1
+		t1=time.time()
+		editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
+		print 2, editData['pageTitle'], time.time()-t1
+		t1=time.time()
+		editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
+		print 3, editData['pageTitle'], time.time()-t1"""
+		
+		#except:
+		#	return #No previous text? New? Exit
 		
 		editData['lenOld']  = len(editData['oldText'])
 		editData['lenNew']  = len(editData['newText'])
@@ -522,7 +538,7 @@ def editAnalysis(editData):
 			return
 		
 		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
-		try: #Try to catch diff
+		"""try: #Try to catch diff
 			t1=time.time()
 			data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
 			print 5, editData['pageTitle'], time.time()-t1
@@ -530,8 +546,7 @@ def editAnalysis(editData):
 			data=data.split('<!-- end content -->')[0] #No change
 		except:
 			return #No diff, exit
-		
-		cleandata=cleandiff(editData['pageTitle'], data) #To clean diff text and to extract inserted lines and words
+		"""
 		
 		#Analysis of this edit, must be reverted?
 		[reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
