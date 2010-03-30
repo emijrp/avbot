@@ -149,7 +149,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 								#evitamos revertir dos veces el mismo blanqueo, misma puntuacion
 								break
 				#excepto si es un vandalismo con otras palabras
-				elif editData['type']=='v' or editData['type']=='p':
+				elif editData['type']=='v' or editData['type']=='t' or editData['type']=='nn': #hace falta añadir las que no son BL para descartar C o entrará algún C alguna vez?
 					regexplist=avbotglobals.vandalControl[editData['author']][editData['diff']][2]
 					if len(editData['pageHistory'])-1>=c+1:
 						if avbotglobals.vandalControl[editData['author']].has_key(editData['pageHistory'][c+1][0]):
@@ -258,6 +258,7 @@ def mustBeReverted(editData, cleandata, userClass):
 		added=False #Avoid duplicate entries in the log
 		for i in m:
 			if avbotglobals.preferences['msg'][v['type']]['priority']>avbotglobals.preferences['msg'][editData['type']]['priority']:
+				#vandalism > test > contrapeso
 				editData['type']=v['type']
 			editData['score']+=v['score']
 			regexplist.append(k)
@@ -265,7 +266,9 @@ def mustBeReverted(editData, cleandata, userClass):
 				editData['details']+=u'%s\n' % (k)
 				added=True
 	
-	if editData['score']<0 and ((editData['score']>-5 and len(cleandata)<editData['score']*-150) or editData['score']<-4): #densidad
+	threshold=-4 #lower points, automatically reverted
+	density=150 #negative points allowed per length string
+	if editData['score']<0 and ((editData['score']>=threshold and len(cleandata)<abs(editData['score']*density)) or editData['score']<threshold): 
 		if avbotglobals.preferences['testmode']:
 			return True, editData
 		else:
@@ -276,7 +279,7 @@ def mustBeReverted(editData, cleandata, userClass):
 		if editData['namespace']==0:
 			regexplist=[] # ¿Si la enviamos vacía al revertalledits funciona? o depende del editData['type']?
 			enlaceexiste=False
-			anyoactual=datetime.date.today().year
+			anyoactual=int(datetime.date.today().year)
 			sections=editData['newText'].split("==")
 			births=""
 			deaths=""
@@ -289,12 +292,12 @@ def mustBeReverted(editData, cleandata, userClass):
 				c+=1
 			
 			if births:
-				m=re.compile(ur'(?i)\* *\[?\[?(\d{4})\]?\]? *?[\:\-] *?[^\[]*?\[\[([^\|\]]*?)(\|[^\]]*?)?\]\]').finditer(cleandata)
+				m=re.compile(ur'(?i)\* *\[?\[?(?P<year>\d{4})\]?\]? *?[\:\-] *?[^\[]*?\[\[(?P<enlace>[^\|\]]+?)(\|[^\]]*?)?\]\]').finditer(cleandata)
 				for i in m: #controlar si se ha metido mas de un cumpleaños?
-					anyo=i.group(1)
-					enlace=i.group(2)
-					wikipedia.output(u'--->[[%s]] - [[%s]]' % (anyo, enlace))
-					wii={}
+					anyo=int(i.group("year"))
+					enlace=i.group("enlace")
+					wikipedia.output(u'---Efeméride rara en [[%s]]--->[[%s]] - [[%s]]' % (editData['pageTitle'], anyo, enlace))
+					wii={} #por si quisieramos comprobar en otras wikis
 					wii['es']=wikipedia.Page(avbotglobals.preferences['site'], u'%s' % enlace)
 					try:
 						if wii['es'].exists():
@@ -302,25 +305,32 @@ def mustBeReverted(editData, cleandata, userClass):
 					except:
 						pass
 				
-					if not enlaceexiste and (re.search(u'(?i)%s.*%s' % (anyo, enlace), births) or re.search(u'(?i)%s.*%s' % (anyo, enlace), deaths)): #poner anyos futuros en los acontecimientos es posible
-						if int(anyo)>int(anyoactual):
-							return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-							motivo=u'Fecha imposible (Año %s)' % anyo
-			
-					if not enlaceexiste and re.search(u'(?i)%s.*%s' % (anyo, enlace), births):
-						if int(anyo)>=int(anyoactual)-20:
-							#que chico mas precoz, comprobemos su relevancia
-							wii['en']=wikipedia.Page(wikipedia.Site('en', 'wikipedia'), u'%s' % enlace)
-							#wii['de']=wikipedia.Page(wikipedia.Site('de', 'wikipedia'), u'%s' % enlace)
-							#wii['fr']=wikipedia.Page(wikipedia.Site('fr', 'wikipedia'), u'%s' % enlace)
-							
-							#la inglesa da error a veces, gestionamos la excepcion
-							try:
-								if not wii['en'].exists():
-									return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-									motivo=u'Posible efeméride irrelevante'
-							except:
-								pass
+					if enlaceexiste:
+						wikipedia.output(u"El artículo al que apunta la efeméride sí existe  : )")
+					else:
+						if anyo>anyoactual: #poner anyos futuros en los acontecimientos es posible, pero no en births o deaths
+							if re.search(u'(?i)%d.*%s' % (anyo, enlace), births) or re.search(u'(?i)%d.*%s' % (anyo, enlace), deaths): 
+								editData['type']='nn'
+								return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+								motivo=u'Fecha imposible (Año %d)' % anyo
+								wikipedia.output(motivo)
+				
+						elif re.search(u'(?i)%d.*%s' % (anyo, enlace), births):
+							if anyo>=anyoactual-20:
+								#que chico mas precoz, comprobemos su relevancia
+								wii['en']=wikipedia.Page(wikipedia.Site('en', 'wikipedia'), enlace)
+								#wii['de']=wikipedia.Page(wikipedia.Site('de', 'wikipedia'), enlace)
+								#wii['fr']=wikipedia.Page(wikipedia.Site('fr', 'wikipedia'), enlace)
+								
+								#la inglesa da error a veces, gestionamos la excepcion
+								try:
+									if not wii['en'].exists():
+										editData['type']='nn'
+										return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+										motivo=u'Posible efeméride irrelevante, no existe en la inglesa'
+										wikipedia.output(motivo)
+								except:
+									pass
 	
 	return reverted, editData
 

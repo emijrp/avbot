@@ -80,9 +80,9 @@ wikipedia.output(header)
 
 avbotcomb.getParameters()
 
-if avbotcomb.checkForUpdates():
-	wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
-	#sys.exit()
+#if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta con la absoluta)
+#	wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
+#	#sys.exit()
 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 if not preferences['nosave']:
@@ -105,9 +105,9 @@ namespaces[3] = avbotcomb.namespaceTranslator(3)
 
 global statsDic
 statsDic={}
-statsDic[2]  = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
-statsDic[12] = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
-statsDic[24] = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0}
+statsDic[2]  = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0}
+statsDic[12] = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0}
+statsDic[24] = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0}
 
 global statsTimersDic
 statsTimersDic={'speed':0, 2: time.time(), 12: time.time(), 24: time.time(), 'tvel': time.time()}

@@ -133,7 +133,7 @@ class BOT(SingleServerIRCBot):
 					editData['minor'] = True
 				editData['resume']    = m.group('resume')
 				
-				avbotanalysis.updateStats('t')
+				avbotanalysis.updateStats('total')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
 				#Avoid to check our edits
@@ -183,7 +183,7 @@ class BOT(SingleServerIRCBot):
 					editData['minor']=True
 				editData['resume']=u''
 				
-				avbotanalysis.updateStats('t')
+				avbotanalysis.updateStats('total')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
 				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
@@ -243,7 +243,7 @@ class BOT(SingleServerIRCBot):
 			intervalo = int(time.time()-avbotglobals.statsTimersDic['tvel'])
 			wikipedia.output(u'\03{lightgreen}%s working for %s: language of %s project\03{default}' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['language'], avbotglobals.preferences['family']))
 			wikipedia.output(u'\03{lightgreen}Average speed: %d edits/minute\03{default}' % int(avbotglobals.statsTimersDic['speed']/(intervalo/60.0)))
-			wikipedia.output(u'\03{lightgreen}Last 2 hours: V[%d], BL[%d], P[%d], S[%d], B[%d], M[%d], T[%d], D[%d]\03{default}' % (avbotglobals.statsDic[2]['v'], avbotglobals.statsDic[2]['bl'], avbotglobals.statsDic[2]['p'], avbotglobals.statsDic[2]['s'], avbotglobals.statsDic[2]['b'], avbotglobals.statsDic[2]['m'], avbotglobals.statsDic[2]['t'], avbotglobals.statsDic[2]['d']))
+			wikipedia.output(u'\03{lightgreen}Last 2 hours: Vandalism[%d], Blanking[%d], Test[%d], S[%d], Good[%d], Bad[%d], Total[%d], Delete[%d]\03{default}' % (avbotglobals.statsDic[2]['v'], avbotglobals.statsDic[2]['bl'], avbotglobals.statsDic[2]['t'], avbotglobals.statsDic[2]['s'], avbotglobals.statsDic[2]['good'], avbotglobals.statsDic[2]['bad'], avbotglobals.statsDic[2]['total'], avbotglobals.statsDic[2]['d']))
 			legend=u''
 			for k,v in avbotglobals.preferences['colors'].items():
 				legend+=u'\03{%s}%s\03{default}, ' % (v, k)
@@ -253,13 +253,13 @@ class BOT(SingleServerIRCBot):
 		
 		#Recalculating statistics
 		for period in [2, 12, 24]: #Every 2, 12 and 24 hours
-			avbotglobals.statsDic[period]['m']=avbotglobals.statsDic[period]['v']+avbotglobals.statsDic[period]['bl']+avbotglobals.statsDic[period]['p']+avbotglobals.statsDic[period]['s']
-			avbotglobals.statsDic[period]['b']=avbotglobals.statsDic[period]['t']-avbotglobals.statsDic[period]['m']
+			avbotglobals.statsDic[period]['bad']=avbotglobals.statsDic[period]['v']+avbotglobals.statsDic[period]['bl']+avbotglobals.statsDic[period]['t']+avbotglobals.statsDic[period]['s']
+			avbotglobals.statsDic[period]['good']=avbotglobals.statsDic[period]['total']-avbotglobals.statsDic[period]['bad']
 			
 			if time.time()-avbotglobals.statsTimersDic[period]>=3600*period:
 				avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
 				avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
-				avbotglobals.statsDic[period]       = {'v':0,'bl':0,'p':0,'s':0,'b':0,'m':0,'t':0,'d':0} #Blanking statistics for a new period
+				avbotglobals.statsDic[period]       = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0} #Blanking statistics for a new period
 
 def main():
 	""" Crea un objeto BOT y lo lanza """

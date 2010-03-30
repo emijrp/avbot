@@ -184,7 +184,7 @@ def resumeTranslator(editData):
 	if avbotglobals.preferences['language']=='es':
 		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	else:
-		resume=u'BOT - Possible %s by [[Special:Contributions/%s|%s]], reverting to %s edit by [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'], editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+		resume=u'BOT - Reverting possible %s by [[Special:Contributions/%s|%s]] to %s version by [[User:%s|%s]]. False positive? [[User:AVBOT/FalsePositives|Report it]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	
 	return resume
 
@@ -337,14 +337,17 @@ def checkForUpdates():
 	svn='http://avbot.googlecode.com/svn/trunk/'
 	f=urllib.urlopen(svn)
 	html=f.read()
-	m=re.compile(ur"\<file name\=\"([^\"]+?\.py)\" href\=\"\1\" \/\>").finditer(html)
+	m=re.compile(ur">(?P<filename>[^<]+?\.py)</a>").finditer(html)
 	for i in m:
-		filename=i.group(1)
+		filename=i.group("filename")
+		wikipedia.output(u"Checking file %s..." % filename)
 		g=open(filename, 'r')
 		h=urllib.urlopen(svn+filename)
 		if g.read()!=h.read():
-			wikipedia.output(u"%s has changed" % filename)
+			wikipedia.output(u"%s has changed!!!" % filename)
 			return True
+		else:
+			wikipedia.output(u"[OK]")
 	f.close()
 	return False
 

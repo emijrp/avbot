@@ -131,9 +131,10 @@ def loadMessages():
 			if l[0]=='#' or l[0]=='<':
 				continue
 			trozos=l.split(';;')
+			#print trozos
 			type=trozos[0].lower()
 			priority=int(trozos[1])
-			meaning=trozos[2]
+			meaning=trozos[2].lower()
 			template=trozos[3]
 			avbotglobals.preferences['msg'][type]={'priority': priority, 'meaning': meaning, 'template': template,}
 

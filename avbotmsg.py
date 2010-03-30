@@ -82,15 +82,12 @@ def sendMessage(author, wtitle, diff, n, tipo):
 	#esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
 	time.sleep(random.randint(5,10))
 	
-	if avbotglobals.preferences['site'].lang!='es':
+	if avbotglobals.preferences['site'].lang not in ['es', 'en']:
 		return
 	talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
 	
 	avisotexto=u""
-	wtitle2=wtitle
 	wtext=u""
-	if re.search(ur'(?i)Categor(ía|y)\:', wtitle2):
-		wtitle2=u':%s' % wtitle2
 	if talkpage.exists() and not talkpage.isRedirectPage():
 		wtext=talkpage.get()
 	
@@ -102,10 +99,10 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		return
 	
 	if n==3: #If n>3, no more messages
-		template=u"%sInminente.css" % avbotglobals.preferences['msg'][tipo]['template']
+		template=u"%s2.css" % avbotglobals.preferences['msg'][tipo]['template']
 		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
 		if templatepage.exists():
-			avisotexto+=u"{{subst:%s|%s|%s}}" % (template, wtitle2, diff)
+			avisotexto+=u"{{subst:%s|%s|%s}}" % (template, wtitle, diff)
 		else:
 			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff' % template)
 			sys.exit()
@@ -113,7 +110,7 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		template=u"%s.css" % avbotglobals.preferences['msg'][tipo]['template']
 		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
 		if templatepage.exists():
-			avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (template, wtitle2, diff, n)
+			avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (template, wtitle, diff, n)
 		else:
 			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
 			sys.exit()
@@ -123,7 +120,10 @@ def sendMessage(author, wtitle, diff, n, tipo):
 			wtext+="\n\n"
 		wtext+=avisotexto
 		if not avbotglobals.preferences['nosave']:
-			talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n))
+			if avbotglobals.preferences['site'].lang=='en':
+				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n))
+			elif avbotglobals.preferences['site'].lang=='es':
+				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n))
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """
