@@ -20,7 +20,7 @@
 # Módulo para detectar vandalismos, blanqueos, ediciones de prueba, y analizar páginas nuevas
 
 import re, wikipedia, datetime
-import random
+import random, time
 
 # AVBOT modules
 import avbotglobals
@@ -37,7 +37,9 @@ def sameOldid(editData):
 		return editData
 	else:
 		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&offset=20090507213843&limit=10&action=history
+		t1=time.time()
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso?
+		print 4, editData['pageTitle'], time.time()-t1
 		return editData
 
 def isSameVandalism(regexlistold, regexlistnew):
@@ -448,10 +450,16 @@ def editAnalysis(editData):
 		editData['oldText']=u''
 		editData['newText']=u''
 		try: #costoso? pero no queda otra
+			t1=time.time()
 			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
 			#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
+			print 1, editData['pageTitle'], time.time()-t1
+			t1=time.time()
 			editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
+			print 2, editData['pageTitle'], time.time()-t1
+			t1=time.time()
 			editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
+			print 3, editData['pageTitle'], time.time()-t1
 		except:
 			return #No previous text? New? Exit
 		
@@ -469,7 +477,9 @@ def editAnalysis(editData):
 		
 		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
 		try: #Try to catch diff
+			t1=time.time()
 			data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
+			print 5, editData['pageTitle'], time.time()-t1
 			data=data.split('<!-- start content -->')[1]
 			data=data.split('<!-- end content -->')[0] #No change
 		except:
