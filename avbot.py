@@ -198,26 +198,26 @@ class BOT(SingleServerIRCBot):
 				blocker=m.group('blocker')
 				blocked=m.group('blocked')
 				block=m.group('block')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) ha sido bloqueado por [[User:%s]] (%d) por un plazo de %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
+				wikipedia.output(u'\03{lightblue}Log: [[User:%s]] (%d) has been blocked by [[User:%s]] (%d) for %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
 				thread.start_new_thread(avbotcomb.blockedUser,(blocker,blocked,block))
 		elif re.search(avbotglobals.parserRegexps['nuevousuario'], line):
 			match=avbotglobals.parserRegexps['nuevousuario'].finditer(line)
 			for m in match:
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[User:%s]] (%d) se acaba de registrar.\03{default}' % (usuario, len(usuario)))
+				wikipedia.output(u'\03{lightblue}Log: [[User:%s]] (%d) has signed up.\03{default}' % (usuario, len(usuario)))
 		elif re.search(avbotglobals.parserRegexps['borrado'], line):
 			match=avbotglobals.parserRegexps['borrado'].finditer(line)
 			for m in match:
 				pageTitle=m.group('pageTitle')
 				usuario=m.group('usuario')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido borrado por [[User:%s]]\03{default}' % (pageTitle, usuario))
+				wikipedia.output(u'\03{lightblue}Log: [[%s]] has been deleted by [[User:%s]]\03{default}' % (pageTitle, usuario))
 		elif re.search(avbotglobals.parserRegexps['traslado'], line):
 			match=avbotglobals.parserRegexps['traslado'].finditer(line)
 			for m in match:
 				usuario=m.group('usuario')
 				origen=m.group('origen')
 				destino=m.group('destino')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] ha sido trasladado a [[%s]] por [[User:%s]]\03{default}' % (origen, destino, usuario))
+				wikipedia.output(u'\03{lightblue}Log: [[%s]] has been moved to [[%s]] by [[User:%s]]\03{default}' % (origen, destino, usuario))
 		elif re.search(avbotglobals.parserRegexps['protegida'], line):
 			match=avbotglobals.parserRegexps['protegida'].finditer(line)
 			for m in match:
@@ -225,7 +225,7 @@ class BOT(SingleServerIRCBot):
 				protecter=m.group('protecter')
 				edit=m.group('edit')
 				move=m.group('move')
-				wikipedia.output(u'\03{lightblue}Registro combinado: [[%s]] (%d) ha sido protegida por [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
+				wikipedia.output(u'\03{lightblue}Log: [[%s]] (%d) has been protected by [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
 				#http://es.wikipedia.org/w/index.php?oldid=23222363#Candados
 				#if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
 				#	thread.start_new_thread(avbotcomb.semiprotect,(pageTitle,protecter))

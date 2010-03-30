@@ -315,7 +315,7 @@ def updateUserDataIfNeeded(editData):
 			avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
 		
 		#Saving user edits file...
-		if not random.randint(0,200):
+		if not random.randint(0,250): #Cada 250 ediciones no anónimas, está bien...
 			avbotsave.saveEdits(avbotglobals.userData['edits'])
 
 def checkBlockInEnglishWikipedia(editData):
