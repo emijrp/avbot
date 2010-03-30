@@ -20,7 +20,7 @@
 # Módulo para detectar vandalismos, blanqueos, ediciones de prueba, y analizar páginas nuevas
 
 import re, wikipedia, datetime
-import random, time
+import random, time, threading
 
 # AVBOT modules
 import avbotglobals
@@ -28,6 +28,37 @@ import avbotload
 import avbotsave
 import avbotmsg
 import avbotcomb
+
+class Diegus(threading.Thread):
+	def __init__(self, page, fun, value):
+		threading.Thread.__init__(self)
+		self.page=page
+		self.fun=fun
+		self.value=value
+		self.oldText=""
+		self.newText=""
+		self.pageHistory=[]
+		
+	def run(self):
+		#print self.page.title(), self.fun
+		if self.fun=='getOldVersionOldid':
+			self.oldText = self.page.getOldVersion(self.value, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+			#print 'oldText', self.value, len(self.oldText)
+		elif self.fun=='getOldVersionDiff':
+			self.newText = self.page.getOldVersion(self.value, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+			#print 'newText', self.value, len(self.newText)
+		elif self.fun=='getVersionHistory':
+			self.pageHistory = self.page.getVersionHistory(revCount=self.value)
+	
+	def getOldText(self):
+		return self.oldText
+	
+	def getNewText(self):
+		return self.newText
+		
+	def getPageHistory(self):
+		return self.pageHistory
+	
 
 def sameOldid(editData):
 	""" Are both the same oldid? """
@@ -451,6 +482,21 @@ def editAnalysis(editData):
 		editData['newText']=u''
 		try: #costoso? pero no queda otra
 			t1=time.time()
+			threadHistory=Diegus(editData['page'], 'getVersionHistory', 10)
+			threadOldid=Diegus(editData['page'], 'getOldVersionOldid', editData['oldid'])
+			threadDiff=Diegus(editData['page'], 'getOldVersionDiff', editData['diff'])
+			threadHistory.start()
+			threadOldid.start()
+			threadDiff.start()
+			threadHistory.join()
+			editData['pageHistory'] = threadHistory.getPageHistory()
+			threadOldid.join()
+			editData['oldText'] = threadOldid.getOldText()
+			threadDiff.join()
+			editData['newText'] = threadDiff.getNewText()
+			print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText'])
+			
+			"""t1=time.time()
 			editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
 			#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
 			print 1, editData['pageTitle'], time.time()-t1
@@ -459,7 +505,7 @@ def editAnalysis(editData):
 			print 2, editData['pageTitle'], time.time()-t1
 			t1=time.time()
 			editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
-			print 3, editData['pageTitle'], time.time()-t1
+			print 3, editData['pageTitle'], time.time()-t1"""
 		except:
 			return #No previous text? New? Exit
 		
