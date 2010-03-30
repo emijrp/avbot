@@ -75,22 +75,35 @@ def loadEdits():
 	
 	avbotglobals.userData['edits']=ediciones
 
-def loadUsers(type):
+def loadUsers(group):
 	""" Captura lista de usuarios de Wikipedia según el tipo deseado """
 	""" Fetch user list by class """
-	users=[]
-	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:Listusers&limit=5000&group=%s" % type)
+	
+	"""vieja forma de hacerlo (un poco fea) users=[]
+	data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:Listusers&limit=5000&group=%s" % group)
 	data=data.split('<!-- start content -->')
 	data=data[1].split('<!-- end content -->')[0]
 	namespace=avbotcomb.namespaceTranslator(2)
 	m=re.compile(ur" title=\"%s:(.*?)\">" % namespace).finditer(data)
 	for i in m:
 		users.append(i.group(1))
-	wikipedia.output(u"Loaded info for %d %ss from [[Special:Listusers]]" % (len(users), type))
-	avbotglobals.userData[type]=users
+	wikipedia.output(u"Loaded info for %d %ss from [[Special:Listusers]]" % (len(users), group))
+	avbotglobals.userData[group]=users"""
+	users=[]
+	aufrom="!"
+	while aufrom:
+		query=wikipedia.query.GetData({'action':'query', 'list':'allusers', 'augroup':group, 'aulimit':'500', 'aufrom':aufrom},site=avbotglobals.preferences['site'],useAPI=True)
+		for allusers in query['query']['allusers']:
+			users.append(allusers['name'])
+		if query.has_key('query-continue'):
+			aufrom=query.has_key('query-continue')
+		else:
+			aufrom=""
+	wikipedia.output(u"Loaded info for %d %ss from [[Special:Listusers]]" % (len(users), group))
+	avbotglobals.userData[group]=users
 
 def loadSysops():
-	""" Carga lista de administradores """
+	""" Carga lista de sysops """
 	""" Load sysops list """
 	loadUsers('sysop')
 
@@ -98,6 +111,21 @@ def loadBots():
 	""" Carga lista de bots """
 	""" Load bots list """
 	loadUsers('bot')
+	
+def loadBureaucrats():
+	""" Carga lista de bureaucrats """
+	""" Load bureaucrats list """
+	loadUsers('bureaucrat')
+
+def loadCheckusers():
+	""" Carga lista de checkusers """
+	""" Load checkusers list """
+	loadUsers('checkuser')
+
+def loadStewards():
+	""" Carga lista de stewards """
+	""" Load stewards list """
+	loadUsers('steward')
 
 def loadMessages():
 	""" Carga preferencias sobre mensajes """

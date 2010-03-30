@@ -360,28 +360,30 @@ def cleandiff(pageTitle, data):
 	marker=' ; ' #no poner ;;; porque da falsos positivos con regexp de repetición de caracteres
 	clean=marker
 	
-	trozos=data.split('<tr>')[2:] #el 1 contiene el numero de linea, nos lo saltamos
-	for trozo in trozos:
-		try:
-			trozo=trozo.split('</tr>')[0] #no es que sea necesario pero...
-			if re.search(ur'diff-context', trozo): #linea de contexto, nos la saltamos
-				continue
-			elif re.search(ur'diff-addedline', trozo):
-				if re.search(ur'diff-deletedline', trozo): #sustitucion/añadido/eliminacion de algo, nos quedamos con lo de dentro del diffchange, dentro del diff-addedline
-					trozo=((trozo.split('<td class="diff-addedline">')[1]).split('</td>'))[0]
-					m=re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>').finditer(trozo)
-					for i in m:
-						clean+=u'%s%s%s' % (marker, i.group('text'), marker)
-				else: #se trata de una linea nueva añadida, nos quedamos con lo de dentro del diff-addedline
-					if re.search(ur'<td class="diff-addedline"><div>', trozo):
-						trozo=((trozo.split('<td class="diff-addedline"><div>')[1]).split('</div></td>'))[0]
-					else:
+	trozos=data.split('<tr>') 
+	if len(trozos)>=3:
+		trozos=trozos[2:] #....(0 cosas)<tr>(1 info sobre líneas</tr>)<tr>(2 lo que nos interesa... # el 1 contiene el numero de línea, nos lo saltamos
+		for trozo in trozos:
+			try:
+				trozo=trozo.split('</tr>')[0] #no es que sea necesario pero...
+				if re.search(avbotglobals.parserRegexps['cleandiff-diff-context'], trozo): #linea de contexto, nos la saltamos
+					continue
+				elif re.search(avbotglobals.parserRegexps['cleandiff-diff-addedline'], trozo):
+					if re.search(avbotglobals.parserRegexps['cleandiff-diff-deletedline'], trozo): #sustitucion/añadido/eliminacion de algo, nos quedamos con lo de dentro del diffchange, dentro del diff-addedline
 						trozo=((trozo.split('<td class="diff-addedline">')[1]).split('</td>'))[0]
-					clean+=u'%s%s%s' % (marker, trozo, marker)
-		except:
-			wikipedia.output(u'ERROR: %s' % trozo)
-	
-	clean=re.sub(ur'[\n\r]', ur' ', clean) #no new lines
+						m=avbotglobals.parserRegexps['cleandiff-diffchange'].finditer(trozo)
+						for i in m:
+							clean+=u'%s%s%s' % (marker, i.group('text'), marker)
+					else: #se trata de una linea nueva añadida, nos quedamos con lo de dentro del diff-addedline
+						if re.search(avbotglobals.parserRegexps['cleandiff-diff-addedline-div'], trozo):
+							trozo=((trozo.split('<td class="diff-addedline"><div>')[1]).split('</div></td>'))[0]
+						else:
+							trozo=((trozo.split('<td class="diff-addedline">')[1]).split('</td>'))[0]
+						clean+=u'%s%s%s' % (marker, trozo, marker)
+			except:
+				wikipedia.output(u'ERROR: %s' % trozo)
+		
+	clean=re.sub(ur'(?m)[\n\r]', ur' ', clean) #no new lines
 	
 	#if len(clean)<3000:
 	#	wikipedia.output(clean)
@@ -471,7 +473,7 @@ def editAnalysis(editData):
 		
 		cleandata=cleandiff(editData['pageTitle'], data) #To clean diff text and to extract inserted lines and words
 		
-		#Vandalism analysis
+		#Analysis of this edit, must be reverted?
 		[reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
 		if reverted: 
 			wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, avbotglobals.preferences['msg'][editData['type']]['meaning'].lower(), editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))

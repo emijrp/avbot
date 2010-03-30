@@ -131,6 +131,11 @@ excludedPages={}
 
 global parserRegexps
 parserRegexps={
+	'cleandiff-diff-context': re.compile(ur'diff-context'),
+	'cleandiff-diff-addedline': re.compile(ur'diff-addedline'),
+	'cleandiff-diff-addedline-div': re.compile(ur'<td class="diff-addedline"><div>'),
+	'cleandiff-diff-deletedline': re.compile(ur'diff-deletedline'),
+	'cleandiff-diffchange': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)(?P<text>[^<]*?)</(ins|span)>'),
 	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly
 	'block':          re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<block>.*?)\"'),
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac

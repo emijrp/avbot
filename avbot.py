@@ -70,7 +70,10 @@ class BOT(SingleServerIRCBot):
 		
 		""" Data loaders """
 		avbotload.loadEdits()
+		avbotload.loadStewards()
 		avbotload.loadSysops()
+		avbotload.loadBureaucrats()
+		avbotload.loadCheckusers()
 		avbotload.loadBots()
 		avbotload.loadExclusions()
 		

@@ -283,9 +283,15 @@ def getUserClass(editData):
 	""" Check user class """
 	
 	userClass='anon'
-	if avbotglobals.userData['sysop'].count(editData['author'])!=0:
+	if avbotglobals.userData['steward'].count(editData['author']):
+		userClass='steward'
+	elif avbotglobals.userData['sysop'].count(editData['author']):
 		userClass='sysop'
-	elif avbotglobals.userData['bot'].count(editData['author'])!=0:
+	elif avbotglobals.userData['bureaucrat'].count(editData['author']):
+		userClass='bureaucrat'
+	elif avbotglobals.userData['checkuser'].count(editData['author']):
+		userClass='checkuser'
+	elif avbotglobals.userData['bot'].count(editData['author']):
 		userClass='bot'
 	elif not re.search(avbotglobals.parserRegexps['ip'], editData['author']):
 		userClass='reg'
