@@ -134,7 +134,7 @@ def loadMessages():
 	if avbotglobals.preferences['site'].lang=='es':
 		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:Emijrp/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['messages'])) #Fijo a Emijrp para los clones de es:
 	else:
-		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], tras)) 
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], avbotglobals.preferences['messages'])) 
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -142,8 +142,8 @@ def loadMessages():
 	else:
 		ownerNick=avbotglobals.preferences['ownerNick']
 		wikipedia.output(u'A preferences page is needed in [[%s]]' % p.title())
-		wikipedia.output(u'<pre>\n\n#Introduce a message per line.\n\nV;;100;;Vandalismo;;User:%s/AvisoVandalismo.css;;\nBL;;50;;Blanqueo;;User:%s/AvisoBlanqueo.css;;\nP;;10;;Prueba;;User:%s/AvisoPrueba.css;;\n#dummie\nC;;-100;;Contrapeso;;User:%s/AvisoContrapeso.css;;\n\n</pre>' % (ownerNick, ownerNick, ownerNick, ownerNick))
-		wikipedia.output('A preferences page is needed. Please, look last bot edits.')
+		wikipedia.output(u'<pre>\n\n#Insert one message per line.\n\nV;;100;;Vandalismo;;User:%s/AvisoVandalismo;;\nBL;;50;;Blanqueo;;User:%s/AvisoBlanqueo;;\nP;;10;;Prueba;;User:%s/AvisoPrueba;;\n#dummie\nC;;-100;;Contrapeso;;User:%s/AvisoContrapeso;;\n\n</pre>' % (ownerNick, ownerNick, ownerNick, ownerNick))
+		#wikipedia.output('A preferences page is needed. Please, look last bot edits.')
 		if not avbotglobals.preferences['force']:
 			sys.exit()
 	
