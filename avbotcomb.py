@@ -66,7 +66,7 @@ def blockedUser(blocker, blocked, castigo):
 			if newvectext!=vectext:
 				#wikipedia.showDiff(vectext, newvectext)
 				if not avbotglobals.preferences['nosave']:
-					pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo))
+					pvec.put(newvectext, u'BOT - [[Special:Contributions/%s|%s]] acaba de ser bloqueado por [[User:%s|%s]] %s' % (blocked, blocked, blocker, blocker, castigo), botflag=False, maxTries=1)
 				wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
 			else:
 				wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
@@ -75,7 +75,7 @@ def blockedUser(blocker, blocked, castigo):
 			"""if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
 				userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
 				if not avbotglobals.preferences['nosave']:
-					userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo)
+					userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo, botflag=False, maxTries=1)
 				wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
 			
 
@@ -90,7 +90,7 @@ def semiprotect(titulo, protecter):
 			semitext=p.get()
 			if not re.search(ur'(?i)\{\{ *(Semiprotegida|Semiprotegido|Semiprotegida2|Pp\-semi\-template)', semitext):
 				if not avbotglobals.preferences['nosave']:
-					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter))
+					p.put(u'{{Semiprotegida|pequeño=sí}}\n%s' % semitext, u'BOT - Añadiendo {{Semiprotegida|pequeño=sí}} a la página recién semiprotegida por [[Special:Contributions/%s|%s]]' % (protecter, protecter), botflag=False, maxTries=1)
 				wikipedia.output(u'\03{lightblue}Aviso: Poniendo {{Semiprotegida}} en [[%s]]\03{default}' % titulo)
 			else:
 				wikipedia.output(u'\03{lightblue}Aviso:[[%s]] ya tiene {{Semiprotegida}}\03{default}' % titulo)
@@ -366,9 +366,3 @@ def existenceFile():
 			existFile.write(str("hi"))
 			existFile.close()
 		time.sleep(60) # debe ser menor que el time del cron / 2
-
-"""
-def put(pageobject, newtext, summary):
-	if not avbotglobals.preferences['nosave']:
-		pageobject.put(newtext, summary)
-"""

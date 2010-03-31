@@ -42,4 +42,4 @@ def saveStats(stats, hours, site):
 	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
 	if not avbotglobals.preferences['nosave']:
 		wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
-		wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen))
+		wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen), botflag=False, maxTries=1)

@@ -211,7 +211,7 @@ def loadRegexpList():
 		ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal/Sorted' % avbotglobals.preferences['botNick'])
 		output=u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort))
 		if ordenada.get()!=output:		
-			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]')
+			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]', botflag=True, maxTries=1)
 	
 	wikipedia.output(u'\nLoaded %s regular expresions...' % (len(avbotglobals.vandalRegexps.items())))
 	
@@ -229,14 +229,14 @@ def reloadRegexpList(author, diff):
 		if p.exists() and not re.search(ur"%s" % diff, p.get()):
 			if changedRegexpsList(oldVandalRegexps, avbotglobals.vandalRegexps):
 				if error:
-					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), error, p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps), botflag=False, maxTries=1)
 				else:
-					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha modificado la lista ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]). Ahora hay %d expresiones regulares válidas.\n%s' % (author, avbotglobals.preferences['language'], ownerNick, diff, len(avbotglobals.vandalRegexps), p.get()), u'BOT - La lista ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps), botflag=False, maxTries=1)
 			else:
 				if error:
-					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, error, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps), botflag=False, maxTries=1)
 				else:
-					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps))"""
+					p.put(u'* {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, {{subst:CURRENTTIME}} (UTC): {{u|%s}} ha editado la página pero hay las mismas %d expresiones regulares válidas ([http://%s.wikipedia.org/w/index.php?title=User:%s/Lista_del_bien_y_del_mal.css&diff=%s&oldid=prev ver diff]).\n%s' % (author, len(avbotglobals.vandalRegexps), avbotglobals.preferences['language'], ownerNick, diff, p.get()), u'BOT - La lista no ha cambiado. Total [%d]' % len(avbotglobals.vandalRegexps), botflag=False, maxTries=1)"""
 	return
 
 def loadUserEdits(author):

@@ -214,7 +214,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 					if not editData['page'].exists():
 						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
 						return False, editData #Exit
-				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
+				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1) # 1 sólo intento y descartar, sin flag
 			print 'put', time.time()-t1, editData['pageTitle']
 			
 			#Send message to user
@@ -240,7 +240,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 				type=editData['type']
 				msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']))
-				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
+				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1)
 			
 			return True, editData
 		c+=1

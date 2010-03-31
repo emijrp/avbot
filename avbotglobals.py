@@ -91,9 +91,9 @@ avbotcomb.getParameters()
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 if not preferences['nosave']:
 	testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-	testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=1) #same text always, avoid avbotcron edit panic
 	testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
-	testEdit.put(u'Test edit', u'BOT - Arrancando robot') #same text always, avoid avbotcron edit panic
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=1) #same text always, avoid avbotcron edit panic
 
 if not preferences['channel']:
 	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
