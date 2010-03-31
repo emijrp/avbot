@@ -19,10 +19,16 @@
 # Module for detect vandalisms, blanking, testing edits, new pages analysis\n
 # Módulo para detectar vandalismos, blanqueos, ediciones de prueba, y analizar páginas nuevas
 
-import re, wikipedia, datetime
-import random, time, threading
+import re
+import datetime
+import random
+import time
+import threading
 
-# AVBOT modules
+""" pywikipediabot modules """
+import wikipedia
+
+""" AVBOT modules """
 import avbotglobals
 import avbotload
 import avbotsave
@@ -51,7 +57,7 @@ class Diegus(threading.Thread):
 			self.newText = self.page.getOldVersion(self.diff, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
 			#print 'newText', self.value, len(self.newText)
 		elif self.fun=='getVersionHistory':
-			self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
+			self.pageHistory = self.page.getVersionHistory(forceReload=True, revCount=self.revcount)
 		elif self.fun=='getUrl':
 			self.HTMLDiff = avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
 	
@@ -216,7 +222,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 					if not editData['page'].exists():
 						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
 						return False, editData #Exit
-				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1) # 1 sólo intento y descartar, sin flag
+				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData)) #, botflag=False, maxTries=1 1 sólo intento y descartar, sin flag
 			print 'put', time.time()-t1, editData['pageTitle']
 			
 			#Send message to user
@@ -242,7 +248,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 				type=editData['type']
 				msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']))
-				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1)
+				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
 			
 			return True, editData
 		c+=1

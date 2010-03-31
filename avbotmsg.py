@@ -20,13 +20,15 @@
 # Módulo para enviar mensajes
 
 import re
-import wikipedia
 import os
 import sys
 import time
 import random
 
-# AVBOT modules
+""" pywikipediabot modules """
+import wikipedia
+
+""" AVBOT modules """
 import avbotglobals
 import avbotcomb
 
@@ -61,42 +63,49 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 			resume+=u" (Posible proxy)"
 		report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
 	if not avbotglobals.preferences['nosave']:
-		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume), botflag=False, maxTries=1)
+		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
 
 def haveIRevertedThisVandalism(wtitle, diff):
 	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
 	""" Check if this bot has reverted this vandalism """
 	vandalisedPage=wikipedia.Page(avbotglobals.preferences['site'], wtitle)
-	vandalisedPageHistory=vandalisedPage.getVersionHistory(revCount=avbotglobals.preferences['historyLength']) #con 10 creo que es suficiente, no van a haber editado tanto desde que se revirtió
-	c=0
-	while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
-		c+=1
-	if c>0 and vandalisedPageHistory[c-1][2]==avbotglobals.preferences['botNick']:
-		return True
-	else:
-		return False
+	vandalisedPageHistory=vandalisedPage.getVersionHistory(forceReload=True, revCount=avbotglobals.preferences['historyLength']) #con 10 creo que es suficiente, no van a haber editado tanto desde que se revirtió
+	print vandalisedPageHistory
+	try: #fix mirar porque falla y no sale la más nueva
+		c=0
+		while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
+			c+=1
+		if c>0 and vandalisedPageHistory[c-1][2]==avbotglobals.preferences['botNick']:
+			return True
+		else:
+			if vandalisedPageHistory[c][0]==diff:
+				print '-'*75
+				print "Lag?"
+				print '-'*75
+				print vandalisedPageHistory
+				print '-'*75
+			return False
+	except:
+		False
 
 def sendMessage(author, wtitle, diff, n, tipo):
 	""" Envía mensajes de advertencia a un usuario """
 	""" Send messages to an user  """
 	#esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
 	time.sleep(random.randint(5,10))
+	#Ha revertido el bot u otro usuario?
+	if not haveIRevertedThisVandalism(wtitle, diff):
+		return
 	if avbotglobals.preferences['site'].lang not in ['es', 'en']:
 		return
 	talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
-	
 	avisotexto=u""
 	wtext=u""
 	if talkpage.exists() and not talkpage.isRedirectPage():
 		wtext=talkpage.get()
-	
-	#he revertido yo u otro usuario?
-	if not haveIRevertedThisVandalism(wtitle, diff):
-		return
 	#evitamos avisar dos veces
 	if re.search(ur'(?im)%s' % diff, wtext): #existe ya un aviso para esta oldid?
 		return
-	
 	if n==3: #If n>3, no more messages
 		template=u"%s2.css" % avbotglobals.preferences['msg'][tipo]['template']
 		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
@@ -113,16 +122,15 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		else:
 			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
 			sys.exit()
-	
 	if avisotexto:
 		if wtext:
 			wtext+="\n\n"
 		wtext+=avisotexto
 		if not avbotglobals.preferences['nosave']:
 			if avbotglobals.preferences['site'].lang=='en':
-				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1)
+				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n))
 			elif avbotglobals.preferences['site'].lang=='es':
-				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1) #poner a true si lo aceptan
+				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n)) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """
@@ -135,4 +143,4 @@ def msgBlock(blocked, blocker):
 		avisotexto+=u"%s\n\n" % aviso.get()
 	avisotexto+=u"{{subst:User:%s/AvisoBloqueo.css|%s}}" % (avbotglobals.preferences['ownerNick'], blocker)
 	if not avbotglobals.preferences['nosave']:
-		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker), botflag=False, maxTries=1)
+		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))

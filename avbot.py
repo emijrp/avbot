@@ -43,7 +43,8 @@ from ircbot import SingleServerIRCBot
 from irclib import nm_to_n, nm_to_h, irc_lower, ip_numstr_to_quad, ip_quad_to_numstr
 
 """ pywikipediabot modules """
-import wikipedia, difflib
+import wikipedia
+import difflib
 
 """ AVBOT modules """
 import avbotglobals  #Shared info
@@ -153,6 +154,10 @@ class BOT(SingleServerIRCBot):
 				
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 				
+				# Avoid to check our edits, aunque ya se chequea en editAnalysis
+				if editData['author'] == avbotglobals.preferences['botNick']: 
+					return #Exit
+		
 				#Check resume for reverts
 				if avbotglobals.preferences['language']=='es' and re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!=u'Usuario:AVBOT/Errores/Automático':
 					if not avbotglobals.preferences['nosave']:
