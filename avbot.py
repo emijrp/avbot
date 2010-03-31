@@ -108,7 +108,7 @@ class BOT(SingleServerIRCBot):
 	def on_pubmsg(self, c, e):
 		""" Captura cada línea del canal de IRC """
 		""" Fetch and parse each line in the IRC channel """
-		
+
 		editData={}
 		
 		line = (e.arguments()[0])

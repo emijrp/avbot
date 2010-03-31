@@ -139,7 +139,10 @@ def isRubbish(editData):
 			if destruir:
 				updateStats('d')
 				if not avbotglobals.preferences['nosave']:
-					editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+					if editData['page'].exists():
+						editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+					else:
+						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
 				return True, motive
 	return False, motive
 
@@ -439,121 +442,121 @@ def editAnalysis(editData):
 	
 	#Getting page object for this edit
 	editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle'])
-	if editData['page'].exists():
-		editData['pageTitle']=editData['page'].title()
-		editData['namespace']=editData['page'].namespace()
-		
-		nm=u''
-		if editData['new']:
-			nm+=u'\03{lightred}N\03{default}'
-		if editData['minor']:
-			nm+=u'\03{lightred}m\03{default}'
-		if nm:
-			nm+=u' '
-		
-		if editData['userClass']=='anon':
-			wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author']))
-		else:
-			if avbotglobals.userData['edits'].has_key(editData['author']):
-				wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}, %s ed.}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author'], avbotglobals.userData['edits'][editData['author']]))
-				if avbotglobals.userData['edits'][editData['author']]>avbotglobals.preferences['newbie']:
-					return #Exit
-			else:
-				wikipedia.output(u'Ha habido un error con el número de ediciones de [[User:%s]]' % editData['author'])
-				return #Exit
-
-		if editData['page'].isRedirectPage(): #Do not analysis redirect pages
-			return #Exit
-		
-		# Must be analysed?
-		if not watch(editData):
-			wikipedia.output(u'[[%s]] edit must not be checked' % editData['pageTitle'])
-			return #Exit
-		
-		# Avoid analysis of excluded pages
-		for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
-			if re.search(compiledexclusion, editData['pageTitle']):
-				wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
-				return #Exit
-		
-		# Avoid to check our edits
-		if editData['author'] == avbotglobals.preferences['botNick']: 
-			return #Exit
-		
-		# New pages analysis
-		if editData['new'] and avbotglobals.preferences['language']=='es':
-			newArticleAnalysis(editData)
-			return
-		
-		# To get history
-		editData['oldText']=u''
-		editData['newText']=u''
-		#try: #costoso? pero no queda otra
-		t1=time.time()
-		threadHistory=Diegus(editData['page'], 'getVersionHistory', editData['oldid'], editData['diff'], 10)
-		threadOldid=Diegus(editData['page'], 'getOldVersionOldid', editData['oldid'], editData['diff'], 10)
-		threadDiff=Diegus(editData['page'], 'getOldVersionDiff', editData['oldid'], editData['diff'], 10)
-		threadHTMLDiff=Diegus(editData['page'], 'getUrl', editData['oldid'], editData['diff'], 10)
-		threadHistory.start()
-		threadOldid.start()
-		threadDiff.start()
-		threadHTMLDiff.start()
-		threadHistory.join()
-		editData['pageHistory'] = threadHistory.getPageHistory()
-		threadOldid.join()
-		editData['oldText'] = threadOldid.getOldText()
-		threadDiff.join()
-		editData['newText'] = threadDiff.getNewText()
-		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
-		threadHTMLDiff.join()
-		editData['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
-		editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- start content -->')[1]
-		editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- end content -->')[0] #No change
-		cleandata=cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
-		print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText']), len(editData['HTMLDiff'])
-		
-		"""t1=time.time()
-		editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
-		#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
-		print 1, editData['pageTitle'], time.time()-t1
-		t1=time.time()
-		editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
-		print 2, editData['pageTitle'], time.time()-t1
-		t1=time.time()
-		editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
-		print 3, editData['pageTitle'], time.time()-t1"""
-		
-		#except:
-		#	return #No previous text? New? Exit
-		
-		editData['lenOld']  = len(editData['oldText'])
-		editData['lenNew']  = len(editData['newText'])
-		editData['lenDiff'] = editData['lenNew']-editData['lenOld']
-		
-		if re.search(avbotglobals.parserRegexps['destruir'], editData['newText']): #Proposed to delete? Skip
-			wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % editData['pageTitle'])
-			return
-		
-		if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']): #Avoid to check false positives pages
-			wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
-			return
-		
-		#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
-		"""try: #Try to catch diff
-			t1=time.time()
-			data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
-			print 5, editData['pageTitle'], time.time()-t1
-			data=data.split('<!-- start content -->')[1]
-			data=data.split('<!-- end content -->')[0] #No change
-		except:
-			return #No diff, exit
-		"""
-		
-		#Analysis of this edit, must be reverted?
-		[reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
-		if reverted: 
-			wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, avbotglobals.preferences['msg'][editData['type']]['meaning'].lower(), editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
-			return
+	t1=time.time()
+	#if editData['page'].exists(): #no es necesario para páginas antiguas, las nuevas ya se verifica justo antes de poner {{destruir}}
+	print 'exists', time.time()-t1
+	editData['pageTitle']=editData['page'].title()
+	editData['namespace']=editData['page'].namespace()
+	
+	nm=u''
+	if editData['new']:
+		nm+=u'\03{lightred}N\03{default}'
+	if editData['minor']:
+		nm+=u'\03{lightred}m\03{default}'
+	if nm:
+		nm+=u' '
+	
+	if editData['userClass']=='anon':
+		wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author']))
 	else:
-		wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
+		if avbotglobals.userData['edits'].has_key(editData['author']):
+			wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}, %s ed.}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author'], avbotglobals.userData['edits'][editData['author']]))
+			if avbotglobals.userData['edits'][editData['author']]>avbotglobals.preferences['newbie']:
+				return #Exit
+		else:
+			wikipedia.output(u'Ha habido un error con el número de ediciones de [[User:%s]]' % editData['author'])
+			return #Exit
 
+	if editData['page'].isRedirectPage(): #Do not analysis redirect pages
+		return #Exit
+	
+	# Must be analysed?
+	if not watch(editData):
+		wikipedia.output(u'[[%s]] edit must not be checked' % editData['pageTitle'])
+		return #Exit
+	
+	# Avoid analysis of excluded pages
+	for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
+		if re.search(compiledexclusion, editData['pageTitle']):
+			wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
+			return #Exit
+	
+	# Avoid to check our edits
+	if editData['author'] == avbotglobals.preferences['botNick']: 
+		return #Exit
+	
+	# New pages analysis
+	if editData['new'] and avbotglobals.preferences['language']=='es':
+		newArticleAnalysis(editData)
+		return #Exit
+	
+	# To get history
+	editData['oldText']=u''
+	editData['newText']=u''
+	#try: #costoso? pero no queda otra
+	t1=time.time()
+	threadHistory=Diegus(editData['page'], 'getVersionHistory', editData['oldid'], editData['diff'], 10)
+	threadOldid=Diegus(editData['page'], 'getOldVersionOldid', editData['oldid'], editData['diff'], 10)
+	threadDiff=Diegus(editData['page'], 'getOldVersionDiff', editData['oldid'], editData['diff'], 10)
+	threadHTMLDiff=Diegus(editData['page'], 'getUrl', editData['oldid'], editData['diff'], 10)
+	threadHistory.start()
+	threadOldid.start()
+	threadDiff.start()
+	threadHTMLDiff.start()
+	threadHistory.join()
+	editData['pageHistory'] = threadHistory.getPageHistory()
+	threadOldid.join()
+	editData['oldText'] = threadOldid.getOldText()
+	threadDiff.join()
+	editData['newText'] = threadDiff.getNewText()
+	#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
+	threadHTMLDiff.join()
+	editData['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
+	editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- start content -->')[1]
+	editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- end content -->')[0] #No change
+	cleandata=cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
+	print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText']), len(editData['HTMLDiff'])
+	
+	"""t1=time.time()
+	editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
+	#editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
+	print 1, editData['pageTitle'], time.time()-t1
+	t1=time.time()
+	editData['oldText']     = editData['page'].getOldVersion(editData['oldid']) #Previous text, oldid es la versión anterior a la actual que es diff
+	print 2, editData['pageTitle'], time.time()-t1
+	t1=time.time()
+	editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
+	print 3, editData['pageTitle'], time.time()-t1"""
+	
+	#except:
+	#	return #No previous text? New? Exit
+	
+	editData['lenOld']  = len(editData['oldText'])
+	editData['lenNew']  = len(editData['newText'])
+	editData['lenDiff'] = editData['lenNew']-editData['lenOld']
+	
+	if re.search(avbotglobals.parserRegexps['destruir'], editData['newText']): #Proposed to delete? Skip
+		wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % editData['pageTitle'])
+		return
+	
+	if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']): #Avoid to check false positives pages
+		wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
+		return
+	
+	#hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
+	"""try: #Try to catch diff
+		t1=time.time()
+		data=avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (editData['diff'], editData['oldid']))
+		print 5, editData['pageTitle'], time.time()-t1
+		data=data.split('<!-- start content -->')[1]
+		data=data.split('<!-- end content -->')[0] #No change
+	except:
+		return #No diff, exit
+	"""
+	
+	#Analysis of this edit, must be reverted?
+	[reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
+	if reverted: 
+		wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, avbotglobals.preferences['msg'][editData['type']]['meaning'].lower(), editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
+		return
+	
