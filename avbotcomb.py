@@ -301,6 +301,7 @@ def cleanLine(line):
 	""" Limpia una línea de IRC de basura """
 	""" Clean IRC line """
 	
+	#los dos subs no son costosos, menos de 0.0004
 	line=re.sub(ur'\x03\d{0,2}', ur'', line) #No colors
 	line=re.sub(ur'\x02\d{0,2}', ur'', line) #No bold
 	return line
@@ -308,7 +309,8 @@ def cleanLine(line):
 def updateUserDataIfNeeded(editData):
 	if editData['userClass']!='anon':
 		if avbotglobals.userData['edits'].has_key(editData['author']):
-			if not random.randint(0,25) or avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']: #X faces dice, true if zero or newbie
+			#Update each 100 edits by this user or if newbie
+			if not random.randint(0,100) or avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']:
 				avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
 		else:
 			#Requesting edits number to server

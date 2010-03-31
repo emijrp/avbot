@@ -125,9 +125,7 @@ class BOT(SingleServerIRCBot):
 				editData['oldid']     = m.group('oldid')
 				editData['author']    = m.group('author')
 				editData['userClass'] = avbotcomb.getUserClass(editData)
-				
-				avbotcomb.updateUserDataIfNeeded(editData)
-				
+					
 				nm=m.group('nm')
 				editData['new']       = editData['minor']=False
 				if re.search('N', nm):
@@ -174,8 +172,6 @@ class BOT(SingleServerIRCBot):
 				editData['author']=m.group('author')
 				editData['userClass'] = avbotcomb.getUserClass(editData)
 				
-				avbotcomb.updateUserDataIfNeeded(editData)
-				
 				nm=m.group('nm')
 				editData['new']=True
 				editData['minor']=False
@@ -186,7 +182,8 @@ class BOT(SingleServerIRCBot):
 				avbotanalysis.updateStats('total')
 				avbotglobals.statsTimersDic['speed'] += 1
 				
-				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan
+				#time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan #fix arreglado con el .exists() antes de .put?
+				#insertado time.sleep(5) justo antes de llamar a newArticleAnalysis(editData) en editAnalysis()
 				thread.start_new_thread(avbotanalysis.editAnalysis,(editData,))
 		elif re.search(avbotglobals.parserRegexps['block'], line):
 			match=avbotglobals.parserRegexps['block'].finditer(line)

@@ -242,6 +242,7 @@ def reloadRegexpList(author, diff):
 def loadUserEdits(author):
 	""" Carga número de ediciones de un usuario en concreto """
 	""" Load user edits number """
+	#fix pasar esta función a query completa?
 	author_=re.sub(' ', '_', author)
 	try:
 		rawdata=avbotglobals.preferences['site'].getUrl("/w/api.php?action=query&list=users&ususers=%s&usprop=editcount&format=xml" % urllib.quote(author_))

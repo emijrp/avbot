@@ -62,6 +62,7 @@ preferences = {
 	'force':         False,
 	'trial':         False,
 	'editsFilename': 'edits.txt',
+	'historyLength': 10, # history length to recover
 }
 
 """ Header message """
@@ -158,6 +159,8 @@ parserRegexps={
 	'anti-birthday-es': re.compile(ur'(?m)^\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$'),
 	'loaduseredits-editcount': re.compile(ur'editcount'),
 	'loaduseredits-editcount-d': re.compile(ur' editcount="(\d+)"'),
+	'isrubbish-tl-red': re.compile(ur'(?i)\{\{|redirect'),
+	'isrubbish-link': re.compile(ur'\[\['),
 	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly
 	'block':          re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<block>.*?)\"'),
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
