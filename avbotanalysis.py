@@ -143,8 +143,9 @@ def isRubbish(editData):
 						editData['page'].put(u'{{RobotDestruir|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
 					else:
 						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
+						return False, '' #Exit
 				return True, motive
-	return False, motive
+	return False, ''
 
 def improveNewArticle(editData):
 	""" Intenta mejorar el artículo según unos consejos básicos del manual de estilo """
@@ -208,6 +209,10 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			
 			#Restore previous version of the page
 			if not avbotglobals.preferences['nosave']:
+				if len(editData['pageHistory'])<10: #es nueva? comprobamos antes de revertir, no vayamos a recrearla...
+					if not editData['page'].exists():
+						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
+						return False, editData #Exit
 				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData))
 			
 			#Send message to user
@@ -442,9 +447,8 @@ def editAnalysis(editData):
 	
 	#Getting page object for this edit
 	editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle'])
-	t1=time.time()
-	#if editData['page'].exists(): #no es necesario para páginas antiguas, las nuevas ya se verifica justo antes de poner {{destruir}}
-	print 'exists', time.time()-t1
+	
+	#if editData['page'].exists(): #no es necesario para páginas antiguas (menos de 10 de historial), las nuevas ya se verifica justo antes de poner {{destruir}}
 	editData['pageTitle']=editData['page'].title()
 	editData['namespace']=editData['page'].namespace()
 	
