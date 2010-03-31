@@ -73,13 +73,12 @@ def sameOldid(editData):
 	""" ¿Es el mismo oldid? """
 	if editData['oldid']!=editData['stableid']:
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso? pero no queda otra
-		return editData
 	else:
-		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&offset=20090507213843&limit=10&action=history
+		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&offset=20090507213843&limit=10&action=history #fix fallaba esto realmente?
 		t1=time.time()
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso?
 		print 4, editData['pageTitle'], time.time()-t1
-		return editData
+	return editData
 
 def isSameVandalism(regexlistold, regexlistnew):
 	""" Is same vandalism? """
