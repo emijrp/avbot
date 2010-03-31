@@ -200,6 +200,8 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 							if isSameVandalism(avbotglobals.vandalControl[editData['author']][editData['pageHistory'][c+1][0]][2], regexplist): #pageHistory[c+1][0] es la id de la edicion anterior a i[0]
 								#evitamos revertir dos veces el mismo vandalismo, misma puntuacion, ¿excepto si es muy baja?
 								break
+				elif editData['type']=='g': # if the sum is good, break and do not revert (a bit redundant, due to score will not be negative and not enter in this fun)
+					break
 			
 			editData['stableid']=i[0]
 			editData['stableAuthor']=i[2]
