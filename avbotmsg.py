@@ -71,7 +71,7 @@ def haveIRevertedThisVandalism(wtitle, diff):
 	vandalisedPage=wikipedia.Page(avbotglobals.preferences['site'], wtitle)
 	vandalisedPageHistory=vandalisedPage.getVersionHistory(forceReload=True, revCount=avbotglobals.preferences['historyLength']) #con 10 creo que es suficiente, no van a haber editado tanto desde que se revirtió
 	print vandalisedPageHistory
-	try: #fix mirar porque falla y no sale la más nueva
+	try: #fix mirar porque falla y no sale la más nueva (hacer mi propio gethistory a ver si no falla?)
 		c=0
 		while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
 			c+=1

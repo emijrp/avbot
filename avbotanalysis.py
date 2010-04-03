@@ -57,7 +57,7 @@ class Diegus(threading.Thread):
 			self.newText = self.page.getOldVersion(self.diff, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
 			#print 'newText', self.value, len(self.newText)
 		elif self.fun=='getVersionHistory':
-			self.pageHistory = self.page.getVersionHistory(forceReload=True, revCount=self.revcount)
+			self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
 		elif self.fun=='getUrl':
 			self.HTMLDiff = avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
 	
@@ -77,10 +77,13 @@ class Diegus(threading.Thread):
 def sameOldid(editData):
 	""" Are both the same oldid? """
 	""" ¿Es el mismo oldid? """
+	print editData['pageTitle'], '   oldid=', editData['oldid'], '    stableid=', editData['stableid']
 	if editData['oldid']!=editData['stableid']:
+		print 222
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso? pero no queda otra
 	else:
 		#editData['stableText']=editData['oldText'] #no sé porqué pero a veces oldtext almacena el primer vandalismo de una serie de vandalismos en cascada http://es.wikipedia.org/w/index.php?title=Dedo&offset=20090507213843&limit=10&action=history #fix fallaba esto realmente?
+		print 333
 		t1=time.time()
 		editData['stableText']=editData['page'].getOldVersion(editData['stableid']) #costoso?
 		print 4, editData['pageTitle'], time.time()-t1
@@ -222,8 +225,13 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 					if not editData['page'].exists():
 						wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
 						return False, editData #Exit
-				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData)) #, botflag=False, maxTries=1 1 sólo intento y descartar, sin flag
+				print "----> pageTitle", editData['pageTitle']
+				print "----> obj page", editData['page'].title()
+				#editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle']) #por algún motivo pierde la "sesión"
+				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1) #¡¡¡MANTENER BOTFLAG=FALSE!!! POR DEFECTO EN LA FUNCIÓN PUT DE WIKIPEDIA.PY ES TRUE, botflag=False, maxTries=1, 1 sólo intento y descartar, sin flag
 			print 'put', time.time()-t1, editData['pageTitle']
+			#wii=wikipedia.Page(wikipedia.Site('es', 'wikipedia'), u"User:AVBOT/Sandbox")
+			#wii.put(editData['stableText'], "test")
 			
 			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1
@@ -526,6 +534,7 @@ def editAnalysis(editData):
 	threadHTMLDiff.start()
 	threadHistory.join()
 	editData['pageHistory'] = threadHistory.getPageHistory()
+	#print editData['pageHistory']
 	threadOldid.join()
 	editData['oldText'] = threadOldid.getOldText()
 	threadDiff.join()

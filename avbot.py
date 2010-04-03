@@ -122,8 +122,8 @@ class BOT(SingleServerIRCBot):
 			match=avbotglobals.parserRegexps['edit'].finditer(line)
 			for m in match:
 				editData['pageTitle'] = m.group('pageTitle')
-				editData['diff']      = m.group('diff')
-				editData['oldid']     = m.group('oldid')
+				editData['diff']      = int(m.group('diff'))
+				editData['oldid']     = int(m.group('oldid'))
 				editData['author']    = m.group('author')
 				editData['userClass'] = avbotcomb.getUserClass(editData)
 					
