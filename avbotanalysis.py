@@ -227,11 +227,11 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 						return False, editData #Exit
 				print "----> pageTitle", editData['pageTitle']
 				print "----> obj page", editData['page'].title()
-				#editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle']) #por algún motivo pierde la "sesión"
+				editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle']) #por algún motivo pierde la "sesión" porqué? #fix 
 				editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1) #¡¡¡MANTENER BOTFLAG=FALSE!!! POR DEFECTO EN LA FUNCIÓN PUT DE WIKIPEDIA.PY ES TRUE, botflag=False, maxTries=1, 1 sólo intento y descartar, sin flag
 			print 'put', time.time()-t1, editData['pageTitle']
 			#wii=wikipedia.Page(wikipedia.Site('es', 'wikipedia'), u"User:AVBOT/Sandbox")
-			#wii.put(editData['stableText'], "test")
+			#wii.put(editData['stableText'], "test", botflag=False, maxTries=1)
 			
 			#Send message to user
 			avbotglobals.vandalControl[editData['author']]['avisos']+=1
@@ -255,7 +255,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			if avbotglobals.preferences['trial']:
 				type=editData['type']
 				msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']))
+				wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']), botflag=False, maxTries=1)
 				wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
 			
 			return True, editData

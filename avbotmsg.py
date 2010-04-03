@@ -63,7 +63,7 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 			resume+=u" (Posible proxy)"
 		report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
 	if not avbotglobals.preferences['nosave']:
-		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume))
+		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume), botflag=False, maxTries=1)
 
 def haveIRevertedThisVandalism(wtitle, diff):
 	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
@@ -128,9 +128,9 @@ def sendMessage(author, wtitle, diff, n, tipo):
 		wtext+=avisotexto
 		if not avbotglobals.preferences['nosave']:
 			if avbotglobals.preferences['site'].lang=='en':
-				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n))
+				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1)
 			elif avbotglobals.preferences['site'].lang=='es':
-				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n)) #poner a true si lo aceptan
+				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """
@@ -143,4 +143,4 @@ def msgBlock(blocked, blocker):
 		avisotexto+=u"%s\n\n" % aviso.get()
 	avisotexto+=u"{{subst:User:%s/AvisoBloqueo.css|%s}}" % (avbotglobals.preferences['ownerNick'], blocker)
 	if not avbotglobals.preferences['nosave']:
-		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker))
+		aviso.put(avisotexto, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que ha sido bloqueado por [[User:%s|%s]]" % (blocked, blocked, blocker, blocker), botflag=False, maxTries=1)
