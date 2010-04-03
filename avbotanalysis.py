@@ -267,6 +267,7 @@ def mustBeReverted(editData, cleandata, userClass):
 	""" Checks if an edit is a vandalism, test or blanking edit """
 	
 	editData['score']=0
+	#fix poner editData['type']='g' ?
 	regexplist=[]
 	reverted=False
 	
@@ -275,7 +276,33 @@ def mustBeReverted(editData, cleandata, userClass):
 	#junto a los interwikis [[es:Blabla]]isdfjisf sfdsf sdf
 	#cuidado? los interwikis también los tocan IPs de otras wikis?
 	#también entre párrafos o más propenso a falsos positivos? http://es.wikipedia.org/w/index.php?title=Termas_de_Caracalla&diff=prev&oldid=35776174
-	
+	oldTextSplit=editData['oldText'].splitlines()
+	newTextSplit=editData['newText'].splitlines()
+	if len(oldTextSplit)>10 and len(newTextSplit)>len(oldTextSplit): #que antes tuviera al menos 10 para evitar esbozos, redirecciones, desamb, ... propenso a errores
+		equal=True
+		c=0
+		for line in oldTextSplit:
+			if line!=newTextSplit[c]:
+				equal=False
+				break
+			c+=1
+		if equal:
+			clines=len(newTextSplit)-len(oldTextSplit)
+			cchars=0
+			nocatsiws=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
+			while c<len(newTextSplit):#recorremos las líneas nuevas y acumulamos cuantos caracteres ha insertado
+				if re.search(avbotglobals.parserRegexps['catsiwslinks'], newTextSplit[c]):
+					nocatsiws=False
+					break
+				cchars+=len(newTextSplit[c])
+				c+=1
+			#calculamos densidad
+			#teniendo en cuenta que puede meter líneas en blanco http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
+			if nocatsiws and cchars/clines<30:
+				editData['type']='t'
+				editData['score']=-1 #poner algo proporcional como en los blanqueos?
+				return revertAllEditsByUser(editData, userClass, regexplist) #Revert
+		
 	#Blanking edit?
 	lenOld=editData['lenOld']
 	lenNew=editData['lenNew']
