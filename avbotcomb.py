@@ -55,9 +55,9 @@ def blockedUser(blocker, blocked, castigo):
 			for trozo in trozos:
 				if re.search(ur'%s' % blocked, re.sub('_', ' ', trozo)) and c+1<=len(trozos)-1: #deberia ser re.sub(ur'\.', ur'\.', blocked) para mas seguridad
 					wikipedia.output(u'\03{lightblue}%s was found :)\03{default}' % (blocked))
-					arellenar=ur'(?i)\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
+					arellenar=ur'(?i)(?P<ini>Acción administrativa:) *\(? *\'{,3} *a rellenar por un bibliotecario *\'{,3} *\)?'
 					if re.search(arellenar, trozos2[c+1]):
-						trozos2[c+1]=re.sub(arellenar, ur"{{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
+						trozos2[c+1]=re.sub(arellenar, ur"\g<ini> {{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
 						break
 				c+=1
 			
