@@ -169,7 +169,7 @@ parserRegexps={
 	#'borrado': re.compile(ur'(?i)\[\[...(?P<pageTitle>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
 	'borrado':        re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +«(?P<pageTitle>.*?)»\:'),
 	'categories':     re.compile(ur'(?i)\[\[ *(Category|Categoría) *\: *[^\]\n\r]+? *\]\]'),
-	'conflictivos':   re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *\}\}'),
+	'conflictivos':   re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|anuncio|promocional|publicidad|sin ?relevancia|SRA|irrelevante|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *[\}\|]'), #promocional etc suelen ser blanqueados o mejorados por IPs para que quiten el cartel, evitamos revertir
 	'destruir':       re.compile(ur'(?i)\{\{ *destruir'),
 	#diffstylebegin y end va relacionado
 	'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),

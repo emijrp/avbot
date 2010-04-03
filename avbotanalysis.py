@@ -270,6 +270,12 @@ def mustBeReverted(editData, cleandata, userClass):
 	regexplist=[]
 	reverted=False
 	
+	#inclusión de líneas cortas al final detrás de los iws http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
+	#al principio también http://es.wikipedia.org/w/index.php?title=Ingenier%C3%ADa_biom%C3%A9dica&diff=prev&oldid=35776392
+	#junto a los interwikis [[es:Blabla]]isdfjisf sfdsf sdf
+	#cuidado? los interwikis también los tocan IPs de otras wikis?
+	#también entre párrafos o más propenso a falsos positivos? http://es.wikipedia.org/w/index.php?title=Termas_de_Caracalla&diff=prev&oldid=35776174
+	
 	#Blanking edit?
 	lenOld=editData['lenOld']
 	lenNew=editData['lenNew']
