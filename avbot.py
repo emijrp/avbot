@@ -168,11 +168,6 @@ class BOT(SingleServerIRCBot):
 			for m in match:
 				editData['pageTitle']=m.group('pageTitle')
 				
-				#Avoid analysis of excluded pages
-				for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
-					if re.search(compiledexclusion, editData['pageTitle']):
-						return #Exit
-				
 				editData['diff']=editData['oldid']=0
 				editData['author']=m.group('author')
 				editData['userClass'] = avbotcomb.getUserClass(editData)
