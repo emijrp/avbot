@@ -634,7 +634,7 @@ def editAnalysis(editData):
 		return
 	
 	# Avoid to check false positives pages
-	if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']): 
+	if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']+editData['oldText']): #buscamos tanto en old como en new, mayor seguridad?
 		wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
 		return
 	
