@@ -91,11 +91,6 @@ def haveIRevertedThisVandalism(wtitle, diff):
 def sendMessage(author, wtitle, diff, n, tipo):
 	""" Envía mensajes de advertencia a un usuario """
 	""" Send messages to an user  """
-	#esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
-	time.sleep(random.randint(5,10))
-	#Ha revertido el bot u otro usuario?
-	if not haveIRevertedThisVandalism(wtitle, diff):
-		return
 	if avbotglobals.preferences['site'].lang not in ['es', 'en']:
 		return
 	talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)

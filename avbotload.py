@@ -207,13 +207,13 @@ def loadRegexpList():
 				error+=u'** Regexp error: Line: %d	%s\n' % (c, rawlines[c])
 	
 	#Sorting list
-	#dejo de funcionar con la api?
 	dosort.sort()
+	goodandevil=avbotglobals.preferences['goodandevil'].split('.')[0] #quitamos .css de momento falla
 	if not avbotglobals.preferences['nosave']:
-		ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal/Sorted' % avbotglobals.preferences['botNick'])
+		ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/%s/Sorted' % (avbotglobals.preferences['botNick'], goodandevil))
 		output=u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort))
-		if ordenada.get()!=output:		
-			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]', botflag=False, maxTries=3)
+		if (ordenada.exists() and ordenada.get()!=output) or not ordenada.exists():	
+			ordenada.put(output, u'BOT - Ordenando lista [[User:%s/%s]]' % (avbotglobals.preferences['ownerNick'], goodandevil), botflag=False, maxTries=3)
 	
 	wikipedia.output(u'\nLoaded %s regular expresions...' % (len(avbotglobals.vandalRegexps.items())))
 	

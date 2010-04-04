@@ -186,7 +186,7 @@ def resumeTranslator(editData):
 	if avbotglobals.preferences['language']=='es':
 		resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	else:
-		resume=u'BOT - Reverting possible %s by [[Special:Contributions/%s|%s]] to %s version by [[User:%s|%s]]. False positive? [[User:AVBOT/FalsePositives|Report it]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+		resume=u'BOT - Reverting possible %s by [[Special:Contributions/%s|%s]] to %s version by [[User:%s|%s]]. False positive? [[User:AVBOT/False Positives|Report it]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
 	
 	return resume
 

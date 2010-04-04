@@ -74,6 +74,29 @@ class Diegus(threading.Thread):
 		return self.HTMLDiff
 	
 
+def haveIRevertedThisVandalism(wtitle, diff):
+	""" Verifica que ha sido este bot el que ha revertido el vandalismo """
+	""" Check if this bot has reverted this vandalism """
+	vandalisedPage=wikipedia.Page(avbotglobals.preferences['site'], wtitle)
+	vandalisedPageHistory=vandalisedPage.getVersionHistory(forceReload=True, revCount=avbotglobals.preferences['historyLength']) #con 10 creo que es suficiente, no van a haber editado tanto desde que se revirtió
+	print vandalisedPageHistory
+	try: #fix mirar porque falla y no sale la más nueva (hacer mi propio gethistory a ver si no falla?)
+		c=0
+		while vandalisedPageHistory[c][0]!=diff and c<len(vandalisedPageHistory):
+			c+=1
+		if c>0 and vandalisedPageHistory[c-1][2]==avbotglobals.preferences['botNick']:
+			return True
+		else:
+			if vandalisedPageHistory[c][0]==diff:
+				print '-'*75
+				print "Lag?"
+				print '-'*75
+				print vandalisedPageHistory
+				print '-'*75
+			return False
+	except:
+		False
+
 def sameOldid(editData):
 	""" Are both the same oldid? """
 	""" ¿Es el mismo oldid? """
@@ -183,7 +206,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 	""" Revierte todas las ediciones de un usuario en un mismo artículo """
 	""" Revert all edits in a same article by a same author """
 	
-	#Add to vandalism control log
+	#Add to vandalism control log, meter donde ompruebo si he revertido yo el vandalismo?
 	if avbotglobals.vandalControl.has_key(editData['author']):
 		avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexplist]
 	else:
@@ -216,8 +239,6 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			editData['stableAuthor']=i[2]
 			editData=sameOldid(editData)
 			
-			updateStats(editData['type'])
-			
 			#Restore previous version of the page
 			t1=time.time()
 			if not avbotglobals.preferences['nosave']:
@@ -233,24 +254,30 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			#wii=wikipedia.Page(wikipedia.Site('es', 'wikipedia'), u"User:AVBOT/Sandbox")
 			#wii.put(editData['stableText'], "test", botflag=False, maxTries=1)
 			
-			#Send message to user
-			avbotglobals.vandalControl[editData['author']]['avisos']+=1
-			if not avbotglobals.preferences['nosave']:
-				avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
+			#Ha revertido el bot u otro usuario?
+			#esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
+			time.sleep(random.randint(5,10))
+			if haveIRevertedThisVandalism(editData['pageTitle'], editData['diff']):
+				updateStats(editData['type'])
 			
-			#Save log for depuration purposes
-			log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
-			logentry=u'\n%s\nPage: [[%s]]\nDate: %s\nPoints: %d\nRegular expressions:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
-			log.write(logentry.encode('utf-8'))
-			log.close()
-			
-			#Send message to admins board
-			if not avbotglobals.preferences['nosave']:
-				blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
-				if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
-					#Not send the message if vandals have been reported before
-					avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
-			
+				#Send message to user
+				avbotglobals.vandalControl[editData['author']]['avisos']+=1
+				if not avbotglobals.preferences['nosave']:
+					avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
+				
+				#Save log for depuration purposes
+				log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
+				logentry=u'\n%s\nPage: [[%s]]\nDate: %s\nPoints: %d\nRegular expressions:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
+				log.write(logentry.encode('utf-8'))
+				log.close()
+				
+				#Send message to admins board
+				if not avbotglobals.preferences['nosave']:
+					blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
+					if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
+						#Not send the message if vandals have been reported before
+						avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
+				
 			#Trial run?
 			if avbotglobals.preferences['trial']:
 				type=editData['type']
@@ -460,6 +487,9 @@ def newArticleAnalysis(editData):
 def cleandiff(pageTitle, data):
 	""" Extrae el texto que ha sido insertado en la edición """
 	""" Clean downloaded diff page """
+	
+	#fix hacerme mi propio differ con la librería difflib?
+	#tener en cuenta las expresiones que ya estaba en oldText por si la IP mueve un bloque de texto
 	
 	marker=' ; ' #no poner ;;; porque da falsos positivos con regexp de repetición de caracteres
 	clean=marker
