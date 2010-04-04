@@ -163,14 +163,14 @@ parserRegexps={
 	'loaduseredits-editcount-d': re.compile(ur' editcount="(\d+)"'),
 	'isrubbish-tl-red': re.compile(ur'(?i)\{\{|redirect'),
 	'isrubbish-link': re.compile(ur'\[\['),
-	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly
+	'blanqueos':      re.compile(ur'(?i)(redirect|redirección|desamb|\{\{ *(db\-|copyvio|destruir|plagio|robotdestruir|wikificar))'), #fix add more cases for en: and pt: mainly db-copyvio
 	'block':          re.compile(ur'(?i)\[\[Especial:Log/block\]\] +block +\* +(?P<blocker>.*?) +\* +bloqueó a +\"Usuario\:(?P<blocked>.*?)\" +.*?durante un plazo de \"(?P<block>.*?)\"'),
 	#[[Especial:Log/delete]] delete  * Snakeyes * borró "Discusión:Gastronomía en Estados Unidos": borrado rápido usando [[w:es:User:Axxgreazz/Monobook-Suite|monobook-suite]] el contenido era: «{{delete|Vandalismo}} {{fuenteprimaria|6|mayo}} Copia y pega el siguiente código en la página de discusión del creador del artículo: == Ediciones con investigac
 	#'borrado': re.compile(ur'(?i)\[\[...(?P<pageTitle>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
 	'borrado':        re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +«(?P<pageTitle>.*?)»\:'),
 	'categories':     re.compile(ur'(?i)\[\[ *(Category|Categoría) *\: *[^\]\n\r]+? *\]\]'),
-	'catsiwslinkssec':     re.compile(ur'(?i)(\[\[|\=\=)'),
-	'conflictivos':   re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|anuncio|promocional|publicidad|sin ?relevancia|SRA|irrelevante|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *[\}\|]'), #promocional etc suelen ser blanqueados o mejorados por IPs para que quiten el cartel, evitamos revertir
+	'catsiwslinkssec':     re.compile(ur'(?i)(\[\[|\=\=|\:\/\/)'), #http://en.wikipedia.org/w/index.php?title=Sukhoi_Superjet_100&diff=353978236&oldid=353978214
+	'conflictivos':   re.compile(ur'(?i)( Cfd | AfD |\{\{ *(AfDM|ad|advert|spam|cleanup|copy ?to|db\-|isrev|inuse|Underconstruction|copyvio|copypaste|autotrad|maltrad|mal traducido|anuncio|promocional|publicidad|sin ?relevancia|SRA|irrelevante|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)))'), #promocional etc suelen ser blanqueados o mejorados por IPs para que quiten el cartel, evitamos revertir http://en.wikipedia.org/wiki/Wikipedia:Template_messages/Maintenance #fix pasar a una subpágina /Skip
 	'destruir':       re.compile(ur'(?i)\{\{ *destruir'),
 	#diffstylebegin y end va relacionado
 	'diffstylebegin': re.compile(ur'(<span class="diffchange">|<span class="diffchange diffchange-inline">|<ins class="diffchange diffchange-inline">)'),
