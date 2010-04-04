@@ -291,7 +291,7 @@ def mustBeReverted(editData, cleandata, userClass):
 			cchars=0
 			nocatsiws=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
 			while c<len(newTextSplit):#recorremos las líneas nuevas y acumulamos cuantos caracteres ha insertado
-				if re.search(avbotglobals.parserRegexps['catsiwslinks'], newTextSplit[c]):
+				if re.search(avbotglobals.parserRegexps['catsiwslinkssec'], newTextSplit[c]):
 					nocatsiws=False
 					break
 				cchars+=len(newTextSplit[c])

@@ -93,9 +93,9 @@ avbotcomb.getParameters()
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 if not preferences['nosave']:
 	testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=1) #same text always, avoid avbotcron edit panic
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
 	testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
-	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=1) #same text always, avoid avbotcron edit panic
+	testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
 
 if not preferences['channel']:
 	preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
@@ -169,7 +169,7 @@ parserRegexps={
 	#'borrado': re.compile(ur'(?i)\[\[...(?P<pageTitle>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
 	'borrado':        re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +«(?P<pageTitle>.*?)»\:'),
 	'categories':     re.compile(ur'(?i)\[\[ *(Category|Categoría) *\: *[^\]\n\r]+? *\]\]'),
-	'catiwslinks':     re.compile(ur'(?i)\[\['),
+	'catiwslinkssec':     re.compile(ur'(?i)(\[\[|\=\=)'),
 	'conflictivos':   re.compile(ur'(?i)\{\{ *(autotrad|maltrad|mal traducido|anuncio|promocional|publicidad|sin ?relevancia|SRA|irrelevante|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource)) *[\}\|]'), #promocional etc suelen ser blanqueados o mejorados por IPs para que quiten el cartel, evitamos revertir
 	'destruir':       re.compile(ur'(?i)\{\{ *destruir'),
 	#diffstylebegin y end va relacionado

@@ -63,7 +63,7 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
 			resume+=u" (Posible proxy)"
 		report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:ReportevandalismoIP\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
 	if not avbotglobals.preferences['nosave']:
-		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume), botflag=False, maxTries=1)
+		wii.put(u'%s\n\n%s' % (restopag, report), u'BOT - Añadiendo aviso de vandalismo reincidente de [[Special:Contributions/%s|%s]]%s' % (author, author, resume), botflag=False, maxTries=3)
 
 def haveIRevertedThisVandalism(wtitle, diff):
 	""" Verifica que ha sido este bot el que ha revertido el vandalismo """

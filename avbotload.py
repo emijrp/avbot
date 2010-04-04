@@ -213,7 +213,7 @@ def loadRegexpList():
 		ordenada=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal/Sorted' % avbotglobals.preferences['botNick'])
 		output=u'<pre>\n%s\n\n%s\n</pre>' % ('\n'.join(dontsort), '\n'.join(dosort))
 		if ordenada.get()!=output:		
-			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]', botflag=False, maxTries=1)
+			ordenada.put(output, u'BOT - Ordenando lista [[User:Emijrp/Lista del bien y del mal.css]]', botflag=False, maxTries=3)
 	
 	wikipedia.output(u'\nLoaded %s regular expresions...' % (len(avbotglobals.vandalRegexps.items())))
 	
