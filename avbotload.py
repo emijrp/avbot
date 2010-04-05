@@ -167,7 +167,11 @@ def loadRegexpList():
 	""" Carga lista de expresiones regulares """
 	""" Load regular expression list """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Lista del bien y del mal.css' % avbotglobals.preferences['ownerNick'])
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], avbotglobals.preferences['goodandevil']))
+	p=""
+	if avbotglobals.preferences['site'].lang=='es':
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:Emijrp/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['goodandevil']))
+	else:
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], avbotglobals.preferences['goodandevil']))
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
@@ -225,6 +229,8 @@ def reloadRegexpList(author, diff):
 	oldVandalRegexps=avbotglobals.vandalRegexps
 	error=loadRegexpList()
 	ownerNick=avbotglobals.preferences['ownerNick']
+	if avbotglobals.preferences['site'].lang=='es':
+		ownerNick=u"Emijrp"
 	goodandevil=avbotglobals.preferences['goodandevil']
 	"""mientras arreglan el bug de no poder editar las propias .css p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[3], ownerNick, goodandevil)) #[3] porque es User talk:
 	if not avbotglobals.preferences['nosave'] and avbotglobals.preferences['site'].lang=='es':
@@ -265,8 +271,11 @@ def loadExclusions():
 	""" Carga lista de páginas excluidas """
 	""" Load excluded pages list """
 	#p=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s/Exclusiones.css' % avbotglobals.preferences['ownerNick'])
-	ownerNick=avbotglobals.preferences['ownerNick']
-	p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], ownerNick, avbotglobals.preferences['exclusions']))
+	p=""
+	if avbotglobals.preferences['site'].lang=='es':
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:Emijrp/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['exclusions']))
+	else:
+		p=wikipedia.Page(avbotglobals.preferences['site'], u'%s:%s/%s' % (avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick'], avbotglobals.preferences['exclusions']))
 	raw=''
 	if p.exists():
 		if not p.isRedirectPage() and not p.isDisambig():
