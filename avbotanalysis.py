@@ -316,16 +316,16 @@ def mustBeReverted(editData, cleandata, userClass):
 		if equal:
 			clines=len(newTextSplit)-len(oldTextSplit)
 			cchars=0
-			nocatsiws=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
+			footerallowed=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
 			while c<len(newTextSplit):#recorremos las líneas nuevas y acumulamos cuantos caracteres ha insertado
-				if re.search(avbotglobals.parserRegexps['catsiwslinkssec'], newTextSplit[c]):
-					nocatsiws=False
+				if re.search(avbotglobals.parserRegexps['footerallowed'], newTextSplit[c]):
+					footerallowed=False
 					break
 				cchars+=len(newTextSplit[c])
 				c+=1
 			#calculamos densidad
 			#teniendo en cuenta que puede meter líneas en blanco http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
-			if nocatsiws and cchars/clines<50:
+			if footerallowed and cchars/clines<50:
 				editData['type']='t'
 				editData['score']=-1 #poner algo proporcional como en los blanqueos?
 				return revertAllEditsByUser(editData, userClass, regexplist) #Revert
