@@ -325,7 +325,7 @@ def mustBeReverted(editData, cleandata, userClass):
 				c+=1
 			#calculamos densidad
 			#teniendo en cuenta que puede meter líneas en blanco http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
-			if footerallowed and cchars/clines<50:
+			if footerallowed and cchars/clines<40:
 				editData['type']='t'
 				editData['score']=-1 #poner algo proporcional como en los blanqueos?
 				return revertAllEditsByUser(editData, userClass, regexplist) #Revert
