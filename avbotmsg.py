@@ -101,31 +101,31 @@ def sendMessage(author, wtitle, diff, n, tipo):
 	#evitamos avisar dos veces
 	if re.search(ur'(?im)%s' % diff, wtext): #existe ya un aviso para esta oldid?
 		return
-	if n==3: #If n>3, no more messages
-		template=u"%s2.css" % avbotglobals.preferences['msg'][tipo]['template']
-		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
-		if templatepage.exists():
-			avisotexto+=u"{{subst:%s|%s|%s}}" % (template, wtitle, diff)
-		else:
-			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff' % template)
-			sys.exit()
-	elif n<3:
-		template=u"%s.css" % avbotglobals.preferences['msg'][tipo]['template']
-		templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
-		if templatepage.exists():
-			avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (template, wtitle, diff, n)
-		else:
-			wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
-			sys.exit()
+	#existe sección para este mes? sino la creamos
+	
+	#miramos cual fue el número del último warning y enviamos el siguiente, <!-- Template:uw-avbotwarningX -->
+	#http://en.wikipedia.org/w/index.php?title=Wikipedia%3ABots%2FRequests_for_approval%2FAVBOT&action=historysubmit&diff=355153089&oldid=354347005
+	x=n
+	
+	#n es el contador interno nuestro, de cuantos vandalismos le hemos detectado
+	#x es el contador de todos los huggle, bots, etc
+	template=u"%s%s.css" % (avbotglobals.preferences['msg'][tipo]['template'], n)
+	templatepage=wikipedia.Page(avbotglobals.preferences['site'], template)
+	if templatepage.exists():
+		avisotexto+=u"{{subst:%s|%s|%s|%s}}" % (template, wtitle, diff, x)
+	else:
+		wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
+		sys.exit()
+	
 	if avisotexto:
 		if wtext:
 			wtext+="\n\n"
 		wtext+=avisotexto
 		if not avbotglobals.preferences['nosave']:
 			if avbotglobals.preferences['site'].lang=='en':
-				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1)
+				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False)
 			elif avbotglobals.preferences['site'].lang=='es':
-				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1) #poner a true si lo aceptan
+				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """

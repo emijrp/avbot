@@ -262,7 +262,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 			
 				#Send message to user
 				avbotglobals.vandalControl[editData['author']]['avisos']+=1
-				if not avbotglobals.preferences['nosave']:
+				if not avbotglobals.preferences['nosave'] and avbotglobals.vandalControl[editData['author']]['avisos']<=3:
 					avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
 				
 				#Save log for depuration purposes
