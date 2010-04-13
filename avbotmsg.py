@@ -122,10 +122,11 @@ def sendMessage(author, wtitle, diff, n, tipo):
 			wtext+="\n\n"
 		wtext+=avisotexto
 		if not avbotglobals.preferences['nosave']:
+			#¡es necesario poner minorEdit=False si se quiere que los anonimos vean el cartel naranja, en los casos que se use botflag=True!
 			if avbotglobals.preferences['site'].lang=='en':
 				talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False)
 			elif avbotglobals.preferences['site'].lang=='es':
-				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False) #poner a true si lo aceptan
+				talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=True, maxTries=1, minorEdit=False) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
 	""" Envía mensaje de bloqueo a un usuario """
