@@ -302,15 +302,17 @@ def mustBeReverted(editData, cleandata, userClass):
 
     #antiguerra de ediciones bot vs. posible vandalo
     if len(editData['pageHistory'])>=3: #si tiene al menos 3 ediciones el articulo
-        if editData['pageHistory'][0][2]==editData['pageHistory'][2][2]:
-        # si la última edición y la antepenúltima son del mismo autor
-        # pepe
-        # otro
-        # pepe
+        if editData['pageHistory'][0][2] == editData['author'] and \ 
+           editData['pageHistory'][2][2] == editData['author'] and \ 
+           editData['pageHistory'][1][2] != editData['author']:
+        # si la última edición y la antepenúltima son del mismo autor, y la de en medio no
+        # pepe (wtext=x)
+        # otro (wtext=y)
+        # pepe (wtext=x)
         # y tienen el mismo texto, es que pepe ha revertido a su edición
         # evitamos entrar en la guerra
         # comprobamos también antes de la antepenúltima para más aseguridad??? #fix
-           if editData['newText']==editData['page'].getOldVersion(editData['pageHistory'][2][0]):
+           if editData['page'].getOldVersion(editData['pageHistory'][0][0]) == editData['page'].getOldVersion(editData['pageHistory'][2][0]):
                wikipedia.output(u"Evitamos entrar en guerra de ediciones en [[%s]]" % editData['pageTitle'])
                return reverted, editData
     
