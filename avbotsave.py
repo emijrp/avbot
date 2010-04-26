@@ -26,22 +26,22 @@ import wikipedia
 import avbotglobals
 
 def saveEdits(ediciones):
-	""" Guarda el número de ediciones de los usuarios en un fichero """
-	""" Saves user edits number in a file """
-	f=open(avbotglobals.preferences['editsFilename'], 'w')
-	for k, v in ediciones.items():
-		try:
-			linea=u"%s;%s;\n" % (k, v)
-			f.write(linea.encode('utf-8'))
-		except:
-			pass
-	f.close()
+    """ Guarda el número de ediciones de los usuarios en un fichero """
+    """ Saves user edits number in a file """
+    f=open(avbotglobals.preferences['editsFilename'], 'w')
+    for k, v in ediciones.items():
+        try:
+            linea=u"%s;%s;\n" % (k, v)
+            f.write(linea.encode('utf-8'))
+        except:
+            pass
+    f.close()
 
 def saveStats(stats, hours, site):
-	""" Guarda las estadísticas en una página con motivos históricos """
-	""" Saves statistics in a page for historical purposes """
-	resumen=u'Vandalism[%d], Blanking[%d], Test[%d], S[%d], Good[%d], Bad[%d], Total[%d], Deletes[%d]' % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d'])
-	wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
-	if not avbotglobals.preferences['nosave']:
-		wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
-		wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen), botflag=False, maxTries=3)
+    """ Guarda las estadísticas en una página con motivos históricos """
+    """ Saves statistics in a page for historical purposes """
+    resumen=u'Vandalism[%d], Blanking[%d], Test[%d], S[%d], Good[%d], Bad[%d], Total[%d], Deletes[%d]' % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d'])
+    wikipedia.output(u"\03{lightgreen}Resumen últimas %d horas: %s\03{default}" % (hours, resumen))
+    if not avbotglobals.preferences['nosave']:
+        wii=wikipedia.Page(site, u"User:AVBOT/Stats/%d" % hours)
+        wii.put(u"{{#switch:{{{1|T}}}|V=%d|BL=%d|P=%d|S=%d|B=%d|M=%d|T=%d|D=%d}}" % (stats[hours]['v'], stats[hours]['bl'], stats[hours]['t'], stats[hours]['s'], stats[hours]['good'], stats[hours]['bad'], stats[hours]['total'], stats[hours]['d']), u"BOT - Actualizando estadísticas de las últimas %d horas: %s" % (hours, resumen), botflag=False, maxTries=3)
