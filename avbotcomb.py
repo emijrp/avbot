@@ -344,6 +344,9 @@ def checkBlockInEnglishWikipedia(editData):
     return comment, isProxy
 
 def checkForUpdates():
+    fullpath = os.getcwd()
+    if len(fullpath)>1:
+			fullpath += "/"
     svn='http://avbot.googlecode.com/svn/trunk/'
     f=urllib.urlopen(svn)
     html=f.read()
@@ -351,13 +354,15 @@ def checkForUpdates():
     for i in m:
         filename=i.group("filename")
         wikipedia.output(u"Checking file %s..." % filename)
-        g=open(filename, 'r')
+        g=open(fullpath+filename, 'r')
         h=urllib.urlopen(svn+filename)
         if g.read()!=h.read():
-            wikipedia.output(u"%s has changed!!!" % filename)
-            return True
+			wikipedia.output(u"%s has changed!!!" % filename)
+			g.close()
+			return True
         else:
-            wikipedia.output(u"[OK]")
+            wikipedia.output(u"OK!")
+            g.close()
     f.close()
     return False
 

@@ -68,7 +68,7 @@ preferences = {
 }
 
 """ Header message """
-header  = u"\nAVBOT Copyright (C) 2008-2010 Emilio José Rodríguez Posada\n"
+header  = u"AVBOT Copyright (C) 2008-2010 Emilio José Rodríguez Posada\n"
 header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
 header += u"This is free software, and you are welcome to redistribute it\n"
 header += u"under certain conditions. See license.\n\n"
@@ -86,9 +86,9 @@ wikipedia.output(header)
 
 avbotcomb.getParameters()
 
-#if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta con la absoluta)
-#   wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
-#   #sys.exit()
+if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta con la absoluta)
+   wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
+   sys.exit()
 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 if not preferences['nosave']:
