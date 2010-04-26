@@ -344,9 +344,7 @@ def checkBlockInEnglishWikipedia(editData):
     return comment, isProxy
 
 def checkForUpdates():
-    fullpath = os.getcwd()
-    if len(fullpath)>1:
-			fullpath += "/"
+    fullpath = "/"+"/".join(os.path.abspath( __file__ ).split("/")[:-1])+"/"
     svn='http://avbot.googlecode.com/svn/trunk/'
     f=urllib.urlopen(svn)
     html=f.read()
