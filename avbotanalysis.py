@@ -310,8 +310,9 @@ def mustBeReverted(editData, cleandata, userClass):
         # y tienen el mismo texto, es que pepe ha revertido a su edición
         # evitamos entrar en la guerra
         # comprobamos también antes de la antepenúltima para más aseguridad??? #fix
-       if editData['newText']==editData['page'].getOldVersion(editData['pageHistory'][2][0]):
-           return reverted, editData
+           if editData['newText']==editData['page'].getOldVersion(editData['pageHistory'][2][0]):
+               wikipedia.output(u"Evitamos entrar en guerra de ediciones en [[%s]]" % editData['pageTitle'])
+               return reverted, editData
     
     #inclusión de líneas cortas al final detrás de los iws http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
     #al principio también http://es.wikipedia.org/w/index.php?title=Ingenier%C3%ADa_biom%C3%A9dica&diff=prev&oldid=35776392
