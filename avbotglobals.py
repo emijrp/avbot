@@ -169,7 +169,7 @@ parserRegexps={
 	#'borrado': re.compile(ur'(?i)\[\[...(?P<pageTitle>.*?)..\]\].*?delete.*?\*.....(?P<usuario>.*?)...\*'),
 	'borrado':        re.compile(ur'(?i)\[\[Especial:Log/delete\]\] +delete +\* +(?P<usuario>.*?) +\* +borró +«(?P<pageTitle>.*?)»\:'),
 	'categories':     re.compile(ur'(?i)\[\[ *(Category|Categoría) *\: *[^\]\n\r]+? *\]\]'),
-	'footerallowed':     re.compile(ur'(?i)(\[\[|\=\=|\:\/\/|\{\{|\.(com|org|edu|gov|net|info|tv))'), #http://en.wikipedia.org/w/index.php?title=Sukhoi_Superjet_100&diff=353978236&oldid=353978214
+	'footerallowed':     re.compile(ur"(?i)(\[\[|\=\=|\:\/\/|\{\{|\'\'|\:|\, |\.(com|org|edu|gov|net|info|tv))"), #http://en.wikipedia.org/w/index.php?title=Sukhoi_Superjet_100&diff=353978236&oldid=353978214
 	'conflictivos':   re.compile(ur'(?i)( Cfd | AfD |(\{\{ *(AfDM|ad|advert|spam|cleanup|copy ?to|db\-|isrev|inuse|Underconstruction|copyvio|copypaste|autotrad|maltrad|mal traducido|anuncio|promocional|publicidad|sin ?relevancia|SRA|irrelevante|wikci|al? (wikcionario|wikicitas|wikinoticias|wikiquote|wikisource))))'), #promocional etc suelen ser blanqueados o mejorados por IPs para que quiten el cartel, evitamos revertir http://en.wikipedia.org/wiki/Wikipedia:Template_messages/Maintenance #fix pasar a una subpágina /Skip
 	'destruir':       re.compile(ur'(?i)( Cfd | AfD |(\{\{ *(destruir|db\-|spam|ad)))'),
 	#diffstylebegin y end va relacionado

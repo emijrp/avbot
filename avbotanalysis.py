@@ -87,12 +87,12 @@ def haveIRevertedThisVandalism(wtitle, diff):
 		if c>0 and vandalisedPageHistory[c-1][2]==avbotglobals.preferences['botNick']:
 			return True
 		else:
-			if vandalisedPageHistory[c][0]==diff:
+			"""if vandalisedPageHistory[c][0]==diff:
 				print '-'*75
 				print "Lag?"
 				print '-'*75
 				print vandalisedPageHistory
-				print '-'*75
+				print '-'*75"""
 			return False
 	except:
 		False
@@ -316,18 +316,19 @@ def mustBeReverted(editData, cleandata, userClass):
 		if equal:
 			clines=len(newTextSplit)-len(oldTextSplit)
 			cchars=0
-			footerallowed=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
+			footerrubbish=True #hay ips que insertan iws o categorías (usuarios de otras wikis), cuidado con esto
 			while c<len(newTextSplit):#recorremos las líneas nuevas y acumulamos cuantos caracteres ha insertado
 				if re.search(avbotglobals.parserRegexps['footerallowed'], newTextSplit[c]):
-					footerallowed=False
+					footerrubbish=False
 					break
 				cchars+=len(newTextSplit[c])
 				c+=1
 			#calculamos densidad
 			#teniendo en cuenta que puede meter líneas en blanco http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
-			if footerallowed and cchars/clines<40:
+			if footerrubbish and cchars/clines<40:
 				editData['type']='t'
 				editData['score']=-1 #poner algo proporcional como en los blanqueos?
+				editData['details']=u"" #no olvidar
 				return revertAllEditsByUser(editData, userClass, regexplist) #Revert
 		
 	#Blanking edit?
