@@ -302,8 +302,8 @@ def mustBeReverted(editData, cleandata, userClass):
 
     #antiguerra de ediciones bot vs. posible vandalo
     if len(editData['pageHistory'])>=3: #si tiene al menos 3 ediciones el articulo
-        if editData['pageHistory'][0][2] == editData['author'] and \ 
-           editData['pageHistory'][2][2] == editData['author'] and \ 
+        if editData['pageHistory'][0][2] == editData['author'] and \
+           editData['pageHistory'][2][2] == editData['author'] and \
            editData['pageHistory'][1][2] != editData['author']:
         # si la última edición y la antepenúltima son del mismo autor, y la de en medio no
         # pepe (wtext=x)
