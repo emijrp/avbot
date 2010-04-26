@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -47,7 +47,7 @@ class Diegus(threading.Thread):
         self.newText=""
         self.pageHistory=[]
         self.HTMLdiff=""
-        
+
     def run(self):
         #print self.page.title(), self.fun
         if self.fun=='getOldVersionOldid':
@@ -60,19 +60,19 @@ class Diegus(threading.Thread):
             self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
         elif self.fun=='getUrl':
             self.HTMLDiff = avbotglobals.preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
-    
+
     def getOldText(self):
         return self.oldText
-    
+
     def getNewText(self):
         return self.newText
-        
+
     def getPageHistory(self):
         return self.pageHistory
-    
+
     def getHTMLDiff(self):
         return self.HTMLDiff
-    
+
 
 def haveIRevertedThisVandalism(wtitle, diff):
     """ Verifica que ha sido este bot el que ha revertido el vandalismo """
@@ -115,7 +115,7 @@ def sameOldid(editData):
 def isSameVandalism(regexlistold, regexlistnew):
     """ Is same vandalism? """
     """ ¿Se trata del mismo vandalismo? """
-    
+
     if len(regexlistold)!=len(regexlistnew):
         return False
     else:
@@ -127,7 +127,7 @@ def isSameVandalism(regexlistold, regexlistnew):
 def updateStats(type):
     """ Incrementa variables de estadísticas """
     """ Increase stats variables """
-    
+
     avbotglobals.statsDic[2][type]+=1
     avbotglobals.statsDic[12][type]+=1
     avbotglobals.statsDic[24][type]+=1
@@ -147,11 +147,11 @@ def watch(editData):
 def isRubbish(editData):
     """ Analiza si se trata de un artículo nuevo inservible """
     """ Check if the new article is useless """
-    
+
     destruir=False
     motive=u'Otros'
     score=0
-    
+
     if avbotglobals.preferences['language']=='es':
         if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):#repetido ? #fix
             if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
@@ -160,7 +160,7 @@ def isRubbish(editData):
                         m=v['compiled'].finditer(editData['newText'])
                         for i in m:
                             score+=v['score']
-                    
+
                     if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()? #fix
                         destruir=True
                         motive=u'Vandalismo'
@@ -177,12 +177,39 @@ def isRubbish(editData):
                         wikipedia.output(u'[[%s]] has been deleted' % editData['pageTitle'])
                         return False, '' #Exit
                 return True, motive
+    if avbotglobals.preferences['language']=='pt':
+        if editData['userClass']=='anon' or (editData['userClass']=='reg' and avbotglobals.userData['edits'][editData['author']]<=avbotglobals.preferences['newbie']):#repetido ? #fix
+            if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+                if not re.search(avbotglobals.parserRegexps['isrubbish-tl-red'], editData['newText']):
+                    for k, v in avbotglobals.vandalRegexps.items():
+                        m=v['compiled'].finditer(editData['newText'])
+                        for i in m:
+                            score+=v['score']
+
+                    if score<0 and ((score>-5 and len(editData['newText'])<score*-150) or score<-4): #igualar a  densidad de isVandalism()? #fix
+                        destruir=True
+                        motive=u'Vandalismo'
+
+## Not good comunity feelings about this
+##                    if len(editData['newText'])<=75 and not destruir:
+##                        if not re.search(avbotglobals.parserRegexps['isrubbish-link'], editData['newText']):
+##                            destruir=True
+##                            motive=u'Demasiado corto'
+            if destruir:
+                updateStats('d')
+                if not avbotglobals.preferences['nosave']:
+                    if editData['page'].exists():
+                        editData['page'].put(u'{{RoboER|%s|%s}}\n%s' % (editData['author'], motive, editData['newText']), u'Marcando para destruir. Motivo: %s. Página creada por [[User:%s|%s]] ([[User talk:%s|disc]] · [[Special:Contributions/%s|cont]])' % (motive, editData['author'], editData['author'], editData['author'], editData['author']))
+                    else:
+                        wikipedia.output(u'[[%s]] foi eliminada' % editData['pageTitle'])
+                        return False, '' #Exit
+                return True, motive
     return False, ''
 
 def improveNewArticle(editData):
     """ Intenta mejorar el artículo según unos consejos básicos del manual de estilo """
     """ Make some changes in the new article to improve it """
-    
+
     if avbotglobals.preferences['language']=='es':
         newText=editData['page'].get()
         if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
@@ -200,21 +227,38 @@ def improveNewArticle(editData):
                         if not avbotglobals.preferences['nosave']:
                             editData['page'].put(newnewText, u'BOT - Aplicando %s... al artículo recién creado' % resumen)
                         return True, resumen
+    if avbotglobals.preferences['language']=='pt':
+        newText=editData['page'].get()
+        if (editData['namespace']==0) and not editData['page'].isRedirectPage() and not editData['page'].isDisambig():
+            if not re.search(ur'(?i)\{\{ *(er|vda|esr)|(redirect|redirecionamento)', newText): #descarta demasiado? destruir|plagio|copyvio
+                if len(newText)>=500:
+                    resumen=u''
+                    newnewText=u''
+                    if not editData['page'].interwiki():
+                        try:
+                            [newnewText, resumen]=avbotcomb.magicInterwiki(editData['page'], resumen, 'en')
+                        except:
+                            pass
+                    [newnewText, resumen]=avbotcomb.vtee(newnewText, resumen)
+                    if len(newnewText)>len(newText):
+                        if not avbotglobals.preferences['nosave']:
+                            editData['page'].put(newnewText, u'BOT - Aplicando %s... ao artigo recém criado' % resumen)
+                        return True, resumen
     return False, u''
 
 def revertAllEditsByUser(editData, userClass, regexplist):
     """ Revierte todas las ediciones de un usuario en un mismo artículo """
     """ Revert all edits in a same article by a same author """
-    
+
     #Add to vandalism control log, meter donde ompruebo si he revertido yo el vandalismo?
     if avbotglobals.vandalControl.has_key(editData['author']):
         avbotglobals.vandalControl[editData['author']][editData['diff']]=[editData['pageTitle'], editData['score'], regexplist]
     else:
         avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexplist]}
-    
+
     c=0
     for i in editData['pageHistory']:
-        if i[2]!=editData['author']: 
+        if i[2]!=editData['author']:
             if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja, CUIDADO CON LOS CLONES!!!
                 #excepto si es un blanqueo distinto del anterior
                 #http://es.wikipedia.org/wiki/Especial:Contribuciones/90.39.120.216
@@ -236,11 +280,11 @@ def revertAllEditsByUser(editData, userClass, regexplist):
                                 break
                 elif editData['type']=='g': # if the sum is good, break and do not revert (a bit redundant, due to score will not be negative and not enter in this fun)
                     break
-            
+
             editData['stableid']=i[0]
             editData['stableAuthor']=i[2]
             editData=sameOldid(editData)
-            
+
             #Restore previous version of the page
             t1=time.time()
             if not avbotglobals.preferences['nosave']:
@@ -250,43 +294,43 @@ def revertAllEditsByUser(editData, userClass, regexplist):
                         return False, editData #Exit
                 print "----> pageTitle", editData['pageTitle']
                 print "----> obj page", editData['page'].title()
-                editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle']) #por algún motivo pierde la "sesión" porqué? #fix 
+                editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle']) #por algún motivo pierde la "sesión" porqué? #fix
                 editData['page'].put(editData['stableText'], avbotcomb.resumeTranslator(editData), botflag=False, maxTries=1) #¡¡¡MANTENER BOTFLAG=FALSE!!! POR DEFECTO EN LA FUNCIÓN PUT DE WIKIPEDIA.PY ES TRUE, botflag=False, maxTries=1, 1 sólo intento y descartar, sin flag
             print 'put', time.time()-t1, editData['pageTitle']
             #wii=wikipedia.Page(wikipedia.Site('es', 'wikipedia'), u"User:AVBOT/Sandbox")
             #wii.put(editData['stableText'], "test", botflag=False, maxTries=1)
-            
+
             #Ha revertido el bot u otro usuario?
             #esperamos un tiempo aleatorio para evitar lag, conflictos de edición...
             time.sleep(random.randint(5,10))
             if haveIRevertedThisVandalism(editData['pageTitle'], editData['diff']):
                 updateStats(editData['type'])
-            
+
                 #Send message to user
                 avbotglobals.vandalControl[editData['author']]['avisos']+=1
                 if not avbotglobals.preferences['nosave'] and avbotglobals.vandalControl[editData['author']]['avisos']<=3:
                     avbotmsg.sendMessage(editData['author'], editData['pageTitle'], editData['diff'], avbotglobals.vandalControl[editData['author']]['avisos'], editData['type'])
-                
+
                 #Save log for depuration purposes
                 log=open('%s/%s.txt' % (avbotglobals.preferences['logsDirectory'], datetime.date.today()), 'a')
                 logentry=u'\n%s\nPage: [[%s]]\nDate: %s\nPoints: %d\nRegular expressions:\n%s\n%s' % ('-'*100, editData['pageTitle'], datetime.datetime.today(), editData['score'], editData['details'], '-'*100)
                 log.write(logentry.encode('utf-8'))
                 log.close()
-                
+
                 #Send message to admins board
                 if not avbotglobals.preferences['nosave']:
                     blockedInEnglishWikipedia=avbotcomb.checkBlockInEnglishWikipedia(editData)
                     if len(avbotglobals.vandalControl[editData['author']].items())==4 or blockedInEnglishWikipedia[1]: #al tercer aviso o cuando es proxy
                         #Not send the message if vandals have been reported before
                         avbotmsg.msgVandalismoEnCurso(avbotglobals.vandalControl[editData['author']], editData['author'], userClass, blockedInEnglishWikipedia)
-                
+
             #Trial run?
             if avbotglobals.preferences['trial']:
                 type=editData['type']
                 msg=u"* %s: Possible [{{SERVER}}/w/index.php?diff=%s&oldid=%s %s] in [[%s]] by [[Special:Contributions/%s|%s]], reverting to [{{SERVER}}/w/index.php?oldid=%s %s] edit by [[User:%s|%s]]" % (datetime.datetime.now(), editData['diff'], editData['stableid'], avbotglobals.preferences['msg'][type]['meaning'], editData['pageTitle'], editData['author'], editData['author'], editData['stableid'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
                 wiii=wikipedia.Page(avbotglobals.preferences['site'], u"User:%s/Trial" % (avbotglobals.preferences['botNick']), botflag=False, maxTries=1)
                 wiii.put(u"%s\n%s" % (msg, wiii.get()), avbotcomb.resumeTranslator(editData))
-            
+
             return True, editData
         c+=1
     return False, editData
@@ -294,7 +338,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
 def mustBeReverted(editData, cleandata, userClass):
     """ ¿Debe ser revertida la edición? ¿Es vandalismo, prueba de edición o blanqueo? """
     """ Checks if an edit is a vandalism, test or blanking edit """
-    
+
     editData['score']=0
     #fix poner editData['type']='g' ?
     regexplist=[]
@@ -302,7 +346,7 @@ def mustBeReverted(editData, cleandata, userClass):
 
     #antiguerra de ediciones bot vs. posible vandalo
     if len(editData['pageHistory'])>=3: #si tiene al menos 3 ediciones el articulo
-        if editData['pageHistory'][0][2] == editData['author'] and \
+       if editData['pageHistory'][0][2] == editData['author'] and \
            editData['pageHistory'][2][2] == editData['author'] and \
            editData['pageHistory'][1][2] != editData['author']:
         # si la última edición y la antepenúltima son del mismo autor, y la de en medio no
@@ -311,11 +355,10 @@ def mustBeReverted(editData, cleandata, userClass):
         # pepe (wtext=x)
         # y tienen el mismo texto, es que pepe ha revertido a su edición
         # evitamos entrar en la guerra
-        # comprobamos también antes de la antepenúltima para más aseguridad??? #fix
-           if editData['page'].getOldVersion(editData['pageHistory'][0][0]) == editData['page'].getOldVersion(editData['pageHistory'][2][0]):
+
                wikipedia.output(u"Evitamos entrar en guerra de ediciones en [[%s]]" % editData['pageTitle'])
                return reverted, editData
-    
+
     #inclusión de líneas cortas al final detrás de los iws http://es.wikipedia.org/w/index.php?title=La_vida_es_sue%C3%B1o&diff=35775982&oldid=35775819
     #al principio también http://es.wikipedia.org/w/index.php?title=Ingenier%C3%ADa_biom%C3%A9dica&diff=prev&oldid=35776392
     #junto a los interwikis [[es:Blabla]]isdfjisf sfdsf sdf
@@ -348,7 +391,7 @@ def mustBeReverted(editData, cleandata, userClass):
                 editData['score']=-1 #poner algo proporcional como en los blanqueos?
                 editData['details']=u"" #no olvidar
                 return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-        
+
     #Blanking edit?
     lenOld=editData['lenOld']
     lenNew=editData['lenNew']
@@ -363,31 +406,31 @@ def mustBeReverted(editData, cleandata, userClass):
             editData['type']='bl'
             editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
             editData['details']=u''
-            
+
             return revertAllEditsByUser(editData, userClass, regexplist) #Revert
         """
         if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7: # 1/7 es un buen numero, 85,7%
             editData['type']='bl'
             editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
             editData['details']=u''
-            
+
             return revertAllEditsByUser(editData, userClass, regexplist) #Revert
         """
     #TODO: Blanking line like this, All glory to the hypnoto
-    
+
     #Interwiki and categories blanking. Example: http://es.wikipedia.org/w/index.php?title=Reciclaje&diff=34127808&oldid=34116543
     oldCategoriesNumber=len(re.findall(avbotglobals.parserRegexps['categories'], editData['oldText']))
     newCategoriesNumber=len(re.findall(avbotglobals.parserRegexps['categories'], editData['newText']))
     oldInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['oldText']))
     newInterwikisNumber=len(re.findall(avbotglobals.parserRegexps['interwikis'], editData['newText']))
-    
+
     if oldInterwikisNumber>=10 and newInterwikisNumber<=oldInterwikisNumber/2 and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): #10 es un número conservador?
         editData['type']='bl'
         editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
         editData['details']=u''
-        
+
         return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-    
+
     #Vandalism or test edit?
     regexplist=[]
     editData['type']='' #dummie, contrapeso
@@ -397,7 +440,7 @@ def mustBeReverted(editData, cleandata, userClass):
             editData['type']=type
             priority=msgprop['priority']
     editData['details']=u''
-    
+
     for k, v in avbotglobals.vandalRegexps.items(): #fix mirar si en la revisión anterior ya había tales palabras malsonantes? (evitamos que un copia/pega desplazado se considere como texto nuevo) no contar las positivas de la anterior
         m=v['compiled'].finditer(cleandata)
         added=False #Avoid duplicate entries in the log
@@ -410,15 +453,15 @@ def mustBeReverted(editData, cleandata, userClass):
             if not added:
                 editData['details']+=u'%s\n' % (k)
                 added=True
-    
+
     threshold=-4 #lower points, automatically reverted
     density=150 #negative points allowed per length string
-    if editData['score']<0 and ((editData['score']>=threshold and len(cleandata)<abs(editData['score']*density)) or editData['score']<threshold): 
+    if editData['score']<0 and ((editData['score']>=threshold and len(cleandata)<abs(editData['score']*density)) or editData['score']<threshold):
         if avbotglobals.preferences['testmode']:
             return True, editData
         else:
             return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-    
+
     #Anti-birthday
     if re.search(avbotglobals.parserRegexps['anti-birthday-es'], editData['pageTitle']):
         if editData['namespace']==0:
@@ -435,7 +478,7 @@ def mustBeReverted(editData, cleandata, userClass):
                 if re.sub(ur"[ =]", ur"", section).lower()=="fallecimientos" and len(sections)>c+1:
                     deaths=sections[c+1]
                 c+=1
-            
+
             if births:
                 m=re.compile(ur'(?i)\* *\[?\[?(?P<year>\d{4})\]?\]? *?[\:\-] *?[^\[]*?\[\[(?P<enlace>[^\|\]]+?)(\|[^\]]*?)?\]\]').finditer(cleandata)
                 for i in m: #controlar si se ha metido mas de un cumpleaños?
@@ -449,25 +492,25 @@ def mustBeReverted(editData, cleandata, userClass):
                             enlaceexiste=True
                     except:
                         pass
-                
+
                     if enlaceexiste:
                         wikipedia.output(u"El artículo al que apunta la efeméride sí existe  : )")
                     else:
                         anyoenlacecompiled=re.compile(ur'(?i)%d.*%s' % (anyo, enlace))
                         if anyo>anyoactual: #poner anyos futuros en los acontecimientos es posible, pero no en births o deaths
-                            if re.search(anyoenlacecompiled, births) or re.search(anyoenlacecompiled, deaths): 
+                            if re.search(anyoenlacecompiled, births) or re.search(anyoenlacecompiled, deaths):
                                 editData['type']='nn'
                                 return revertAllEditsByUser(editData, userClass, regexplist) #Revert
                                 motivo=u'Fecha imposible (Año %d)' % anyo
                                 wikipedia.output(motivo)
-                
+
                         elif re.search(anyoenlacecompiled, births):
                             if anyo>=anyoactual-20:
                                 #que chico mas precoz, comprobemos su relevancia
                                 wii['en']=wikipedia.Page(wikipedia.Site('en', 'wikipedia'), enlace)
                                 #wii['de']=wikipedia.Page(wikipedia.Site('de', 'wikipedia'), enlace)
                                 #wii['fr']=wikipedia.Page(wikipedia.Site('fr', 'wikipedia'), enlace)
-                                
+
                                 #la inglesa da error a veces, gestionamos la excepcion
                                 try:
                                     if not wii['en'].exists():
@@ -477,7 +520,7 @@ def mustBeReverted(editData, cleandata, userClass):
                                         wikipedia.output(motivo)
                                 except:
                                     pass
-    
+
     return reverted, editData
 
 def newArticleAnalysis(editData):
@@ -489,31 +532,31 @@ def newArticleAnalysis(editData):
         wikipedia.output(u"[[%s]] has been deleted!" % editData['pageTitle'])
         return
     editData['lenNew']=len(editData['newText'])
-    
+
     [done, motive]=isRubbish(editData)
-    
+
     if done:
         wikipedia.output(u'\03{lightred}Alert!: Putting destroy template in [[%s]]. Motive: %s\03{default}' % (editData['pageTitle'], motive))
         return
-    
+
     [done, resume]=improveNewArticle(editData)
     if done:
         wikipedia.output(u'\03{lightred}Alert!: Aplicando %s... a [[%s]]\03{default}' % (resume, editData['pageTitle']))
         return
-        
+
     return
 
 def cleandiff(pageTitle, data):
     """ Extrae el texto que ha sido insertado en la edición """
     """ Clean downloaded diff page """
-    
+
     #fix hacerme mi propio differ con la librería difflib?
     #tener en cuenta las expresiones que ya estaba en oldText por si la IP mueve un bloque de texto
-    
+
     marker=' ; ' #no poner ;;; porque da falsos positivos con regexp de repetición de caracteres
     clean=marker
-    
-    trozos=data.split('<tr>') 
+
+    trozos=data.split('<tr>')
     if len(trozos)>=3:
         trozos=trozos[2:] #....(0 cosas)<tr>(1 info sobre líneas</tr>)<tr>(2 lo que nos interesa... # el 1 contiene el numero de línea, nos lo saltamos
         for trozo in trozos:
@@ -535,12 +578,12 @@ def cleandiff(pageTitle, data):
                         clean+=u'%s%s%s' % (marker, trozo, marker)
             except:
                 wikipedia.output(u'ERROR: %s' % trozo)
-    
+
     clean=re.sub(ur'(?m)[\n\r]', ur' ', clean) #no new lines
-    
+
     #if len(clean)<3000:
     #   wikipedia.output(clean)
-    
+
     if clean==marker:
         clean=''
     return clean
@@ -548,14 +591,14 @@ def cleandiff(pageTitle, data):
 def editAnalysis(editData):
     """ Lanzamiento de funciones de análisis previo descarte de páginas/ediciones que no deben ser analizadas """
     """ Checks edit to search vandalisms, blanking, tests, etc """
-    
+
     #Getting page object for this edit
     editData['page']=wikipedia.Page(avbotglobals.preferences['site'], editData['pageTitle'])
-    
+
     #if editData['page'].exists(): #no es necesario para páginas antiguas (menos de 10 de historial), las nuevas ya se verifica justo antes de poner {{destruir}}
     editData['pageTitle']=editData['page'].title()
     editData['namespace']=editData['page'].namespace()
-    
+
     nm=u''
     if editData['new']:
         nm+=u'\03{lightred}N\03{default}'
@@ -563,7 +606,7 @@ def editAnalysis(editData):
         nm+=u'\03{lightred}m\03{default}'
     if nm:
         nm+=u' '
-    
+
     if editData['userClass']=='anon':
         wikipedia.output(u'[%s] %s[[%s]] {\03{%s}%s\03{default}}' % (avbotcomb.getTime(), nm, editData['pageTitle'], avbotglobals.preferences['colors'][editData['userClass']], editData['author']))
     else:
@@ -578,28 +621,28 @@ def editAnalysis(editData):
 
     if editData['page'].isRedirectPage(): #Do not analysis redirect pages
         return #Exit
-    
+
     # Avoid to check our edits
-    if editData['author'] == avbotglobals.preferences['botNick']: 
+    if editData['author'] == avbotglobals.preferences['botNick']:
         return #Exit
-        
+
     # Must be analysed?
     if not watch(editData):
         wikipedia.output(u'[[%s]] edit must not be checked' % editData['pageTitle'])
         return #Exit
-        
+
     # Avoid analysis of excluded pages
     for exclusion, compiledexclusion in avbotglobals.excludedPages.items():
         if re.search(compiledexclusion, editData['pageTitle']):
             wikipedia.output(u'[[%s]] is in the exclusion list' % editData['pageTitle'])
             return #Exit
-    
+
     # New pages analysis
     if editData['new'] and avbotglobals.preferences['language']=='es':
         time.sleep(5) #Para evitar que .exists() o .get() devuelva que no existe
         newArticleAnalysis(editData)
         return #Exit
-    
+
     # To get history
     editData['oldText']=u''
     editData['newText']=u''
@@ -628,7 +671,7 @@ def editAnalysis(editData):
     editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- end content -->')[0] #No change
     cleandata=cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
     print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText']), len(editData['HTMLDiff'])
-    
+
     """t1=time.time()
     editData['pageHistory'] = editData['page'].getVersionHistory(revCount=10) #To avoid bot edit wars, 10 está bien?
     #editData['oldText']     = editData['page'].getOldVersion(editData['page'].previousRevision()) #Previous text
@@ -639,24 +682,24 @@ def editAnalysis(editData):
     t1=time.time()
     editData['newText']     = editData['page'].getOldVersion(editData['diff']) #Current text, más lento que el .get() ?
     print 3, editData['pageTitle'], time.time()-t1"""
-    
+
     #except:
     #   return #No previous text? New? Exit
-    
+
     editData['lenOld']  = len(editData['oldText'])
     editData['lenNew']  = len(editData['newText'])
     editData['lenDiff'] = editData['lenNew']-editData['lenOld']
-    
+
     # Proposed to delete? Skip
-    if re.search(avbotglobals.parserRegexps['destruir'], editData['newText']): 
+    if re.search(avbotglobals.parserRegexps['destruir'], editData['newText']):
         wikipedia.output(u'Alguien ha marcado [[%s]] para destruir. Saltamos.' % editData['pageTitle'])
         return
-    
+
     # Avoid to check false positives pages
     if re.search(avbotglobals.parserRegexps['conflictivos'], editData['newText']+editData['oldText']): #buscamos tanto en old como en new, mayor seguridad?
         wikipedia.output(u'[[%s]] es un artículo conflictivo, no lo analizamos' % editData['pageTitle'])
         return
-    
+
     #hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
     """try: #Try to catch diff
         t1=time.time()
@@ -667,10 +710,10 @@ def editAnalysis(editData):
     except:
         return #No diff, exit
     """
-    
+
     #Analysis of this edit, must be reverted?
     [reverted, editData]=mustBeReverted(editData, cleandata, editData['userClass'])
-    if reverted: 
+    if reverted:
         wikipedia.output(u'%s\n\03{lightred}Alert!: Possible %s by %s in [[%s]]\nDetails:\n%s\n%s\03{default}%s' % ('-'*50, avbotglobals.preferences['msg'][editData['type']]['meaning'].lower(), editData['author'], editData['pageTitle'], editData['score'], editData['details'], '-'*50))
         return
-    
+

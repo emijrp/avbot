@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -48,11 +48,11 @@ def msgVandalismoEnCurso(dic_vand, author, userclass, blockedInEnglishWikipedia)
     wikipedia.output(u"El usuario %s ha vandalizado varias veces" % author)
     wii=wikipedia.Page(avbotglobals.preferences['site'], u"Wikipedia:Vandalismo en curso")
     restopag=wii.get()
-    
+
     #evitamos avisar dos veces
     if re.search(ur'(?im)^\=* *%s *\=*' % author, restopag): #existe ya un aviso
         return
-    
+
     if userclass=='reg':
         report+=u'<!-- completa los datos tras las "flechitas" -->\n{{subst:Reportevandalismo\n| 1 = %s\n| 2 = %s\n| 3 = ~~~~\n}}' % (author, explanation)
     else:
@@ -91,7 +91,7 @@ def haveIRevertedThisVandalism(wtitle, diff):
 def sendMessage(author, wtitle, diff, n, tipo):
     """ Envía mensajes de advertencia a un usuario """
     """ Send messages to an user  """
-    if avbotglobals.preferences['site'].lang not in ['es', 'en']:
+    if avbotglobals.preferences['site'].lang not in ['es', 'en', 'pt']:
         return
     talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
     avisotexto=u""
@@ -102,11 +102,11 @@ def sendMessage(author, wtitle, diff, n, tipo):
     if re.search(ur'(?im)%s' % diff, wtext): #existe ya un aviso para esta oldid?
         return
     #existe sección para este mes? sino la creamos
-    
+
     #miramos cual fue el número del último warning y enviamos el siguiente, <!-- Template:uw-avbotwarningX -->
     #http://en.wikipedia.org/w/index.php?title=Wikipedia%3ABots%2FRequests_for_approval%2FAVBOT&action=historysubmit&diff=355153089&oldid=354347005
     x=n
-    
+
     #n es el contador interno nuestro, de cuantos vandalismos le hemos detectado
     #x es el contador de todos los huggle, bots, etc
     template=u"%s%s.css" % (avbotglobals.preferences['msg'][tipo]['template'], n)
@@ -116,7 +116,7 @@ def sendMessage(author, wtitle, diff, n, tipo):
     else:
         wikipedia.output(u'"%s" page doesnt exist. Please create it. Parameter 1: Title, Parameter 2: Diff, Parameter 3: Message #number' % template)
         sys.exit()
-    
+
     if avisotexto:
         if wtext:
             wtext+="\n\n"
@@ -127,6 +127,8 @@ def sendMessage(author, wtitle, diff, n, tipo):
                 talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False)
             elif avbotglobals.preferences['site'].lang=='es':
                 talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=True, maxTries=1, minorEdit=False) #poner a true si lo aceptan
+            elif avbotglobals.preferences['site'].lang=='ot':
+                talkpage.put(wtext, u"BOT - Avisando [[Special:Contributions/%s|%s]] de a sua edição em [[%s]] foi revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=True, maxTries=1, minorEdit=False) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
     """ Envía mensaje de bloqueo a un usuario """

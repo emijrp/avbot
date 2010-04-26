@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -39,7 +39,7 @@ import avbotsave
 def blockedUser(blocker, blocked, castigo):
     """ Carga Vandalismo en curso y gestionar bloqueo  """
     """ Load Vandalismo en curso and manage block """
-    
+
     blocker_=re.sub(u' ', u'_', blocker)
     blocked_=re.sub(u' ', u'_', blocked)
     #desactivado por http://es.wikipedia.org/w/index.php?title=Usuario%3AAVBOT%2FSugerencias&diff=21583774&oldid=21539840
@@ -60,10 +60,10 @@ def blockedUser(blocker, blocked, castigo):
                         trozos2[c+1]=re.sub(arellenar, ur"\g<ini> {{Vb|1=%s ([http://%s.wikipedia.org/w/index.php?title=Special:Log&type=block&user=%s&page=User:%s&year=&month=-1 ver log])|2=c|3=%s}} --~~~~\g<fin>" % (castigo, avbotglobals.preferences['site'].lang, blocker_, blocked_, blocker), trozos2[c+1])
                         break
                 c+=1
-            
+
             #reunimos los trozos de nuevo con ===
             newvectext="===".join(trozos2)
-            
+
             #Updating vandalism board
             if newvectext!=vectext:
                 #wikipedia.showDiff(vectext, newvectext)
@@ -72,14 +72,14 @@ def blockedUser(blocker, blocked, castigo):
                 wikipedia.output(u'\03{lightblue}Alerta: Tachando [[User:%s]] de WP:VEC. Gestionado por [[User:%s]]\03{default}' % (blocked, blocker))
             else:
                 wikipedia.output(u'\03{lightblue}No se ha modificado WP:VEC.\03{default}')
-            
+
             #si ha sido bloqueado para siempre, redirigimos a su pagina de usuario
             """if re.search(ur'(para siempre|indefinite|infinite|infinito)', castigo):
                 userpage=wikipedia.Page(avbotglobals.preferences['site'], u'User:%s' % blocked)
                 if not avbotglobals.preferences['nosave']:
                     userpage.put(u'#REDIRECT [[Wikipedia:Usuario expulsado]]', u'BOT - El usuario ha sido expulsado %s' % castigo, botflag=False, maxTries=1)
                 wikipedia.output(u'\03{lightblue}Redirigiendo página de usuario a [[Wikipedia:Usuario expulsado]]\03{default}')"""
-            
+
 
 def semiprotect(titulo, protecter):
     """ Pone la plantilla {{semiprotegido}} si no la tiene ya """
@@ -113,24 +113,24 @@ def magicInterwiki(page, resumen, idioma):
     """ Check for userful interwikis """
     wtext=page.get()
     wtitle=page.title()
-    
+
     pex=wikipedia.Page(wikipedia.Site(idioma, "wikipedia"), wtitle)
-    
+
     if pex.exists() and not pex.isRedirectPage() and not pex.isDisambig():
         #descartamos articulos con interwikis a la española
         iws=pex.interwiki()
         for iw in iws:
             if iw.site().lang=='es':
                 return wtext, resumen
-        
+
         linked=page.linkedPages()
         linkedex=pex.linkedPages()
-        
+
         aux=[]
         for link in linkedex:
             aux.append(link.title())
         linkedex=aux
-        
+
         cont=0
         total=0
         for link in linked:
@@ -142,7 +142,7 @@ def magicInterwiki(page, resumen, idioma):
                         if linkedex.count(linkiw.title())!=0:
                             cont+=1
         #wikipedia.output(u"Total=%s | Contador=%s" % (str(total), str(cont)))
-        
+
         if cont>=total/2 and cont>0: #50% de margen
             iws=pex.interwiki()
             iws.append(pex)
@@ -182,19 +182,21 @@ def resumeTranslator(editData):
     """ Beta summaries translator """
     resume=u''
     type=editData['type']
-    
+
     if avbotglobals.preferences['language']=='es':
         resume=u'BOT - Posible %s de [[Special:Contributions/%s|%s]], revirtiendo hasta la edición %s de [[User:%s|%s]]. ¿[[User:AVBOT/Errores|Hubo un error]]?' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
+    elif avbotglobals.preferences['language']=='pt':
+        resume=u'BOT - Possível %s de [[Special:Contributions/%s|%s]], revertendo para a edição %s de [[User:%s|%s]].' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
     else:
         resume=u'BOT - Reverting possible %s by [[Special:Contributions/%s|%s]] to %s version by [[User:%s|%s]]. False positive? [[User:AVBOT/False Positives|Report it]]' % (avbotglobals.preferences['msg'][type]['meaning'].lower(), editData['author'], editData['author'], editData['stableid'], editData['stableAuthor'], editData['stableAuthor'])
-    
+
     return resume
 
 def getParameters():
     """ Gestionar parámetros capturados de la consola """
     """ Manage console parameters """
     args=sys.argv
-    
+
     obligatory=2
     for arg in args[1:]:
         if arg.startswith('-language'):
@@ -256,7 +258,7 @@ def getParameters():
         elif arg.startswith('-trial'):
             if len(arg) == 6:
                 avbotglobals.preferences['trial'] = True
-    
+
     if obligatory:
         wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
         sys.exit()
@@ -269,7 +271,7 @@ def getTime():
 def encodeLine(line):
     """ Codifica una cadena en UTF-8 a poder ser """
     """ Encode string into UTF-8 """
-    
+
     try:
         line2=unicode(line,'utf-8')
     except UnicodeError:
@@ -283,7 +285,7 @@ def encodeLine(line):
 def getUserClass(editData):
     """ Averigua el tipo de usuario del que se trata """
     """ Check user class """
-    
+
     userClass='anon'
     if avbotglobals.userData['steward'].count(editData['author']):
         userClass='steward'
@@ -302,7 +304,7 @@ def getUserClass(editData):
 def cleanLine(line):
     """ Limpia una línea de IRC de basura """
     """ Clean IRC line """
-    
+
     #los dos subs no son costosos, menos de 0.0004
     line=re.sub(ur'\x03\d{0,2}', ur'', line) #No colors
     line=re.sub(ur'\x02\d{0,2}', ur'', line) #No bold
@@ -317,7 +319,7 @@ def updateUserDataIfNeeded(editData):
         else:
             #Requesting edits number to server
             avbotglobals.userData['edits'][editData['author']]=avbotload.loadUserEdits(editData['author'])
-        
+
         #Saving user edits file...
         if not random.randint(0,250): #Cada 250 ediciones no anónimas, está bien...
             avbotsave.saveEdits(avbotglobals.userData['edits'])
@@ -327,11 +329,11 @@ def checkBlockInEnglishWikipedia(editData):
     isProxy=False
     if re.search(avbotglobals.parserRegexps['ip'], editData['author']): #Is it an IP?
         enwiki=wikipedia.Site('en', 'wikipedia')
-        
+
         data=enwiki.getUrl("/w/index.php?title=Special:BlockList&ip=%s" % editData['author'])
         data=data.split('<!-- start content -->')
         data=data[1].split('<!-- end content -->')[0]
-        
+
         data=data.split('<li>')
         if len(data)>1:
             m=re.compile(ur"</span> *\((?P<expires>[^<]*?)\) *<span class=\"comment\">\((?P<comment>[^<]*?)\)</span>").finditer(data[1])
@@ -340,29 +342,26 @@ def checkBlockInEnglishWikipedia(editData):
                 if re.search(ur'(?i)proxy', i.group('comment')):
                     isProxy=True
                 break #con el primero basta
-    
+
     return comment, isProxy
 
-def checkForUpdates():
-    fullpath = "/"+"/".join(os.path.abspath( __file__ ).split("/")[:-1])+"/"
-    svn='http://avbot.googlecode.com/svn/trunk/'
-    f=urllib.urlopen(svn)
-    html=f.read()
-    m=re.compile(ur">(?P<filename>[^<]+?\.py)</a>").finditer(html)
-    for i in m:
-        filename=i.group("filename")
-        wikipedia.output(u"Checking file %s..." % filename)
-        g=open(fullpath+filename, 'r')
-        h=urllib.urlopen(svn+filename)
-        if g.read()!=h.read():
-			wikipedia.output(u"%s has changed!!!" % filename)
-			g.close()
-			return True
-        else:
-            wikipedia.output(u"OK!")
-            g.close()
-    f.close()
-    return False
+##def checkForUpdates():
+##    svn='http://avbot.googlecode.com/svn/trunk/'
+##    f=urllib.urlopen(svn)
+##    html=f.read()
+##    m=re.compile(ur">(?P<filename>[^<]+?\.py)</a>").finditer(html)
+##    for i in m:
+##        filename=i.group("filename")
+##        wikipedia.output(u"Checking file %s..." % filename)
+##        g=open(filename, 'r')
+##        h=urllib.urlopen(svn+filename)
+##        if g.read()!=h.read():
+##            wikipedia.output(u"%s has changed!!!" % filename)
+##            return True
+##        else:
+##            wikipedia.output(u"[OK]")
+##    f.close()
+##    return False
 
 def existenceFile():
     while True:

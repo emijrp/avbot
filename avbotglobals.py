@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -68,7 +68,7 @@ preferences = {
 }
 
 """ Header message """
-header  = u"AVBOT Copyright (C) 2008-2010 Emilio José Rodríguez Posada\n"
+header  = u"\nAVBOT Copyright (C) 2008-2010 Emilio José Rodríguez Posada\n"
 header += u"This program comes with ABSOLUTELY NO WARRANTY.\n"
 header += u"This is free software, and you are welcome to redistribute it\n"
 header += u"under certain conditions. See license.\n\n"
@@ -86,16 +86,16 @@ wikipedia.output(header)
 
 avbotcomb.getParameters()
 
-if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta con la absoluta)
-   wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
-   sys.exit()
+#if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta con la absoluta)
+#   wikipedia.output(u"***New code available*** Please, update your copy of AVBOT from http://avbot.googlecode.com/svn/trunk/")
+#   #sys.exit()
 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
-if not preferences['nosave']:
-    testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-    testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
-    testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
-    testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
+##if not preferences['nosave']:
+##    testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
+##    testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
+##    testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
+##    testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
 
 if not preferences['channel']:
     preferences['channel']  = '#%s.%s' % (preferences['language'], preferences['family'])
@@ -115,7 +115,7 @@ elif preferences['site'].lang=='pt':
     preferences['goodandevil']=u'Expressões.css'
     preferences['exclusions']=u'Exclusões.css'
     preferences['messages']=u'Mensagens.css'
-    
+
 global namespaces
 namespaces={}
 namespaces[2] = avbotcomb.namespaceTranslator(2)
