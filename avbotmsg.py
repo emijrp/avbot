@@ -91,7 +91,7 @@ def haveIRevertedThisVandalism(wtitle, diff):
 def sendMessage(author, wtitle, diff, n, tipo):
     """ Envía mensajes de advertencia a un usuario """
     """ Send messages to an user  """
-    if avbotglobals.preferences['site'].lang not in ['es', 'en']:
+    if avbotglobals.preferences['site'].lang not in ['es', 'en', 'pt']:
         return
     talkpage=wikipedia.Page(avbotglobals.preferences['site'], u"User talk:%s" % author)
     avisotexto=u""
@@ -126,6 +126,8 @@ def sendMessage(author, wtitle, diff, n, tipo):
             if avbotglobals.preferences['site'].lang=='en':
                 talkpage.put(wtext, u"BOT - Warning [[Special:Contributions/%s|%s]], reverted edit in [[%s]] (Warning #%d)" % (author, author, wtitle, n), botflag=False, maxTries=1, minorEdit=False)
             elif avbotglobals.preferences['site'].lang=='es':
+                talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=True, maxTries=1, minorEdit=False) #poner a true si lo aceptan
+            elif avbotglobals.preferences['site'].lang=='pt':
                 talkpage.put(wtext, u"BOT - Avisando a [[Special:Contributions/%s|%s]] de que su edición en [[%s]] ha sido revertida (Aviso #%d)" % (author, author, wtitle, n), botflag=True, maxTries=1, minorEdit=False) #poner a true si lo aceptan
 
 def msgBlock(blocked, blocker):
