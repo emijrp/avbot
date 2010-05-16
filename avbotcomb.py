@@ -355,9 +355,9 @@ def checkForUpdates():
         g=open(fullpath+filename, 'r')
         h=urllib.urlopen(svn+filename)
         if g.read()!=h.read():
-			wikipedia.output(u"%s has changed!!!" % filename)
-			g.close()
-			return True
+            wikipedia.output(u"%s has changed!!!" % filename)
+            g.close()
+            return True
         else:
             wikipedia.output(u"OK!")
             g.close()
