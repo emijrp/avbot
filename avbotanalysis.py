@@ -212,6 +212,9 @@ def revertAllEditsByUser(editData, userClass, regexplist):
     else:
         avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexplist]}
     
+    if editData['type']=='bl': #malditos blanqueos #fix
+        return False, editData
+    
     c=0
     for i in editData['pageHistory']:
         if i[2]!=editData['author']: 
