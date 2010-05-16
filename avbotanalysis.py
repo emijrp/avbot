@@ -212,7 +212,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
     else:
         avbotglobals.vandalControl[editData['author']]={'avisos': 0, editData['diff']: [editData['pageTitle'], editData['score'], regexplist]}
     
-    if editData['type']=='bl': #malditos blanqueos #fix
+    if editData['type']=='bl': #malditos blanqueos #fix http://es.wikipedia.org/w/index.php?title=Saneamiento_ambiental&action=history
         return False, editData
     
     c=0
