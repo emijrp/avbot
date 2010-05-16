@@ -216,6 +216,10 @@ def revertAllEditsByUser(editData, userClass, regexplist):
     for i in editData['pageHistory']:
         if i[2]!=editData['author']: 
             if i[2]==avbotglobals.preferences['botNick']:#evitar que el bot entre en guerras de ediciones, ni aunque la puntuacion sea muy baja, CUIDADO CON LOS CLONES!!!
+                """debido a las guerras de ediciones entre los bots y los supuestos vandalos
+                dejo que revierta solo 1 vez cada 24 horas"""
+                break #buscar en la lista de bots y mirar si hace 24 horas #fix
+                """
                 #excepto si es un blanqueo distinto del anterior
                 #http://es.wikipedia.org/wiki/Especial:Contribuciones/90.39.120.216
                 #http://es.wikipedia.org/wiki/Especial:Contribuciones/85.53.17.213
@@ -235,7 +239,7 @@ def revertAllEditsByUser(editData, userClass, regexplist):
                                 #evitamos revertir dos veces el mismo vandalismo, misma puntuacion, ¿excepto si es muy baja?
                                 break
                 elif editData['type']=='g': # if the sum is good, break and do not revert (a bit redundant, due to score will not be negative and not enter in this fun)
-                    break
+                    break"""
             
             editData['stableid']=i[0]
             editData['stableAuthor']=i[2]
