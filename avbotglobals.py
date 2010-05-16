@@ -93,7 +93,7 @@ if avbotcomb.checkForUpdates(): #no llega al directorio actual (cron lo ejecuta 
 preferences['site']     = wikipedia.Site(preferences['language'], preferences['family'])
 if not preferences['nosave']:
     testEdit                = wikipedia.Page(preferences['site'], 'User:%s/Sandbox' % preferences['botNick'])
-    testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
+    testEdit.put(u'136', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
     testEdit                = wikipedia.Page(wikipedia.Site(u'en', u'wikipedia'), 'User:%s/Sandbox' % preferences['botNick'])
     testEdit.put(u'Test edit', u'BOT - Arrancando robot', botflag=False, maxTries=3) #same text always, avoid avbotcron edit panic
 
