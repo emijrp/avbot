@@ -631,8 +631,8 @@ def editAnalysis(editData):
     #hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
     threadHTMLDiff.join()
     editData['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
-    editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- start content -->')[1]
-    editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- end content -->')[0] #No change
+    editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- content -->')[1]
+    editData['HTMLDiff']=editData['HTMLDiff'].split('<!-- /content -->')[0] #No change
     cleandata=cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
     print 0, editData['pageTitle'], time.time()-t1, editData['pageHistory'][0][0], len(editData['oldText']), len(editData['newText']), len(editData['HTMLDiff'])
     
