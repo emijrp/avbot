@@ -4,6 +4,7 @@
 #ircbot https://fisheye.toolserver.org/browse/~raw,r=720/Bryan/TsLogBot/TsLogBot.py
 #capacidad para leer CR de irc o de api
 
+import re
 import time
 import thread
 
@@ -14,18 +15,21 @@ users = {}
 
 preferences = {
     "rcAPI": True,
+    "rcIRC": False,
 }
 
 def loadUsersFromUserGroup(usergroup):
+    global users
+    
     users[usergroup] = []
-    pass
 
 def loadUserGroups():
     global usergroups
     
-    usergroups = ["admin", "bot"]
+    usergroups = ["admin", "bot"] #catch from api, no by default
     
-    pass
+    for usergroup in usergroups:
+        loadUsersFromUserGroup(usergroup)
 
 def loadUsers():
     if not usergroups:
@@ -39,7 +43,16 @@ def loadData():
     loadUsers()
 
 def editIsBlanking(edit_props):
-    return True
+    return False
+
+def editIsTest(edit_props):
+    return False
+
+def editIsVandalism(edit_props):
+    return False
+
+def editIsVanish(edit_props):
+    return False
 
 def userwarning():
     #enviar mensajes según el orden que ya tengan los de la discusión
@@ -62,28 +75,35 @@ def editWar(edit_props):
     return False
 
 def analize(edit_props):
-    print edit_props
     if editWar(edit_props):
         #http://es.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Francia&rvprop=size&rvend=2010-07-25T14:54:54Z
         print "Saltamos para evitar guerra"
         return
     elif dangerous(edit_props):
-        if editIsBlanking(users["admin"]):
+        if editIsBlanking(edit_props):
             revert(edit_props, motive="blanking")
-        elif editIsTest():
+        elif editIsTest(edit_props):
             pass
-        elif editIsVandalism(users["admin"]):
+        elif editIsVandalism(edit_props):
             pass
-        elif editIsVanish(users["admin"]):
+        elif editIsVanish(edit_props):
             pass
         else:
             pass
 
+def isIP(user):
+    if re.findall(ur"(?im)^\d+\.\d+\.\d+\.\d+$", user): #improve
+        return True
+    return False
+
 def dangerous(edit_props):
-    user = ""
     useredits = 0
-    if user not in users["admin"] and \
-       user not in users["bot"] and \
+    
+    if isIP(edit_props['user']):
+        return True
+    
+    if edit_props['user'] not in users["admin"] and \
+       edit_props['user'] not in users["bot"] and \
        useredits < 25:
        return True
     return False
@@ -106,9 +126,18 @@ def rcAPI():
             if rcsimple not in rchistory:
                 rchistory = rchistory[-1000:]
                 rchistory.append(rcsimple)
-                thread.start_new_thread(analize, (rc,))
+                edit_props = {'user': rc[2],}
+                
+                if not editWar(edit_props) and dangerous(edit_props):
+                    wikipedia.output(u'\03{lightyellow}%s\03{default}' % ('\t'.join(rcsimple)))
+                    thread.start_new_thread(analize, (edit_props,))
+                else:
+                    wikipedia.output(u'\03{lightgreen}%s\03{default}' % ('\t'.join(rcsimple)))
             rctimestamp = rc[1]
         time.sleep(3)
+
+def rcIRC():
+    pass
 
 def run():
     #irc or api
@@ -117,27 +146,21 @@ def run():
     
     if preferences["rcAPI"]:
         rcAPI()
-    
-    edit_props = {}
-    
-    if not editWar() and \
-       dangerous(edit_props):
-        analize(edit_props)
-    pass
+    elif preferences["rcIRC"]:
+        rcIRC()
 
 def welcome():
-    pass
+    print "#"*80
+    print "# Welcome to AVBOT "
+    print "#"*80
 
 def bye():
-    pass
+    print "Bye, bye..."
 
 def main():
     welcome()
-    
     loadData()
-    
     run()
-    
     bye()
 
 if __name__ == '__main__':
