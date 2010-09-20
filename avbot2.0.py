@@ -224,6 +224,10 @@ def isIP(user):
 def dangerous(edit_props):
     useredits = getUserEdits(edit_props['user'])
     
+    #namespace filter
+    if edit_props['page'].namespace() != 0:
+        return False
+    
     #anon filter
     if isIP(edit_props['user']):
         return True
@@ -234,15 +238,18 @@ def dangerous(edit_props):
             return False
         
     #edit number filter
-    if useredits < 25:
+    if useredits <= 25:
        return True
     
     return False
 
 def fetchedEdit(edit_props):
     timestamp = edit_props['timestamp'].split('T')[1].split('Z')[0]
+    change = edit_props['change']
+    if change >= 0:
+        change = '+%d' % (change)
     
-    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.}' % (timestamp, edit_props['title'], colours[getUserGroup(edit_props['user'])], edit_props['user'], getUserEdits(edit_props['user']))
+    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colours[getUserGroup(edit_props['user'])], edit_props['user'], getUserEdits(edit_props['user']), edit_props['change'])
     if not editWar(edit_props) and dangerous(edit_props):
         wikipedia.output(u'== Analyzing ==> %s' % line)
         thread.start_new_thread(analize, (edit_props,))
@@ -306,10 +313,11 @@ def rcIRC():
                             if message.startswith('\x01ACTION'):
                                 pass #log('* %s %s' % (nick, message[8:]))
                             else:
+                                #todo esta regexp solo vale para ediciones, las páginas nuevas tienen rcid= y no diff: http://en.wikipedia.org/w/index.php?oldid=385928375&rcid=397223378
                                 m = re.compile(ur'(?im)^\[\[(?P<title>.+?)\]\]\s+(?P<flag>[NMB]*?)\s+(?P<url>http://.+?diff=(?P<diff>\d+?)\&oldid=(?P<oldid>\d+?))\s+\*\s+(?P<user>.+?)\s+\*\s+\((?P<change>[\-\+]\d+?)\)\s+(?P<comment>.*?)$').finditer(message)
                                 for i in m:
                                     #flag, change, url
-                                    edit_props = {'page': wikipedia.Page(preferences['site'], i.group('title')), 'title': i.group('title'), 'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), 'user': i.group('user'), 'comment': i.group('comment'), 'diff': i.group('diff'), 'oldid': i.group('oldid')}
+                                    edit_props = {'page': wikipedia.Page(preferences['site'], i.group('title')), 'title': i.group('title'), 'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), 'user': i.group('user'), 'comment': i.group('comment'), 'diff': i.group('diff'), 'oldid': i.group('oldid'), 'change': int(i.group('change'))}
                                     thread.start_new_thread(fetchedEdit, (edit_props,))
                                 pass #log('<%s>\t%s' % (nick, message))
                 else:
