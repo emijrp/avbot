@@ -15,6 +15,8 @@ import urllib
 import socket
 import sys
 
+#modules from pywikipediabot
+import query
 import wikipedia
 
 class Diegus(threading.Thread):
@@ -56,10 +58,9 @@ class Diegus(threading.Thread):
     def getHTMLDiff(self):
         return self.HTMLDiff
 
-usergroups = [] #list of groups
-whitelistgroups = ['sysop', 'bot', ] #list of trusted users
+whitelistedgroups = ['checkuser', 'founder', 'researcher', 'bot', 'bureaucrat', 'abusefilter', 'oversight', 'steward', 'sysop', 'reviewer', 'import', 'rollbacker'] #list of trusted users
 users = {} #dic with users sorted by group
-useredits = {} #dic with user edits number
+groups = {}
 colours = {
     'sysop': 'lightblue',
     'bot': 'lightpurple',
@@ -74,136 +75,170 @@ colournames = ['black', 'blue', 'green', 'aqua', 'red', 'purple', 'yellow', 'whi
 preferences = {
     'language': 'en',
     'family': 'wikipedia',
+    'botname': 'AVBOT',
+    'newbie': 25,
     'rcAPI': False,
     'rcIRC': True,
     'server': 'irc.wikimedia.org',
     'channel': '#en.wikipedia',
-    'ircNick': 'AVBOT%d' % (random.randint(10000,99999)),
-    'userEditsFile': 'useredits.txt',
+    'ircname': 'AVBOT%d' % (random.randint(10000,99999)),
+    'userinfofile': 'userinfo.txt',
+    'test': True,
+    'testwiki': False,
+    'testfile': True,
+    'testfilename': 'avbotreverts-testing.txt',
 }
 
 preferences['site'] = wikipedia.Site(preferences['language'], preferences['family'])
+preferences['testwikipage'] = wikipedia.Page(preferences['site'], u'User:%s/Test' % (preferences['botname']))
 
-def loadUsersFromUserGroup(usergroup):
+regexps = [
+    ur'(?i)\bf+u+c+k+\b',
+    ur'(?i)\b(h+a+){2,}\b',
+    ur'(?i)\bg+a+y+\b',
+    ur'(?i)\bf+a+g+s*\b',
+    ur'(?i)\ba+s+s+\b',
+    ur'(?i)\bb+i+t+c+h+(e+s+)?\b',
+    ]
+cregexps = []
+
+for regexp in regexps:
+    cregexps.append(re.compile(regexp))
+
+def loadUsersFromGroup(group):
     global users
     
-    users[usergroup] = []
+    users[group] = []
     aufrom = '!'
     while aufrom:
-        url = 'http://%s.%s.org/w/api.php?action=query&list=allusers&augroup=%s&aulimit=500&aufrom=%s' % (preferences['language'], preferences['family'], usergroup, aufrom.encode('utf-8'))
-        f = urllib.urlopen(url)
-        raw = unicode(f.read(), 'utf-8')
-        f.close()
-        m = re.compile(ur'<span style="color:blue;">&lt;u name=&quot;(?P<user>.+?)&quot; /&gt;</span>').finditer(raw)
-    
-        for i in m:
-            user = i.group('user')
-            users[usergroup].append(user)
+        params = {
+        'action': 'query',
+        'list': 'allusers',
+        'augroup': group,
+        'aulimit': '500',
+        'aufrom': aufrom,
+        }
+        data = query.GetData(params, site = preferences['site'])
+        if not 'error' in data.keys():
+            for item in data['query']['allusers']:
+                users[group].append(item['name'])
         
-        m = re.findall(ur'<span style="color:blue;">&lt;allusers aufrom=&quot;(?P<aufrom>.+?)&quot; /&gt;</span>', raw)
-        if m:
-            aufrom = m[0]
+        if 'query-continue' in data.keys():
+            aufrom = data['query-continue']['allusers']['aufrom']
         else:
             aufrom = ''
 
-def getUserEdits(user):
-    edits = 0
-    
+def getUserInfo(user):
+    editcount = 0
     if not isIP(user):
-        if useredits.has_key(user):
-            edits = useredits[user]
+        if users.has_key(user):
+            editcount = users[user]['editcount']
         
-        if getUserGroup(user) in whitelistgroups: #todo, puede tener varios grupos
-            if useredits.has_key(user) and not random.randint(0, 10): #avoid update whitelisted users too much
-                return edits
+        if editcount > preferences['newbie']:
+            if not random.randint(0, 20): #avoid update no newbies users too much
+                return editcount
         
-        url = 'http://en.wikipedia.org/w/api.php?action=query&list=users&ususers=%s&usprop=editcount' % (urllib.quote(user.encode('utf-8')))
-        f = urllib.urlopen(url)
-        raw = unicode(f.read(), 'utf-8')
-        f.close()
-        
-        m = re.findall(ur'<span style="color:blue;">&lt;user name=&quot;.+?&quot; editcount=&quot;(\d+?)&quot; /&gt;</span>', raw)
-        if m:
-            edits = int(m[0])
-            useredits[user] = edits
+        params = {
+        'action': 'query',
+        'list': 'users',
+        'ususers': user,
+        'usprop': 'editcount|groups',
+        }
+        data = query.GetData(params, site=preferences['site'])
+        if not 'error' in data.keys():
+            editcount = 0
+            if 'editcount' in query.GetData(params)['query']['users'][0].keys():
+                editcount = int(query.GetData(params)['query']['users'][0]['editcount'])
+            groups = []
+            if 'groups' in query.GetData(params)['query']['users'][0].keys():
+                groups = query.GetData(params)['query']['users'][0]['groups']
+            users[user] = {'editcount': editcount, 'groups': groups, }
     
     #saving file
     if not random.randint(0, 100):
-        saveUserEdits()
-    
-    return edits
+        saveUserInfo()
 
-def getUserGroup(user):
-    #todo, devolver una lista de grupos mejor?
-    for usergroup in usergroups:
-        if user in users[usergroup]:
-            return usergroup
-    
+def getUserEditcount(user):
     if isIP(user):
-        return 'anon'
+        return 0
     
-    return ''
+    if users.has_key(user):
+        return users[user]['editcount']
+    else:
+        getUserInfo(user)
+        return users[user]['editcount']
 
-def saveUserEdits():
-    f = open(preferences['userEditsFile'], 'w')
+def getUserGroups(user):
+    if isIP(user):
+        return []
     
-    for user, edits in useredits.items():
-        line = u'%s\t%d\n' % (user, edits)
+    if users.has_key(user):
+        return users[user]['groups']
+    else:
+        getUserInfo(user)
+        return users[user]['groups']
+
+def saveUserInfo():
+    f = open(preferences['userinfofile'], 'w')
+    
+    for user, props in users.items():
+        print props
+        line = u'%s\t%d\t%s\n' % (user, props['editcount'], ','.join(props['groups']))
         f.write(line.encode('utf-8'))
     
     f.close()
 
-def loadUserEdits():
-    global useredits
+def loadUserInfo():
+    global users
     
-    if not os.path.exists(preferences['userEditsFile']):
+    if not os.path.exists(preferences['userinfofile']):
         #creating empty file
-        saveUserEdits()
+        saveUserInfo()
     
-    f = open(preferences['userEditsFile'], 'r')
+    f = open(preferences['userinfofile'], 'r')
     for line in f:
         line = unicode(line, 'utf-8')
         line = line[:-1]
         if line:
-            user, edits = line.split('\t')
-            useredits[user] = int(edits)
+            user, editcount, groups = line.split('\t')
+            users[user] = {'editcount': int(edits), 'groups': groups.split(',')}
     
     f.close()
 
-def loadUserGroups():
-    global usergroups
+def loadGroups():
+    #Info about groups: http://www.mediawiki.org/wiki/Manual:User_rights
+    global groups
     
-    usergroups = ['sysop', 'bot'] #catch from api, no by default
-    usergroups = usergroups + whitelistgroups
-    
-    #avoid dupes
-    usergroups2 = usergroups
-    usergroups = []
-    for usergroup in usergroups2:
-        if usergroups.count(usergroup) == 0:
-            usergroups.append(usergroup)
+    groups = []
+    params = {
+    'action': 'query',
+    'meta': 'siteinfo',
+    'siprop': 'usergroups',
+    }
+    data = query.GetData(params, site=preferences['site'])
+    if not 'error' in data.keys():
+        for item in query.GetData(params)['query']['usergroups']:
+            groups.append(item['name'])
 
 def loadUsers():
-    if not usergroups:
-        loadUserGroups()
+    if not groups:
+        loadGroups()
     
-    for usergroup in usergroups:
-        loadUsersFromUserGroup(usergroup=usergroup)
+    for group in whitelistedgroups:
+        loadUsersFromGroup(group=group)
+        print 'Loaded %d users in the group %s' % (len(users[group]), group)
     
     #previously blocked users and ips too?
 
 def loadData():
     #users
-    loadUserGroups()
-    print 'Loaded %d usergroups' % (len(usergroups))
-    print 'Loaded %d white groups: %s' % (len(whitelistgroups), ', '.join(whitelistgroups))
+    loadGroups()
+    print 'Loaded %d groups: %s' % (len(groups), ', '.join(groups))
+    print 'Loaded %d white groups: %s' % (len(whitelistedgroups), ', '.join(whitelistedgroups))
     
     loadUsers()
-    for whitegroup in whitelistgroups:
-        print 'Loaded %d users in the white group %s' % (len(users[whitegroup]), whitegroup)
-    
-    loadUserEdits()
-    print 'Loaded edit number for %d users' % (len(useredits.keys()))
+    loadUserInfo()
+    print 'Loaded editcount for %d users' % (len(users.keys()))
     
     #other interesting data...
 
@@ -231,16 +266,9 @@ def editIsTest(edit_props):
     return False
 
 def editIsVandalism(edit_props):
-    regexps = [
-    ur'(?i)\bf+u+c+k+\b',
-    ur'(?i)\b(h+a+){2,}\b',
-    ur'(?i)\bg+a+y+\b',
-    ur'(?i)\bf+a+g+s*\b',
-    ur'(?i)\ba+s+s+\b',
-    ur'(?i)\bb+i+t+c+h+(e+s+)?\b',
-    ]
     
-    for regexp in regexps:
+    
+    for regexp in cregexps:
         if re.search(regexp, edit_props['newText']) and \
            not re.search(regexp, edit_props['oldText']):
             return True
@@ -261,11 +289,36 @@ def revert(edit_props, motive=""):
     #print "Detected edit to revert: %s" % motive
     
     #revertind code
+    #revert all edits by this user
+    stableoldid = ''
+    stableuser = ''
+    
+    #print edit_props['history']
+    for revision in edit_props['history']:
+        if revision[2] != edit_props['user']:
+            stableoldid = revision[0]
+            stableuser = revision[2]
+            break #nos quedamos con la más reciente que sea válida
+    
+    print '--->', edit_props['title'], stableoldid, edit_props['oldid'], '<----'
+    if stableoldid and str(stableoldid) == str(edit_props['oldid']):
+        if preferences['testwiki']:
+            output = u'\n* %s [[%s]] [{{SERVER}}/w/index.php?diff=next&oldid=%s]' % (edit_props['timestamp'], edit_props['title'], edit_props['diff'])
+            #preferences['testwikipage'].put(output, u'BOT - Adding one more: [[%s]]' % (edit_props['title']))
+        elif preferences['testfile']:
+            output = u'\n* %s [[%s]] [{{SERVER}}/w/index.php?diff=next&oldid=%s]' % (edit_props['timestamp'], edit_props['title'], edit_props['diff'])
+            f=open(preferences['testfilename'], 'a')
+            f.write(output.encode('utf-8'))
+            f.close()
+        else:
+            pass
+            #edit_props['page'].put(edit_props['oldText'], u'BOT - Reverting to %s version by [[User:%s|%s]]' % (stableoldid, stableuser, stableuser))
     
     #end code
     
     if reverted(): #a lo mejor lo ha revertido otro bot u otra persona
-        userwarning() 
+        pass
+        #userwarning() 
     else:
         print "Somebody was faster than us reverting. Reverting not needed"
 
@@ -279,7 +332,7 @@ def analize(edit_props):
         #http://es.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Francia&rvprop=size&rvend=2010-07-25T14:54:54Z
         print "Saltamos para evitar la guerra"
         return
-    elif dangerous(edit_props):
+    elif isDangerous(edit_props):
         #preparing data
         #get last edits in history
         t1=time.time()
@@ -293,7 +346,7 @@ def analize(edit_props):
         threadDiff.start()
         threadHTMLDiff.start()
         threadHistory.join()
-        edit_props['pageHistory'] = threadHistory.getPageHistory()
+        edit_props['history'] = threadHistory.getPageHistory()
         #print edit_props['pageHistory']
         threadOldid.join()
         edit_props['oldText'] = threadOldid.getOldText()
@@ -305,7 +358,7 @@ def analize(edit_props):
         edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- content -->')[1]
         edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- /content -->')[0] #No change
         #cleandata = cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
-        line = u'%s %s %s %s %s %s' % (edit_props['title'], time.time()-t1, edit_props['pageHistory'][0][0], len(edit_props['oldText']), len(edit_props['newText']), len(edit_props['HTMLDiff']))
+        line = u'%s %s %s %s %s %s' % (edit_props['title'], time.time()-t1, edit_props['history'][0][0], len(edit_props['oldText']), len(edit_props['newText']), len(edit_props['HTMLDiff']))
         #wikipedia.output(u'\03{lightred}%s\03{default}' % line)
         
         if editIsBlanking(edit_props):
@@ -314,20 +367,25 @@ def analize(edit_props):
         elif editIsTest(edit_props):
             wikipedia.output(u'\03{lightred}-> *Test* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         elif editIsVandalism(edit_props):
-            revert(edit_props, motive="vandalism")
             wikipedia.output(u'\03{lightred}-> *Vandalism* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
+            revert(edit_props, motive="vandalism")
         elif editIsVanish(edit_props):
             wikipedia.output(u'\03{lightred}-> *Vanish* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         else:
             pass
 
 def isIP(user):
-    if re.findall(ur"(?im)^\d+\.\d+\.\d+\.\d+$", user): #improve
+    t = user.split('.')
+    if len(t) == 4 and \
+       int(t[0])>=0 and int(t[0])<=255 and \
+       int(t[1])>=0 and int(t[1])<=255 and \
+       int(t[2])>=0 and int(t[2])<=255 and \
+       int(t[3])>=0 and int(t[3])<=255:
         return True
     return False
 
-def dangerous(edit_props):
-    useredits = getUserEdits(edit_props['user'])
+def isDangerous(edit_props):
+    useredits = getUserEditcount(edit_props['user'])
     
     #namespace filter
     if edit_props['page'].namespace() != 0:
@@ -338,12 +396,12 @@ def dangerous(edit_props):
         return True
     
     #group filter
-    for whitelistgroup in whitelistgroups:
-        if edit_props['user'] in users[whitelistgroup]:
+    for whitelistedgroup in whitelistedgroups:
+        if whitelistedgroup in users[edit_props['user']]['groups']:
             return False
         
     #edit number filter
-    if useredits <= 25:
+    if useredits <= preferences['newbie']:
        return True
     
     return False
@@ -354,8 +412,17 @@ def fetchedEdit(edit_props):
     if change >= 0:
         change = '+%d' % (change)
     
-    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colours[getUserGroup(edit_props['user'])], edit_props['user'], getUserEdits(edit_props['user']), change)
-    if not editWar(edit_props) and dangerous(edit_props):
+    colour = 'lightyellow' #default
+    if getUserEditcount(edit_props['user']) > preferences['newbie']:
+        colour = 'lightgreen'
+    for group in getUserGroups(edit_props['user']): #for users with importan flags (stewards, oversight) but probably low editcounts 
+        if group in whitelistedgroups:
+            colour = 'lightblue'
+    if 'bot' in getUserGroups(edit_props['user']):
+        colour = 'lightpurple'
+    
+    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colour, edit_props['user'], getUserEditcount(edit_props['user']), change)
+    if not editWar(edit_props) and isDangerous(edit_props):
         wikipedia.output(u'== Analyzing ==> %s' % line)
         thread.start_new_thread(analize, (edit_props,))
     else:
@@ -392,8 +459,8 @@ def rcIRC():
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((preferences['server'], 6667))
             
-            conn.sendall('USER %s * * %s\r\n' % (preferences['ircNick'], preferences['ircNick']))
-            conn.sendall('NICK %s\r\n' % (preferences['ircNick']))
+            conn.sendall('USER %s * * %s\r\n' % (preferences['ircname'], preferences['ircname']))
+            conn.sendall('NICK %s\r\n' % (preferences['ircname']))
             conn.sendall('JOIN %s\r\n' % (preferences['channel']))
     
             buffer = ''
@@ -446,8 +513,12 @@ def run():
 
 def welcome():
     print "#"*80
-    print "# Welcome to AVBOT "
+    print "# Welcome to AVBOT 2.0 "
     print "#"*80
+    
+    #running message?
+    #page = wikipedia.Page(preferences['site'], u'User:AVBOT/Sandbox')
+    #page.put(u'%d' % (random.randint(1000, 9999)), u'BOT - Testing')
 
 def bye():
     print "Bye, bye..."
