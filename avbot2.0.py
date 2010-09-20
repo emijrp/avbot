@@ -10,11 +10,51 @@ import random
 import re
 import time
 import thread
+import threading
 import urllib
 import socket
 import sys
 
 import wikipedia
+
+class Diegus(threading.Thread):
+    def __init__(self, edit_props, fun):
+        threading.Thread.__init__(self)
+        self.edit_props = edit_props
+        self.fun = fun
+        self.page = edit_props['page']
+        self.oldid = edit_props['oldid']
+        self.diff = edit_props['diff']
+        self.revcount = 10
+        self.oldText = ''
+        self.newText = ''
+        self.pageHistory = []
+        self.HTMLdiff = ''
+        
+    def run(self):
+        #print self.page.title(), self.fun
+        if self.fun == 'getOldVersionOldid':
+            self.oldText = self.page.getOldVersion(self.oldid, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+            #print 'oldText', self.value, len(self.oldText)
+        elif self.fun == 'getOldVersionDiff':
+            self.newText = self.page.getOldVersion(self.diff, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
+            #print 'newText', self.value, len(self.newText)
+        elif self.fun == 'getVersionHistory':
+            self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
+        elif self.fun == 'getUrl':
+            self.HTMLDiff = preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
+    
+    def getOldText(self):
+        return self.oldText
+    
+    def getNewText(self):
+        return self.newText
+        
+    def getPageHistory(self):
+        return self.pageHistory
+    
+    def getHTMLDiff(self):
+        return self.HTMLDiff
 
 usergroups = [] #list of groups
 whitelistgroups = ['sysop', 'bot', ] #list of trusted users
@@ -168,6 +208,8 @@ def loadData():
     #other interesting data...
 
 def editIsBlanking(edit_props):
+    
+    
     return False
 
 def editIsTest(edit_props):
@@ -187,7 +229,10 @@ def reverted():
     return False
 
 def revert(edit_props, motive=""):
-    print "Detected edit to revert: %s" % motive
+    #print "Detected edit to revert: %s" % motive
+    
+    #revertind code
+    #end code
     
     if reverted(): #a lo mejor lo ha revertido otro bot u otra persona
         userwarning() 
@@ -202,11 +247,40 @@ def editWar(edit_props):
 def analize(edit_props):
     if editWar(edit_props):
         #http://es.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Francia&rvprop=size&rvend=2010-07-25T14:54:54Z
-        print "Saltamos para evitar guerra"
+        print "Saltamos para evitar la guerra"
         return
     elif dangerous(edit_props):
+        #preparing data
+        #get last edits in history
+        t1=time.time()
+        #simplificar las llamas a los hilos? pasar todos los parámetros o solo los necesarios?
+        threadHistory = Diegus(edit_props, 'getVersionHistory')
+        threadOldid = Diegus(edit_props, 'getOldVersionOldid')
+        threadDiff = Diegus(edit_props, 'getOldVersionDiff')
+        threadHTMLDiff = Diegus(edit_props, 'getUrl')
+        threadHistory.start()
+        threadOldid.start()
+        threadDiff.start()
+        threadHTMLDiff.start()
+        threadHistory.join()
+        edit_props['pageHistory'] = threadHistory.getPageHistory()
+        #print edit_props['pageHistory']
+        threadOldid.join()
+        edit_props['oldText'] = threadOldid.getOldText()
+        threadDiff.join()
+        edit_props['newText'] = threadDiff.getNewText()
+        #hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
+        threadHTMLDiff.join()
+        edit_props['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
+        edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- content -->')[1]
+        edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- /content -->')[0] #No change
+        #cleandata = cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
+        line = u'%s %s %s %s %s %s' % (edit_props['title'], time.time()-t1, edit_props['pageHistory'][0][0], len(edit_props['oldText']), len(edit_props['newText']), len(edit_props['HTMLDiff']))
+        wikipedia.output(u'\03{lightred}%s\03{default}' % line)
+        
         if editIsBlanking(edit_props):
             revert(edit_props, motive="blanking")
+            wikipedia.output(u'\03{lightred}-> *Blanking* detected in [[%s]]\03{default}' % (edit_props['title']))
         elif editIsTest(edit_props):
             pass
         elif editIsVandalism(edit_props):
@@ -249,7 +323,7 @@ def fetchedEdit(edit_props):
     if change >= 0:
         change = '+%d' % (change)
     
-    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colours[getUserGroup(edit_props['user'])], edit_props['user'], getUserEdits(edit_props['user']), edit_props['change'])
+    line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colours[getUserGroup(edit_props['user'])], edit_props['user'], getUserEdits(edit_props['user']), change)
     if not editWar(edit_props) and dangerous(edit_props):
         wikipedia.output(u'== Analyzing ==> %s' % line)
         thread.start_new_thread(analize, (edit_props,))
