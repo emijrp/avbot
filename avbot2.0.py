@@ -208,14 +208,43 @@ def loadData():
     #other interesting data...
 
 def editIsBlanking(edit_props):
+    lenNew = len(edit_props['newText'])
+    lenOld = len(edit_props['oldText'])
     
+    if lenNew < lenOld and \
+       not re.search(ur"(?i)# *REDIRECT", edit_props['newText']):
+       #Avoid articles converted into #REDIRECT [[...]] and other legitimate blankings
+        percent = (lenOld-lenNew)/(lenOld/100.0)
+        if (lenOld>=500 and lenOld<1000 and percent>=90) or \
+           (lenOld>=1000 and lenOld<2500 and percent>=85) or \
+           (lenOld>=2500 and lenOld<5000 and percent>=75) or \
+           (lenOld>=5000 and lenOld<10000 and percent>=72.5) or \
+           (lenOld>=10000 and lenOld<20000 and percent>=70) or \
+           (lenOld>=20000 and percent>=65):
+            return True
     
     return False
 
 def editIsTest(edit_props):
+    
+    
     return False
 
 def editIsVandalism(edit_props):
+    regexps = [
+    ur'(?i)\bf+u+c+k+\b',
+    ur'(?i)\b(h+a+){2,}\b',
+    ur'(?i)\bg+a+y+\b',
+    ur'(?i)\bf+a+g+s*\b',
+    ur'(?i)\ba+s+s+\b',
+    ur'(?i)\bb+i+t+c+h+(e+s+)?\b',
+    ]
+    
+    for regexp in regexps:
+        if re.search(regexp, edit_props['newText']) and \
+           not re.search(regexp, edit_props['oldText']):
+            return True
+    
     return False
 
 def editIsVanish(edit_props):
@@ -232,6 +261,7 @@ def revert(edit_props, motive=""):
     #print "Detected edit to revert: %s" % motive
     
     #revertind code
+    
     #end code
     
     if reverted(): #a lo mejor lo ha revertido otro bot u otra persona
@@ -276,17 +306,18 @@ def analize(edit_props):
         edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- /content -->')[0] #No change
         #cleandata = cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
         line = u'%s %s %s %s %s %s' % (edit_props['title'], time.time()-t1, edit_props['pageHistory'][0][0], len(edit_props['oldText']), len(edit_props['newText']), len(edit_props['HTMLDiff']))
-        wikipedia.output(u'\03{lightred}%s\03{default}' % line)
+        #wikipedia.output(u'\03{lightred}%s\03{default}' % line)
         
         if editIsBlanking(edit_props):
-            revert(edit_props, motive="blanking")
-            wikipedia.output(u'\03{lightred}-> *Blanking* detected in [[%s]]\03{default}' % (edit_props['title']))
+            #revert(edit_props, motive="blanking")
+            wikipedia.output(u'\03{lightred}-> *Blanking* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         elif editIsTest(edit_props):
-            pass
+            wikipedia.output(u'\03{lightred}-> *Test* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         elif editIsVandalism(edit_props):
-            pass
+            revert(edit_props, motive="vandalism")
+            wikipedia.output(u'\03{lightred}-> *Vandalism* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         elif editIsVanish(edit_props):
-            pass
+            wikipedia.output(u'\03{lightred}-> *Vanish* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         else:
             pass
 
