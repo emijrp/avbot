@@ -19,45 +19,6 @@ import sys
 import query
 import wikipedia
 
-class Diegus(threading.Thread):
-    def __init__(self, edit_props, fun):
-        threading.Thread.__init__(self)
-        self.edit_props = edit_props
-        self.fun = fun
-        self.page = edit_props['page']
-        self.oldid = edit_props['oldid']
-        self.diff = edit_props['diff']
-        self.revcount = 10
-        self.oldText = ''
-        self.newText = ''
-        self.pageHistory = []
-        self.HTMLdiff = ''
-        
-    def run(self):
-        #print self.page.title(), self.fun
-        if self.fun == 'getOldVersionOldid':
-            self.oldText = self.page.getOldVersion(self.oldid, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
-            #print 'oldText', self.value, len(self.oldText)
-        elif self.fun == 'getOldVersionDiff':
-            self.newText = self.page.getOldVersion(self.diff, get_redirect=True) #cogemos redirect si se tercia, y ya filtramos luego
-            #print 'newText', self.value, len(self.newText)
-        elif self.fun == 'getVersionHistory':
-            self.pageHistory = self.page.getVersionHistory(revCount=self.revcount)
-        elif self.fun == 'getUrl':
-            self.HTMLDiff = preferences['site'].getUrl('/w/index.php?diff=%s&oldid=%s&diffonly=1' % (self.diff, self.oldid))
-    
-    def getOldText(self):
-        return self.oldText
-    
-    def getNewText(self):
-        return self.newText
-        
-    def getPageHistory(self):
-        return self.pageHistory
-    
-    def getHTMLDiff(self):
-        return self.HTMLDiff
-
 whitelistedgroups = ['checkuser', 'founder', 'researcher', 'bot', 'bureaucrat', 'abusefilter', 'oversight', 'steward', 'sysop', 'reviewer', 'import', 'rollbacker'] #list of trusted users
 users = {} #dic with users sorted by group
 groups = {}
@@ -101,6 +62,7 @@ regexps = [
     ur'(?i)\bb+i+t+c+h+(e+s+)?\b',
     ]
 cregexps = []
+ipregexp = re.compile(ur'\d+(\.\d+){3}')
 
 for regexp in regexps:
     cregexps.append(re.compile(regexp))
@@ -201,7 +163,7 @@ def loadUserInfo():
         line = line[:-1]
         if line:
             user, editcount, groups = line.split('\t')
-            users[user] = {'editcount': int(edits), 'groups': groups.split(',')}
+            users[user] = {'editcount': int(editcount), 'groups': groups.split(',')}
     
     f.close()
 
@@ -286,6 +248,7 @@ def reverted():
     return False
 
 def revert(edit_props, motive=""):
+    #revertir usando rollback y sino hay (detectar mirando los grupos del bot) buscar la ultima edicion de un no-vandalo (bajarme las ultimas 10? ediciones del historial?) y hacer .put 
     #print "Detected edit to revert: %s" % motive
     
     #revertind code
@@ -336,29 +299,13 @@ def analize(edit_props):
         #preparing data
         #get last edits in history
         t1=time.time()
-        #simplificar las llamas a los hilos? pasar todos los parámetros o solo los necesarios?
-        threadHistory = Diegus(edit_props, 'getVersionHistory')
-        threadOldid = Diegus(edit_props, 'getOldVersionOldid')
-        threadDiff = Diegus(edit_props, 'getOldVersionDiff')
-        threadHTMLDiff = Diegus(edit_props, 'getUrl')
-        threadHistory.start()
-        threadOldid.start()
-        threadDiff.start()
-        threadHTMLDiff.start()
-        threadHistory.join()
-        edit_props['history'] = threadHistory.getPageHistory()
-        #print edit_props['pageHistory']
-        threadOldid.join()
-        edit_props['oldText'] = threadOldid.getOldText()
-        threadDiff.join()
-        edit_props['newText'] = threadDiff.getNewText()
-        #hacer mi propio differ, tengo el oldText y el newText, pedir esto retarda la reversión unos segundos #fix #costoso?
-        threadHTMLDiff.join()
-        edit_props['HTMLDiff'] = threadHTMLDiff.getHTMLDiff()
-        edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- content -->')[1]
-        edit_props['HTMLDiff'] = edit_props['HTMLDiff'].split('<!-- /content -->')[0] #No change
-        #cleandata = cleandiff(editData['pageTitle'], editData['HTMLDiff']) #To clean diff text and to extract inserted lines and words
-        line = u'%s %s %s %s %s %s' % (edit_props['title'], time.time()-t1, edit_props['history'][0][0], len(edit_props['oldText']), len(edit_props['newText']), len(edit_props['HTMLDiff']))
+        #todo http://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Aa&rvlimit=2&rvprop=ids|timestamp|user|comment|content
+        #comparar ids con diff y oldid para ver si han revertido ya
+        #si coinciden, capturar texts
+        edit_props['oldText'] = ''
+        edit_props['newText'] = ''
+        
+        line = u'%s %s %s %s %s' % (edit_props['title'], time.time()-t1, len(edit_props['oldText']), len(edit_props['newText'])))
         #wikipedia.output(u'\03{lightred}%s\03{default}' % line)
         
         if editIsBlanking(edit_props):
@@ -375,13 +322,14 @@ def analize(edit_props):
             pass
 
 def isIP(user):
-    t = user.split('.')
-    if len(t) == 4 and \
-       int(t[0])>=0 and int(t[0])<=255 and \
-       int(t[1])>=0 and int(t[1])<=255 and \
-       int(t[2])>=0 and int(t[2])<=255 and \
-       int(t[3])>=0 and int(t[3])<=255:
-        return True
+    if re.search(ipregexp, user):
+        t = user.split('.')
+        if len(t) == 4 and \
+           int(t[0])>=0 and int(t[0])<=255 and \
+           int(t[1])>=0 and int(t[1])<=255 and \
+           int(t[2])>=0 and int(t[2])<=255 and \
+           int(t[3])>=0 and int(t[3])<=255:
+            return True
     return False
 
 def isDangerous(edit_props):
