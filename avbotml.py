@@ -19,13 +19,27 @@ import sys
 import query
 import wikipedia
 
-whitelistedgroups = ['checkuser', 'founder', 'researcher', 'bot', 'bureaucrat', 'abusefilter', 'oversight', 'steward', 'sysop', 'reviewer', 'import', 'rollbacker'] #list of trusted users
+#whitelisted users
+wlgroups = [
+    'abusefilter', 
+    'bot', 
+    'bureaucrat', 
+    'checkuser', 
+    'founder', 
+    'import', 
+    'oversight', 
+    'researcher', 
+    'reviewer', 
+    'rollbacker',
+    'steward', 
+    'sysop', 
+    ]
 users = {} #dic with users sorted by group
 groups = {}
 colours = {
-    'sysop': 'lightblue',
-    'bot': 'lightpurple',
     'anon': 'lightyellow',
+    'bot': 'lightpurple',
+    'sysop': 'lightblue',
     '': 'lightgreen',
     }
 """
@@ -457,12 +471,10 @@ def run():
     elif preferences["rcIRC"]:
         rcIRC()
     else:
-        print 'You have to choice a feed mode: IRC or API'
+        print 'You have to choice a feed mode: --irc or --api'
 
 def welcome():
-    print "#"*80
-    print "# Welcome to AVBOT 2.0 "
-    print "#"*80
+    print "#"*80, "\n# Welcome to AVBOT 2.0 \n", "#"*80
     
     #running message?
     #page = wikipedia.Page(preferences['site'], u'User:AVBOT/Sandbox')
