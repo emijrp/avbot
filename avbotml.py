@@ -84,7 +84,7 @@ for regexp in regexps:
 def loadUsersFromGroup(group):
     global users
     
-    users[group] = []
+    users[group] = {}
     aufrom = '!'
     while aufrom:
         params = {
@@ -97,7 +97,9 @@ def loadUsersFromGroup(group):
         data = query.GetData(params, site = preferences['site'])
         if not 'error' in data.keys():
             for item in data['query']['allusers']:
-                users[group].append(item['name'])
+                user = item['name']
+                users[group][user] = {'editcount': getUserEditcount(user), 'groups': getUserGroups(user)}
+                print user, users[group][user]
         
         if 'query-continue' in data.keys():
             aufrom = data['query-continue']['allusers']['aufrom']
@@ -129,9 +131,7 @@ def getUserInfo(user):
             if 'groups' in query.GetData(params)['query']['users'][0].keys():
                 groups = query.GetData(params)['query']['users'][0]['groups']
             users[user] = {'editcount': editcount, 'groups': groups, }
-    
-    #saving file
-    if not random.randint(0, 100):
+        
         saveUserInfo()
 
 def getUserEditcount(user):
@@ -158,7 +158,7 @@ def saveUserInfo():
     f = open(preferences['userinfofile'], 'w')
     
     for user, props in users.items():
-        print props
+        #print props
         line = u'%s\t%d\t%s\n' % (user, props['editcount'], ','.join(props['groups']))
         f.write(line.encode('utf-8'))
     
@@ -178,7 +178,6 @@ def loadUserInfo():
         if line:
             user, editcount, groups = line.split('\t')
             users[user] = {'editcount': int(editcount), 'groups': groups.split(',')}
-    
     f.close()
 
 def loadGroups():
@@ -196,25 +195,14 @@ def loadGroups():
         for item in query.GetData(params)['query']['usergroups']:
             groups.append(item['name'])
 
-def loadUsers():
-    if not groups:
-        loadGroups()
-    
-    for group in whitelistedgroups:
-        loadUsersFromGroup(group=group)
-        print 'Loaded %d users in the group %s' % (len(users[group]), group)
-    
-    #previously blocked users and ips too?
-
 def loadData():
     #users
     loadGroups()
     print 'Loaded %d groups: %s' % (len(groups), ', '.join(groups))
-    print 'Loaded %d white groups: %s' % (len(whitelistedgroups), ', '.join(whitelistedgroups))
+    print 'Loaded %d whitelisted groups: %s' % (len(wlgroups), ', '.join(wlgroups))
     
-    loadUsers()
     loadUserInfo()
-    print 'Loaded editcount for %d users' % (len(users.keys()))
+    print 'Loaded userinfo for %d users' % (len(users.keys()))
     
     #other interesting data...
 
@@ -307,9 +295,9 @@ def editWar(edit_props):
 def analize(edit_props):
     if editWar(edit_props):
         #http://es.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Francia&rvprop=size&rvend=2010-07-25T14:54:54Z
-        print "Saltamos para evitar la guerra"
+        print "Saltamos para evitar una guerra de ediciones"
         return
-    elif isDangerous(edit_props):
+    elif mustBeAnalysed(edit_props):
         #preparing data
         #get last edits in history
         t1=time.time()
@@ -319,7 +307,7 @@ def analize(edit_props):
         edit_props['oldText'] = ''
         edit_props['newText'] = ''
         
-        line = u'%s %s %s %s %s' % (edit_props['title'], time.time()-t1, len(edit_props['oldText']), len(edit_props['newText'])))
+        line = u'%s %s %s %s' % (edit_props['title'], time.time()-t1, len(edit_props['oldText']), len(edit_props['newText']))
         #wikipedia.output(u'\03{lightred}%s\03{default}' % line)
         
         if editIsBlanking(edit_props):
@@ -329,7 +317,7 @@ def analize(edit_props):
             wikipedia.output(u'\03{lightred}-> *Test* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         elif editIsVandalism(edit_props):
             wikipedia.output(u'\03{lightred}-> *Vandalism* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
-            revert(edit_props, motive="vandalism")
+            #revert(edit_props, motive="vandalism")
         elif editIsVanish(edit_props):
             wikipedia.output(u'\03{lightred}-> *Vanish* detected in [[%s]] (%s)\03{default}' % (edit_props['title'], edit_props['change']))
         else:
@@ -346,7 +334,9 @@ def isIP(user):
             return True
     return False
 
-def isDangerous(edit_props):
+def mustBeAnalysed(edit_props):
+    # decide if an edit must be analysed
+    
     useredits = getUserEditcount(edit_props['user'])
     
     #namespace filter
@@ -358,8 +348,8 @@ def isDangerous(edit_props):
         return True
     
     #group filter
-    for whitelistedgroup in whitelistedgroups:
-        if whitelistedgroup in users[edit_props['user']]['groups']:
+    for wlgroup in wlgroups:
+        if wlgroup in users[edit_props['user']]['groups']:
             return False
         
     #edit number filter
@@ -378,13 +368,13 @@ def fetchedEdit(edit_props):
     if getUserEditcount(edit_props['user']) > preferences['newbie']:
         colour = 'lightgreen'
     for group in getUserGroups(edit_props['user']): #for users with importan flags (stewards, oversight) but probably low editcounts 
-        if group in whitelistedgroups:
+        if group in wlgroups:
             colour = 'lightblue'
     if 'bot' in getUserGroups(edit_props['user']):
         colour = 'lightpurple'
     
     line = u'%s [[%s]] {\03{%s}%s\03{default}, %d ed.} (%s)' % (timestamp, edit_props['title'], colour, edit_props['user'], getUserEditcount(edit_props['user']), change)
-    if not editWar(edit_props) and isDangerous(edit_props):
+    if not editWar(edit_props) and mustBeAnalysed(edit_props):
         wikipedia.output(u'== Analyzing ==> %s' % line)
         thread.start_new_thread(analize, (edit_props,))
     else:
@@ -401,7 +391,7 @@ def rcAPI():
     rcdir = "newer"
     rchistory = []
     while True:
-        rcs = site.recentchanges(number=100, rcstart=rctimestamp, rcdir=rcdir) #no devuelve los oldid, mejor hacerme mi propia wikipedia.query
+        rcs = site.recentchanges(number=100, rcstart=rctimestamp, rcdir=rcdir) #fix no devuelve los oldid, mejor hacerme mi propia wikipedia.query
         
         for rc in rcs:
             rcsimple = [rc[0].title(), rc[1], rc[2], rc[3]]
