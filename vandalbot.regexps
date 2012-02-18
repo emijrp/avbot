@@ -1,0 +1,107 @@
+#http://en.wikipedia.org/wiki/User:Emijrp/Good_and_evil_list.css
+#repetitions
+(?i)!
+(?i)!!+
+(?i)\?
+(?i)\?\?+
+(?i)\.{4,}
+(?i)\,{4,}
+(?i)([0-9])\1{4,}
+(?i)([a-z])\1{4,}
+
+#good stuff
+(?i)\[\[[^\|\]\n\r]+(\|[^\|\]\n\r]*)?\]\]
+(?i)(\<\/?ref\>|\<ref name)
+(?i)[^\{]\{\{[^\{]
+(?i)\</?[a-z]+\>
+(?i)(\<\!\-\-|\-\-\>)
+(?i)\b[A-Z][a-z]+\b
+(?i)\b19\d\d\b
+(?i)\{\|
+(?i)\|\-
+ \|\| 
+(?im)^==+ *[^=]+ *\=\=+
+(?i)(ftps?|https?)://
+(?im)^[\*\#]
+(?i)\([^\(\)]+\)
+(?i)(class|colspan|rowspan) *=
+
+#bad stuff
+(?i)\ba+l+l+ +g+a+y+s*\b
+(?i)\ba+n+a+l+\b
+(?i)\ba+n+u+s+\b
+(?i)\ba+r+s+e+(h+o+l+e+s*)?\b
+(?i)\ba+s+s+(e+s+)?\b
+(?i)\ba+s+s+(h+o+l+e+s*)?\b
+(?i)\ba+n+u+s+\b
+(?i)\bb+i+t+c+h+(e+s*)?\b
+(?i)\bb+l+o+w+ *j+o+b+s*\b
+(?i)\bc+o+c+k+s+\b
+(?i)\bc+o+c+k+s+u+c+k+e+r+s*\b
+(?i)\bc+r+a+p+(p+y+|s*)?\b
+(?i)\bc+u+m+s*\b
+(?i)\bc+u+m+ *l+o+a+d+s*\b
+(?i)\bc+u+m+ +i+n+\b
+(?i)\bc+u+n+t+s*\b
+(?i)\bd+i+c+k+s*\b
+(?i)\bd+u+m+b+s*\b
+(?i)\bf+a+g+(g+o+t)?\b
+(?i)\bf+a+r+t+s*\b
+(?i)\bf+a+t+t+y\b
+(?i)\bf+u+c+k+(e+d+|e+r+s*)?\b
+(?i)\bg+a+y+s*\b
+(?i)\bi+d+i+o+t+s*\b
+(?i)\bn+a+r+u+ta+r+d+s*\b
+(?i)\bn+i+g+g+(e+r+s*|a+s*)\b
+(?i)\bo+m+f*g+\b
+(?i)\br+e+d+ *n+e+c+k+s*\b
+(?i)\br+e+t+ar+d+(e+d+|e+r+s*|s*)\b
+(?i)\br+o+f+l+c+o+p+t+e+r+s*\b
+(?i)\bs+e+x+\b
+(?i)\bs+h+i+t+(t+y+)?\b
+(?i)\bs+l+u+t+(t+y+|t+i+e+r+s*|s*)?\b
+(?i)\bs+t+u+p+i+d\b
+(?i)\bs+u+c+k+(e+r+s*|s*)?\b
+(?i)\bw+h+o+r+e+s*\b
+(?i)\bw+t+f+\b
+
+#numbers
+\b666\b
+
+#personal allusions
+(?i)\bf+o+r+ +(m+e+|u+|y+a+|y+o+u+)\b
+(?i)\bi+ +c+a+n+('*t+)?\b
+(?i)\bi+ +c+o+u+l+d+(n+'*t+)?\b
+(?i)\bi+ +d+o+n+'*t+\b
+(?i)\bi+ +l+i+k+e+\b
+(?i)\bi+ +l+i+k+e+ +p+i+e+s*\b
+(?i)\bi+ +l+o+v+e+\b
+(?i)\bi+'*m+\b
+(?i)\b(i+'*m+ +g+o+i+n+g+ +t+o+|i+ +h+a+v+e+ +t+o+) +k+i+l+l+\b
+(?i)\bl+i+k+e+s+\b
+(?i)\bm+e+\b
+(?i)\b(m+y+|y+o+u+r+) +c+o+c+k+s*\b
+(?i)\b(m+y+|y+o+u+r+) +d+i+c+k+s*\b
+(?i)\b(m+y+|y+o+u+r+) +t+i+t+i*e*s*\b
+(?i)\b(m+y+|y+o+u+r+) +(d+a+d+(d+y+)?|f+a+t+h+e+r+s*)\b
+(?i)\b(m+y+|y+o+u+r+) +(m+[ou]+m+|m+o+t+h+e+r+s*)\b
+(?i)\b(m+y+|y+o+u+r+) +m+o+u+t+h+\b
+
+#jargon
+(?i)\bl+[o0]+l+\b
+
+#smilies
+\: ?\)
+\:\-\)
+\:\-+\D
+8=+D
+
+#bias
+(?i)\ba+d+o+r+a+b+l+e+\b
+(?i)\ba+w+e*s+o+m+e\b
+(?i)\b(i+s+|a+r+e+) +t+h+e +b+e+st+\b
+(?i)\bo+w+n+e+d+\b
+(?i)\by+e+a+h+\b
+
+
+
