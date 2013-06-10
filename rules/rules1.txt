@@ -1,0 +1,14 @@
+#bad
+ur"(?im)([a-z])\1{9,}";;;-1
+ur"(?im)\b(c+u+n+t+s*)\b";;;-1,
+ur"(?im)\b(c+r+a+p+(p+y+)?)\b";;;-1
+ur"(?im)\b(f+u+c+k+)\b";;;-1
+ur"(?im)\b(h+e+y+)\b";;;-1
+ur"(?im)\b(p+u+s+s+y+)\b";;;-1
+ur"(?im)\b(p+u+s+s+i+e+s)\b";;;-1
+ur"(?im)\b(u+h+h+)\b";;;-1
+ur"(?im)\b(v+a+g+i+n+a+s*)\b";;;-1
+ur"(?im)\b(y+o+u+r+)\b";;;-1
+
+#good
+ur"(?im)\b(redirect)\b";;;+1
