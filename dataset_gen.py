@@ -52,6 +52,9 @@ def getregulars(revisions):
 
 def main():
     filename = sys.argv[1]
+    maxreverts = int(sys.argv[2])
+    maxregulars = maxreverts*14
+    
     if not os.path.exists('dataset'):
         os.makedirs('dataset')
     
@@ -151,12 +154,28 @@ def main():
         
         #close tags
         if re.search(r_page_end, l):
+            if maxreverts == 0 and maxregulars == 0:
+                break
+            
             if page_ns == '0':
                 print page_title
                 revisions[page_title]['revisions'].sort()
                 reverts = getreverts(revisions[page_title]['revisions'])
                 regulars = getregulars(revisions[page_title]['revisions'])
                 
+                #update limits
+                if len(reverts) > maxreverts:
+                    reverts = reverts[:maxreverts]
+                    maxreverts = 0
+                else:
+                    maxreverts -= len(reverts)
+                if len(regulars) > maxregulars:
+                    regulars = regulars[:maxregulars]
+                    maxregulars = 0
+                else:
+                    maxregulars -= len(regulars)
+                
+                #save
                 for ll in [reverts, regulars]:
                     for rid, oid, cat, rtext, otext in ll:
                         index.append('%s;%s;%s' % (rid, oid, cat))

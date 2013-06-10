@@ -53,7 +53,7 @@ def loadrules():
             rules[rulesfile][rule] = {'compiled': re.compile(ur"%s" % rule), 'points': int(points)}
     return rules
 
-def analize(revid, oldid, rules):
+def analize(revid, oldid, rules, threshold):
     global texts
     
     revidtext = texts[revid]
@@ -63,7 +63,7 @@ def analize(revid, oldid, rules):
     p2 = sum([len(re.findall(v['compiled'], oldidtext)) * v['points'] for rule_r, v in rules.items()])
     points = p1 - p2
     
-    return points >= 0 and 'REGULAR' or 'REVERTED'
+    return points >= threshold and 'REGULAR' or 'REVERTED'
 
 def main():
     global texts
@@ -74,31 +74,32 @@ def main():
     print len(texts)
     rules = loadrules()
     
-    for rulesfile, rules2 in rules.items():
-        reverts = 0
-        solreverted = 0
-        solregular = 0
-        falsepositives = 0
-        for revid, v in index.items():
-            if v['class'] == 'REVERTED':
-                reverts += 1
-            sol = analize(revid, v['oldid'], rules2)
-            index[revid]['solution'] = sol
-            #print revid, sol
+    for threshold in range(-10,0):
+        for rulesfile, rules2 in rules.items():
+            reverts = 0
+            solreverted = 0
+            solregular = 0
+            falsepositives = 0
+            for revid, v in index.items():
+                if v['class'] == 'REVERTED':
+                    reverts += 1
+                sol = analize(revid, v['oldid'], rules2, threshold)
+                index[revid]['solution'] = sol
+                #print revid, sol
+                
+                if sol == 'REVERTED':
+                    solreverted += 1
+                    if v['class'] != sol:
+                        falsepositives += 1
+                        log('<li>FALSE POSITIVE: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
+                    else:
+                        log('<li>REVERTED: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
+                elif sol == 'REGULAR':
+                    solregular += 1
+                    if v['class'] != sol:
+                        log('<li>ESCAPED: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
             
-            if sol == 'REVERTED':
-                solreverted += 1
-                if v['class'] != sol:
-                    falsepositives += 1
-                    log('<li>FALSE POSITIVE: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
-                else:
-                    log('<li>REVERTED: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
-            elif sol == 'REGULAR':
-                solregular += 1
-                if v['class'] != sol:
-                    log('<li>ESCAPED: <a href="http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" target="_blank">%s</a><br/>' % (revid, revid))
-        
-        print '%d reverted (%.1f%% false positives) of %d vandalisms (%.1f%%)' % (solreverted, solreverted and falsepositives/(solreverted/100.0) or 0, reverts, reverts and solreverted/(reverts/100.0) or 0)
+            print '%d reverted (%.1f%% false positives) of %d vandalisms (%.1f%%)' % (solreverted, solreverted and falsepositives/(solreverted/100.0) or 0, reverts, reverts and solreverted/(reverts/100.0) or 0)
     
 if __name__ == '__main__':
     main()

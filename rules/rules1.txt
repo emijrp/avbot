@@ -5,12 +5,20 @@
 (?im)\b(c+o+c+k+s*)\b;;;-1
 (?im)\b(c+u+n+t+s*)\b;;;-1
 (?im)\b(c+r+a+p+(p+y+)?)\b;;;-1
+(?im)\b(d+i+c+k+s*)\b;;;-1
+(?im)\b(d+i+c+k+h+e+a+d+s*)\b;;;-1
 (?im)\b(f+u+c+k+)\b;;;-1
 (?im)\b(h+e+y+)\b;;;-1
 (?im)\b(p+u+s+s+y+)\b;;;-1
 (?im)\b(p+u+s+s+i+e+s)\b;;;-1
 (?im)\b(u+h+h+)\b;;;-1
 (?im)\b(v+a+g+i+n+a+s*)\b;;;-1
+(?im)\b(y+o+u+r+ *m+o+m+)\b;;;-1
+(?im)\b(y+o+u+r+s *t+r+u+l+y)\b;;;-1
 
 #good
+(?im)<ref>;;;+1
+(?im)<ref name;;;+1
+(?im)\[\[[^\[\]]+\]\];;;+1
 #(?im)\b(redirect)\b;;;+1
+(?im)\{\{reflist\}\};;;+1
