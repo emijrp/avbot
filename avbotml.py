@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #todo
@@ -230,8 +231,6 @@ def editIsTest(edit_props):
     return False
 
 def editIsVandalism(edit_props):
-    
-    
     for regexp in cregexps:
         if re.search(regexp, edit_props['newText']) and \
            not re.search(regexp, edit_props['oldText']):
@@ -304,11 +303,30 @@ def analize(edit_props):
         #todo http://en.wikipedia.org/w/api.php?action=query&prop=revisions&titles=Aa&rvlimit=2&rvprop=ids|timestamp|user|comment|content
         #comparar ids con diff y oldid para ver si han revertido ya
         #si coinciden, capturar texts
+        
+        params = {
+        'action': 'query',
+        'prop': 'revisions',
+        'titles': edit_props['title'],
+        'rvlimit': '10',
+        'rvprop': 'ids|timestamp|user|comment|content',
+        }
+        data = query.GetData(params, site = preferences['site'])
+        if not 'error' in data.keys():
+            rnew = data['query']['pages'][data['query']['pages'].keys()[0]]['revisions'][0]
+            rold = data['query']['pages'][data['query']['pages'].keys()[0]]['revisions'][1]
+        
         edit_props['oldText'] = ''
         edit_props['newText'] = ''
         
+        if str(rnew['revid']) == str(edit_props['diff']) and str(rold['revid']) == str(edit_props['oldid']):
+            edit_props['oldText'] = rold['*']
+            edit_props['newText'] = rnew['*']
+        
+        print list(set(set(edit_props['newText'].split())-set(edit_props['oldText'].split())))[:10]
+        
         line = u'%s %s %s %s' % (edit_props['title'], time.time()-t1, len(edit_props['oldText']), len(edit_props['newText']))
-        #wikipedia.output(u'\03{lightred}%s\03{default}' % line)
+        wikipedia.output(u'\03{lightyellow}%s\03{default}' % line)
         
         if editIsBlanking(edit_props):
             #revert(edit_props, motive="blanking")
