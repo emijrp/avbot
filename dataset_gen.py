@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import os
 import re
 import sys
 
@@ -15,6 +16,11 @@ def unescape(s):
     s = s.replace("&amp;", "&") # Must be last
     return s
 
+def saverev(rid, rtext):
+    f = open('dataset/%s.txt' % (rid), 'w')
+    f.write(rtext.encode('utf-8'))
+    f.close()
+
 def getreverts(revisions):
     cpagerevs = len(revisions)
     cpagerev = 0
@@ -25,9 +31,9 @@ def getreverts(revisions):
                revisions[cpagerev][1]['rev_sha1'] == revisions[cpagerev+2][1]['rev_sha1'] and \
                revisions[cpagerev][1]['rev_username'] and revisions[cpagerev+1][1]['rev_ip'] and revisions[cpagerev+2][1]['rev_username'] and \
                revisions[cpagerev][1]['rev_username'] != revisions[cpagerev+2][1]['rev_username']:
-                print "REVERTED -> http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" % (revisions[cpagerev+1][1]['rev_id'])
-                revertids.append(revisions[cpagerev+1][1]['rev_id'])
+                revertids.append([revisions[cpagerev+1][1]['rev_id'], revisions[cpagerev][1]['rev_id'], 'REVERTED', revisions[cpagerev+1][1]['rev_text'], revisions[cpagerev][1]['rev_text']])
             cpagerev += 1
+    return revertids
 
 def getregulars(revisions):
     cpagerevs = len(revisions)
@@ -40,13 +46,15 @@ def getregulars(revisions):
                revisions[cpagerev][1]['rev_username'] and revisions[cpagerev+1][1]['rev_username'] and revisions[cpagerev+2][1]['rev_username'] and \
                revisions[cpagerev][1]['rev_username'] != revisions[cpagerev+1][1]['rev_username'] and \
                revisions[cpagerev][1]['rev_username'] != revisions[cpagerev+2][1]['rev_username']:
-                print "REGULAR -> http://zu.wikipedia.org/w/index.php?oldid=%s&diff=prev" % (revisions[cpagerev+1][1]['rev_id'])
-                regularids.append(revisions[cpagerev+1][1]['rev_id'])
+                regularids.append([revisions[cpagerev+1][1]['rev_id'], revisions[cpagerev][1]['rev_id'], 'REGULAR', revisions[cpagerev+1][1]['rev_text'], revisions[cpagerev][1]['rev_text']])
             cpagerev += 1
+    return regularids
 
 def main():
     filename = sys.argv[1]
-
+    if not os.path.exists('dataset'):
+        os.makedirs('dataset')
+    
     if filename.endswith('.bz2'):
         import bz2
         source = bz2.BZ2File(filename)
@@ -61,7 +69,6 @@ def main():
                                   stdout=subprocess.PIPE,
                                   bufsize=65535).stdout
     else:
-        # assume it's an uncompressed XML file
         source = open(filename)
 
     r_page = re.compile(ur'(?im)<page>')
@@ -110,6 +117,8 @@ def main():
     rev_format = ''
 
     revisions = {}
+    saved = []
+    index = []
     for l in source:
         l = unicode(l, 'utf-8')
         #print l
@@ -143,10 +152,21 @@ def main():
         #close tags
         if re.search(r_page_end, l):
             if page_ns == '0':
+                print page_title
                 revisions[page_title]['revisions'].sort()
-                getreverts(revisions[page_title]['revisions'])
-                getregulars(revisions[page_title]['revisions'])
-            
+                reverts = getreverts(revisions[page_title]['revisions'])
+                regulars = getregulars(revisions[page_title]['revisions'])
+                
+                for ll in [reverts, regulars]:
+                    for rid, oid, cat, rtext, otext in ll:
+                        index.append('%s;%s;%s' % (rid, oid, cat))
+                        if not rid in saved:
+                            saverev(rid, rtext)
+                            saved.append(rid)
+                        if not oid in saved:
+                            saverev(oid, otext)
+                            saved.append(oid)
+                
             page_title = ''
             page_ns = ''
             page_id = ''
@@ -219,6 +239,12 @@ def main():
             rev_model = l.split('<model>')[1].split('</model>')[0]
         elif re.search(r_format, l):
             rev_format = l.split('<format>')[1].split('</format>')[0]
+
+    index.sort()
+    g = open('dataset/index.txt', 'w')
+    index = u'revid;oldid;class\n%s' % (u'\n'.join(index))
+    g.write(index.encode('utf-8'))
+    g.close()
 
 if __name__ == '__main__':
     main()
