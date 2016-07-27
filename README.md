@@ -1,8 +1,8 @@
 ## What is AVBOT?
 
-<p align="right">
-![AVBOT logo](/images/avbot-logo.png)
-</p>
+<div align="right">
+<img src="https://raw.githubusercontent.com/emijrp/avbot/master/images/avbot-logo.png" alt="AVBOT logo" title="AVBOT logo" />
+</div>
 
 **AVBOT** is an anti-vandalism bot for MediaWiki wikis. It is developed by [Emilio J. Rodríguez-Posada](https://github.com/emijrp ) in [Python](https://www.python.org), using pywikibot and irclib.
 
