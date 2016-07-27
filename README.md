@@ -1,6 +1,6 @@
 ## What is AVBOT?
 
-<div style="float: right">
+<div align="right">
 <img src="https://raw.githubusercontent.com/emijrp/avbot/master/images/avbot-logo.png" alt="AVBOT logo" title="AVBOT logo" />
 </div>
 
