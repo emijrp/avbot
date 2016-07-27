@@ -1,6 +1,6 @@
 ## What is AVBOT?
 
-<div style="text-align: right;">
+<div style="text-align: right;" markdown="1">
 <img src="https://raw.githubusercontent.com/emijrp/avbot/master/images/avbot-logo.png" alt="AVBOT logo" title="AVBOT logo" />
 </div>
 
