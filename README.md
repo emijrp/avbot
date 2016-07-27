@@ -1,6 +1,8 @@
 ## What is AVBOT?
 
+<p align="right">
 ![AVBOT logo](/images/avbot-logo.png)
+</p>
 
 **AVBOT** is an anti-vandalism bot for MediaWiki wikis. It is developed by [Emilio J. Rodríguez-Posada](https://github.com/emijrp ) in [Python](https://www.python.org), using pywikibot and irclib.
 
@@ -17,18 +19,22 @@ In 2009, this project was awarded with **Premio Nacional al "Mejor proyecto comu
   * Reporting of repetitive attacks to admins' noticeboard
 
 ## Download
-You can download the *source code* from our [http://code.google.com/p/avbot/source/browse/#svn%2Ftrunk SVN repository].
+
+You can download the **source code** like this:
+
+* git clone https://github.com/emijrp/avbot
+* [Download link for browsers](https://github.com/emijrp/avbot/archive/master.zip)
 
 ## Documentation
-In the [http://code.google.com/p/avbot/downloads/list downloads section] you can find a *manual* and other useful texts about AVBOT. There is also a *blog* at [http://avbot.blogspot.com avbot.blogspot.com].
+
+In the [https://github.com/emijrp/avbot/tree/master/docs docs section] you can find a *manual* and other useful texts about AVBOT. There is also a *blog* at [avbot.blogspot.com](https://avbot.blogspot.com).
 
 ## Publications
 
-There are two main publications regarding AVBOT:
+There are two main [publications](https://github.com/emijrp/avbot/tree/master/publications) regarding AVBOT:
 
-  * «[https://code.google.com/p/avbot/downloads/detail?name=III_2011_rodriguez1.pdf AVBOT: Detecting and fixing Vandalism in Wikipedia]». UPGRADE, Volume: 2011, Issue No. 3, July 2011.
-  * «[https://code.google.com/p/avbot/downloads/detail?name=Rodriguez-nov203-vdef.pdf AVBOT: detección y corrección de vandalismos en Wikipedia]». NovATIca, núm. 203, 2010, pp. 51-53.
-
+  * «[AVBOT: Detecting and fixing Vandalism in Wikipedia](https://github.com/emijrp/avbot/raw/master/publications/2011-upgrade-avbot.en.pdf)». UPGRADE, Volume: 2011, Issue No. 3, July 2011.
+  * «[AVBOT: detección y corrección de vandalismos en Wikipedia](https://github.com/emijrp/avbot/raw/master/publications/2010-novatica-avbot.es.pdf)». NovATIca, núm. 203, 2010, pp. 51-53.
 
 ![Spanish Wikipedia vandalism edits reverted by AVBOT per day in 2008](/images/avbot-stats-2008.png)
 
