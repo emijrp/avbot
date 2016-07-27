@@ -1,14 +1,12 @@
 ## What is AVBOT?
 
-<div style="text-align: right;" markdown="1">
-<img src="https://raw.githubusercontent.com/emijrp/avbot/master/images/avbot-logo.png" alt="AVBOT logo" title="AVBOT logo" />
-</div>
-
 **AVBOT** is an anti-vandalism bot for MediaWiki wikis. It is developed by [Emilio J. Rodríguez-Posada](https://github.com/emijrp ) in [Python](https://www.python.org), using pywikibot and irclib.
 
 AVBOT has been working in [Spanish Wikipedia](http://es.wikipedia.org/wiki/Usuario:AVBOT) since 2008, it has reverted more than 250,000 vandalism edits, and it has [several clones](http://es.wikipedia.org/wiki/Usuario:AVBOT#Clones) managed by other users.
 
 In 2009, this project was awarded with **Premio Nacional al "Mejor proyecto comunitario"** in the [III Concurso Universitario de Software Libre](http://www.concursosoftwarelibre.org/0809/premios-iii-concurso-universitario-software-libre).
+
+![AVBOT logo](/images/avbot-logo.png)
 
 ## Features
 
