@@ -25,11 +25,11 @@ You can download the **source code** like this:
 
 ## Documentation
 
-In the [https://github.com/emijrp/avbot/tree/master/docs docs section] you can find a *manual* and other useful texts about AVBOT. There is also a *blog* at [avbot.blogspot.com](https://avbot.blogspot.com).
+In the [docs section](https://github.com/emijrp/avbot/tree/master/docs) you can find a **manual** and other useful texts about AVBOT. There is also a **blog** at [avbot.blogspot.com](https://avbot.blogspot.com).
 
 ## Publications
 
-There are two main [publications](https://github.com/emijrp/avbot/tree/master/publications) regarding AVBOT:
+There are two main **[publications](https://github.com/emijrp/avbot/tree/master/publications)** regarding AVBOT:
 
   * «[AVBOT: Detecting and fixing Vandalism in Wikipedia](https://github.com/emijrp/avbot/raw/master/publications/2011-upgrade-avbot.en.pdf)». UPGRADE, Volume: 2011, Issue No. 3, July 2011.
   * «[AVBOT: detección y corrección de vandalismos en Wikipedia](https://github.com/emijrp/avbot/raw/master/publications/2010-novatica-avbot.es.pdf)». NovATIca, núm. 203, 2010, pp. 51-53.
