@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Anti-Vandalism BOT for MediaWiki projects
-# Copyright (C) 2008-2010 Emilio José Rodríguez Posada
+# AVBOT - Anti-vandalism bot for MediaWiki wikis
+# Copyright (C) 2008-2016 emijrp <emijrp@gmail.com>
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -53,8 +53,8 @@ import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar ma
 import avbotcomb     #Trivia functions
 
 """ Continue header message """
-header =  u"Loading data for %s: language of %s project\n" % (avbotglobals.preferences['language'], avbotglobals.preferences['family'])
-header += u"Newbie users are those who have done %s edits or less" % avbotglobals.preferences['newbie']
+header =  u"Loading data for %s:%s project\n" % (avbotglobals.preferences['family'], avbotglobals.preferences['language'])
+header += u"Newbie users are those who have done %s edits or less" % (avbotglobals.preferences['newbie'])
 wikipedia.output(header)
 
 class BOT(SingleServerIRCBot):
@@ -62,8 +62,8 @@ class BOT(SingleServerIRCBot):
     """ BOT class """
     
     def __init__(self):
-        """  """
-        """  """
+        """ Inicialización del bot """
+        """ Bot initialization """
         self.channel = avbotglobals.preferences['channel']
         self.nickname = avbotglobals.preferences['nickname']
         

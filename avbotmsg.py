@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# AVBOT - Anti-Vandalism BOT for MediaWiki projects
-# Copyright (C) 2008-2010 Emilio José Rodríguez Posada
+# AVBOT - Anti-vandalism bot for MediaWiki wikis
+# Copyright (C) 2008-2016 emijrp <emijrp@gmail.com>
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
