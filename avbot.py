@@ -32,61 +32,290 @@
 """ External modules """
 """ Python modules """
 import os
+import random
 import re
 import sys
-import thread
+import _thread
 import time
 
-""" irclib modules """
-from ircbot import SingleServerIRCBot
-from irclib import nm_to_n
-
 """ pywikipediabot modules """
-import wikipedia
+import pywikibot
 
 """ AVBOT modules """
+"""
 import avbotglobals  #Shared info
 import avbotload     #Data and regexp loader
 import avbotsave     #Saving info in files
 import avbotmsg      #Send messages to vandals
 import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
 import avbotcomb     #Trivia functions
+"""
 
-""" Continue header message """
-header =  u"Loading data for %s:%s project\n" % (avbotglobals.preferences['family'], avbotglobals.preferences['language'])
-header += u"Newbie users are those who have done %s edits or less" % (avbotglobals.preferences['newbie'])
-wikipedia.output(header)
-
-class BOT(SingleServerIRCBot):
-    """ Clase BOT """
-    """ BOT class """
+class AVBOT():
+    """ Clase AVBOT """
+    """ AVBOT class """
     
     def __init__(self):
         """ Inicialización del bot """
         """ Bot initialization """
-        self.channel = avbotglobals.preferences['channel']
-        self.nickname = avbotglobals.preferences['nickname']
         
+        self.repo = 'https://github.com/emijrp/avbot' # Repository with AVBOT source code
+        self.version = self.getVersion() # AVBOT version
+        self.path = '/%s' % ('/'.join(os.path.abspath( __file__ ).split('/')[:-1]), )
+        
+        self.wikiBotName = 'Bot', # Bot username in wiki
+        self.wikiManagerName = 'Manager' # Bot manager username in wiki
+        self.wikiLanguage = 'en' # Default wiki language is English
+        self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
+        self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
+        
+        self.rcFeed = 'irc' # Feed mode for recent changes (irc or API)
+        self.ircNetwork = 'irc.wikimedia.org' # IRC network where is the recent changes IRC channel
+        self.ircPort = 6667 # IRC network port number
+        self.ircChannel = '#%s.%s' % (self.wikiLanguage, self.wikiFamily) # Recent changes IRC channel
+        self.ircBotName = '%s%s' % (self.wikiBotName, str(random.randint(1000, 9999))) # Bot username in IRC network
+        
+        self.logsDirectory = 'botlogs' # Directory reverts logs, not ending in /
+        self.newbieThreshold = 25 # Threshold edits for newbie users
+        self.statsDelay = 60 # Delay in seconds between printing stats
+        self.colors = {
+            'steward': 'lightblue', 
+            'sysop': 'lightblue', 
+            'bureaucrat': 'lightblue', 
+            'checkuser': 'lightblue', 
+            'bot': 'lightpurple', 
+            'reg': 'lightgreen',
+            'anon': 'lightyellow', 
+        }
+        self.context = r'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]'
+        self.msg = {}
+        self.testmode = False
+        self.dryrun = False # Don't save any edit in wiki
+        self.force = False
+        self.trial = False
+        self.users = {}
+        self.usersFile = '%s.%s.users.txt' % (self.wikiFamily, self.wikiLanguage)
+        self.historyLen = 10 # Numer of edits to retrieve by history
+        self.filters = []
+        self.filtersLocations = [ # Files with regexps and scores to detect vandalism
+            {'type': 'file', 'location': 'filters/%s.%s.filters.txt' % (self.wikiFamily, self.wikiLanguage)}, 
+            {'type': 'page', 'location': 'User:%s/filters.css' % (self.wikiBotName)}, 
+        ]
+        self.exclusions = []
+        self.exclusionsLocations = [ # Files and pages that lists excluded pages (usual false positives)
+            {'type': 'file', 'location': 'exclusions/%s.%s.exclusions.txt' % (self.wikiFamily, self.wikiLanguage)}, 
+            {'type': 'page', 'location': 'User:%s/exclusions.css' % (self.wikiBotName)}, 
+        ]
+        self.messagesLocations = [ # Files with messages to leave in talk pages
+            {'type': 'file', 'location': 'messages/%s.%s.messages.txt' % (self.wikiFamily, self.wikiLanguage)}, 
+            {'type': 'page', 'location': 'User:%s/messages.css' % (self.wikiBotName)}, 
+        ]
+        self.namespaces = []
+        self.isAliveFile = '%s.%s.alive.txt' % (self.wikiFamily, self.wikiLanguage) # File to check if AVBOT is working
+        self.isAliveSeconds = 60 # Touches isAliveFile every X seconds
+        self.pidFile = '%s.%s.pid.txt' % (self.wikiFamily, self.wikiLanguage) # File with process ID
+        
+    def start(self):
+        # Welcome message
+        header  = "AVBOT Copyright (C) 2008-2016 emijrp <emijrp@gmail.com>\n"
+        header += "This program comes with ABSOLUTELY NO WARRANTY.\n"
+        header += "This is free software, and you are welcome to redistribute it\n"
+        header += "under certain conditions. See license.\n\n"
+        header += "############################################################################\n"
+        header += "# Name:     AVBOT (Anti-vandalism bot for MediaWiki wikis)                 #\n"
+        header += "# Version:  %s                                                            #\n" % (self.version)
+        header += "# Features: Revert vandalism, blanking and test edits                      #\n"
+        header += "#           Report vandalism attack waves to admins                        #\n"
+        header += "#           Mark rubbish articles for deletion                             #\n"
+        header += "############################################################################\n\n"
+        header += "Available parameters (* obligatory): --wikilang, --wikifamily, --newbieedits, --wikibotname*, --statsdelay, --ircnetwork, --ircchannel, --wikimanagername*, --nosave, --force\n"
+        header += "Example: python avbot.py --wikibotname:MyBot --wikimanagername:MyUser\n"
+        header +=  u"Loading data for %s:%s project\n" % (avbotglobals.preferences['family'], avbotglobals.preferences['language'])
+        header += u"Newbie users are those who have done %s edits or less" % (avbotglobals.preferences['newbie'])
+        print(header)
+        
+        """ Avoid running two or more instances of AVBOT """
+        #self.isAlive()
+    
         """ Data loaders """
-        avbotload.loadEdits()
-        avbotload.loadStewards()
-        avbotload.loadSysops()
-        avbotload.loadBureaucrats()
-        avbotload.loadCheckusers()
-        avbotload.loadBots()
-        avbotload.loadExclusions()
+        self.loadUsers()
+        self.loadExclusions()
         
         """Messages"""
-        avbotload.loadMessages()
-        wikipedia.output(u"Loaded %d messages..." % (len(avbotglobals.preferences['msg'].items())))
+        """avbotload.loadMessages()
+        wikipedia.output(u"Loaded %d messages..." % (len(avbotglobals.preferences['msg'].items())))"""
         
         """Regular expresions for vandalism edits """
-        error=avbotload.loadRegexpList()
-        wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...\n%s" % (len(avbotglobals.vandalRegexps.items()), error))
+        """error=avbotload.loadRegexpList()
+        wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...\n%s" % (len(avbotglobals.vandalRegexps.items()), error))"""
         
-        wikipedia.output(u'Joining to recent changes IRC channel...\n')
-        SingleServerIRCBot.__init__(self, [(avbotglobals.preferences['network'], avbotglobals.preferences['port'])], self.nickname, self.nickname)
+        if self.rcFeed == 'irc':
+            self.rcIRC()
+        elif self.rcFeed == 'api':
+            self.rcAPI()
     
+    def getVersion(self):
+        with open('%s/VERSION' % (self.path)) as g:
+            self.version = g.read().strip()
+
+    def checkForUpdates(self):
+        f = urllib.urlopen('%s/VERSION' % (self.repo))
+        remoteversion = f.read().strip()
+        
+        if remoteversion != preferences['version']:
+            return True
+        return False    
+
+    def loadUsers(self):
+        """ Load info about users (editcount) """
+        """ Carga información sobre usuarios (número de ediciones) """
+        
+        print("Loading info for users")
+        self.loadUsersByGroup('steward')
+        self.loadUsersByGroup('sysop')
+        self.loadUsersByGroup('bureaucrat')
+        self.loadUsersByGroup('checkuser')
+        self.loadUsersByGroup('bot')
+        
+        if os.path.isfile('%s/%s' % (self.path, self.usersFile)):
+            with open('%s/%s' % (self.path, self.usersFile), 'r') as f:
+                for row in f.read().splitlines():
+                    username, editcount = row.split(';')
+                    if not username in self.users:
+                        self.users[username] = {'groups': ['*']}
+                    self.users[username]['editcount'] = int(editcount)
+        
+        print("Loaded info for %d users from %s" % (len(self.users.keys()), self.usersFile))
+    
+    def loadUsersByGroup(self, group):
+        """ Captura lista de usuarios de un grupo """
+        """ Fetch user list by group """
+    
+        aufrom = "!"
+        while aufrom:
+            query = pywikibot.query.GetData({'action': 'query', 'list': 'allusers', 'augroup': group, 'aulimit': '500', 'aufrom': aufrom}, site = self.site, useAPI = True)
+            for row in query['query']['allusers']:
+                username = allusers['name']
+                if username in self.usernames:
+                    self.users[username]['groups'].append(group)
+                else:
+                    self.users[username] = {'groups': [group]}
+            if 'query-continue' in query:
+                aufrom = query['query-continue']
+            else:
+                aufrom = ""
+        print("Loaded %d users from %s group" % (len(query['query']['allusers']), group))
+    
+    def loadExclusions(self):
+        """ Carga lista de páginas excluidas """
+        """ Load excluded pages list """
+        
+        for exclusionLocation in self.exclusionsLocations:
+            if exclusionLocation['type'] == 'file':
+                location = '%s/%s' % (self.path, exclusionLocation['location'])
+                if os.path.isfile(location):
+                    with open(location, 'r') as f:
+                        for row in f.read().strip().splitlines():
+                            row = row.strip()
+                            if row and not row.startswith('#'): # Remove comments
+                                row = row.split('#')[0].strip() # Remove inline comments
+                                self.exclusions.append(re.compile(r"(?m)^%s$" % (row)))
+                else:
+                    print("Not found: %s" % (exclusionLocation['location']))
+            elif exclusionLocation['type'] == 'page':
+                exclusionsPage = pywikibot.Page(self.site, exclusionLocation['location'])
+                if exclusionsPage.exists() and not exclusionsPage.isRedirectPage():
+                    for row in exclusionsPage.text.strip().splitlines():
+                        row = row.strip()
+                        if row and not row.startswith('#'):
+                            row = row.split('#')[0].strip()
+                            self.exclusions.append(re.compile(r"(?m)^%s$" % (row)))
+                else:
+                    print("Not found or it is a redirect: %s" % (exclusionLocation['location']))
+
+    def isAlive(self):
+        isAliveFile = '%s/%s' % (self.path, self.isAliveFile)
+        pidFile = '%s/%s' % (self.path, self.pidFile)
+        if os.path.isfile(isAliveFile):
+            os.system("rm %s" % (isAliveFile))
+            print("It seems AVBOT is running in another process")
+            print("Deleting isAlive file %s" % (self.isAliveFile))
+            print("Exiting... Please, re-run this script in %d minutes or more" % ((self.isAliveSeconds*5)/60))
+            sys.exit()
+        else:
+            if os.path.isfile(pidFile):
+                try:
+                    with open(pidFile, 'r') as f:
+                        oldpid = f.read().strip()
+                    os.system("kill -9 %s" % (oldpid))
+                except:
+                    pywikibot.output("Error while killing previous AVBOT process. Probably it isn't running anymore")
+        
+            # Saving current process ID
+            with open(pidFile, 'w') as f:
+                f.write(str(os.getpid()))
+    
+        # Starting isAlive checking
+        #_thread.start_new_thread(self.isAliveBackground, ())
+    
+    def isAliveBackground(self):
+        isAliveFile = '%s/%s' % (self.path, self.isAliveFile)
+        while True:
+            if not os.path.isfile(self.isAliveFile):
+                with open(self.isAliveFile, 'w') as f:
+                    f.write("AVBOT is running")
+            time.sleep(self.isAliveSeconds)
+    
+    def rcIRC(self):
+        # Partially from Bryan ircbot http://toolserver.org/~bryan/TsLogBot/TsLogBot.py (MIT License)
+        print("Joining to recent changes IRC channel...\n")
+        while True:
+            try:
+                conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                conn.connect((self.ircNetwork, self.ircPort))
+                
+                conn.sendall('USER %s * * %s\r\n' % (self.ircBotName, self.ircBotName))
+                conn.sendall('NICK %s\r\n' % (self.ircBotName))
+                conn.sendall('JOIN %s\r\n' % (self.ircChannel))
+        
+                ircbuffer = ''
+                while True:
+                    if '\n' in ircbuffer:
+                        line = ircbuffer[:ircbuffer.index('\n')]
+                        ircbuffer = ircbuffer[len(line) + 1:]
+                        line = line.strip()
+                        #print >>sys.stderr, line
+                        
+                        data = line.split(' ', 3)
+                        if data[0] == 'PING':
+                            conn.sendall('PONG %s\r\n' % data[1])
+                        elif data[1] == 'PRIVMSG':
+                            nick = data[0][1:data[0].index('!')]
+                            target = data[2]
+                            message = data[3][1:]
+                            message = unicode(message, 'utf-8')
+                            message = re.sub(r'\x03\d{0,2}', r'', message) #No colors
+                            message = re.sub(r'\x02\d{0,2}', r'', message) #No bold
+                            if target == self.ircChannel:
+                                if message.startswith('\x01ACTION'):
+                                    pass #log('* %s %s' % (nick, message[8:]))
+                                else:
+                                    #todo esta regexp solo vale para ediciones, las páginas nuevas tienen rcid= y no diff: http://en.wikipedia.org/w/index.php?oldid=385928375&rcid=397223378
+                                    print(message)
+                                    m = re.findall(r'(?im)^\[\[(?P<title>.+?)\]\]\s+(?P<flag>[NMB]*?)\s+(?P<url>https://.+?diff=(?P<diff>\d+?)\&oldid=(?P<oldid>\d+?))\s+\*\s+(?P<user>.+?)\s+\*\s+\((?P<change>[\-\+]\d+?)\)\s+(?P<comment>.*?)$', message)
+                                    for i in m:
+                                        #flag, change, url
+                                        edit_props = {'page': pywikibot.Page(self.site, i.group('title')), 'title': i.group('title'), 'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), 'user': i.group('user'), 'comment': i.group('comment'), 'diff': i.group('diff'), 'oldid': i.group('oldid'), 'change': int(i.group('change'))}
+                                        #_thread.start_new_thread(fetchedEdit, (edit_props,))
+                                        print(edit_props.items())
+                                    pass #log('<%s>\t%s' % (nick, message))
+                    else:
+                        data = conn.recv(1024)
+                        if not data: raise socket.error
+                        ircbuffer += data
+            except socket.error:
+                print >>sys.stderr, 'Socket error!'
+            
     def on_welcome(self, c, e):
         """ Se une al canal de IRC de Cambios recientes """
         """ Joins to IRC channel with Recent changes """
@@ -107,7 +336,9 @@ class BOT(SingleServerIRCBot):
     def on_pubmsg(self, c, e):
         """ Captura cada línea del canal de IRC """
         """ Fetch and parse each line in the IRC channel """
-
+        
+        
+        """
         editData = {}
         
         line = (e.arguments()[0])
@@ -150,7 +381,7 @@ class BOT(SingleServerIRCBot):
                 if re.search(avbotglobals.parserRegexps['messages'], editData['pageTitle']):
                     avbotload.loadMessages()
                 
-                thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
+                _thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
                 
                 # Avoid to check our edits, aunque ya se chequea en editAnalysis
                 if editData['author'] == avbotglobals.preferences['botNick']: 
@@ -182,7 +413,7 @@ class BOT(SingleServerIRCBot):
                 
                 #time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan #fix arreglado con el .exists() antes de .put?
                 #insertado time.sleep(5) justo antes de llamar a newArticleAnalysis(editData) en editAnalysis()
-                thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
+                _thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
         elif re.search(avbotglobals.parserRegexps['block'], line):
             match = avbotglobals.parserRegexps['block'].finditer(line)
             for m in match:
@@ -190,7 +421,7 @@ class BOT(SingleServerIRCBot):
                 blocked = m.group('blocked')
                 block=m.group('block')
                 wikipedia.output(u'\03{lightblue}Log: [[User:%s]] (%d) has been blocked by [[User:%s]] (%d) for %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
-                thread.start_new_thread(avbotcomb.blockedUser, (blocker, blocked, block))
+                _thread.start_new_thread(avbotcomb.blockedUser, (blocker, blocked, block))
         elif re.search(avbotglobals.parserRegexps['nuevousuario'], line):
             match = avbotglobals.parserRegexps['nuevousuario'].finditer(line)
             for m in match:
@@ -219,7 +450,7 @@ class BOT(SingleServerIRCBot):
                 wikipedia.output(u'\03{lightblue}Log: [[%s]] (%d) has been protected by [[User:%s]] (%d), edit=%s (%d), move=%s (%d)\03{default}' % (pageTitle, len(pageTitle), protecter, len(protecter), edit, len(edit), move, len(move)))
                 #http://es.wikipedia.org/w/index.php?oldid=23222363#Candados
                 #if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
-                #   thread.start_new_thread(avbotcomb.semiprotect, (pageTitle, protecter))
+                #   _thread.start_new_thread(avbotcomb.semiprotect, (pageTitle, protecter))
         else:
             #wikipedia.output(u'No gestionada ---> %s' % line)
             f = open('lineasnogestionadas.txt', 'a')
@@ -255,35 +486,15 @@ class BOT(SingleServerIRCBot):
                 avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
                 avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
                 avbotglobals.statsDic[period]       = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0} #Blanking statistics for a new period
-
-def main():
-    """ Crea un objeto BOT y lo lanza """
-    """ Creates and launches a bot object """
-    
-    if os.path.isfile(avbotglobals.existFile):
-        os.system("rm %s" % avbotglobals.existFile)
-        wikipedia.output(u"Eliminado fichero %s" % avbotglobals.existFile)
-        sys.exit()
-    else:
-        try:
-            PID = open(avbotglobals.pidFile, 'r')
-            oldpid = PID.read()
-            PID.close()
-            os.system("kill -9 %s" % oldpid)
-        except:
-            wikipedia.output(u"Hubo un error al intentar matar el proceso anterior")
+        """
         
-        #Writing current PID
-        PID = open(avbotglobals.pidFile, 'w')
-        PID.write(str(os.getpid()))
-        PID.close()
+def main():
+    """ Crea un objeto AVBOT y lo lanza """
+    """ Creates AVBOT object and launch it """
     
-    #launching existence file generator
-    thread.start_new_thread(avbotcomb.existenceFile, ())
-    
-    #Starting bot...
-    bot = BOT()
-    bot.start()
+    # Starting AVBOT
+    avbot = AVBOT()
+    avbot.start()
 
 if __name__ == '__main__':
     main()
