@@ -1,0 +1,10 @@
+([A-Za-z])\1{9,};;-1;;vandalism
+(e+l+|l+a|l+o+s+|l+a+s+) m+e+j+o+r+e*s*;;-1;;vandalism
+g+u+a+p+[oa]+s*;;-1;;vandalism
+(l+e+|t+e+) g+u+s+t+a+s*;;-1;;vandalism
+m+i+e+r+d+a+s*;;-1;;vandalism
+p+o+l+l+a+s*;;-1;;vandalism
+t+[íi]+[oa]+s*;;-1;;vandalism
+t+o+n+t+[oa]+s*;;-1;;vandalism
+'''Texto en negrita''';;-1;;test
+''Texto en cursiva'';;-1;;test

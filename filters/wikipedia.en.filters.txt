@@ -1,1 +1,12 @@
-
+a+m+a+z+i+n+g;;-1;;vandalism
+c+o+c+k+s*;;-1;;vandalism
+f+a+g+g+o+t+;;-1;;vandalism
+f+u+n+n+y;;-1;;vandalism
+p+u+s+s+y+;;-1;;vandalism
+p+u+s+s+i+e+s+;;-1;;vandalism
+s+h+i+t+;;-1;;vandalism
+s+i+l+l+y+;;-1;;vandalism
+s+t+u+p+i+d+;;-1;;vandalism
+s+u+c+k+s*;;-1;;vandalism
+'''Bold text''';;-1;;test
+''Italic text'';;-1;;test

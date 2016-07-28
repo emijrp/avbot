@@ -1,0 +1,6 @@
+bot,group
+steward,group
+sysop,group
+bureaucrat,group
+checkuser,group
+AVBOT,user
