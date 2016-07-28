@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #TODO
+# https://meta.wikimedia.org/wiki/Objective_Revision_Evaluation_Service
 #sameoldid, evitar que cargue siempr y aproveche el oldtext anterior
 #evitar guerras de edicion por clones de avbot, sol: pagina que liste los clones? lin 135 avbotanalysis
 #subpaginas centralizadas y sin centralizar en el avbotload
@@ -67,7 +68,7 @@ class AVBOT():
         
         self.wikiBotName = 'Bot', # Bot username in wiki
         self.wikiBotManagerName = 'BotManager' # Bot manager username in wiki
-        self.wikiLanguage = 'en' # Default wiki language is English
+        self.wikiLanguage = 'es' # Default wiki language is English
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
         
@@ -147,6 +148,7 @@ class AVBOT():
    
         """ Data loaders """
         self.loadUsers()
+        self.loadFilters()
         self.loadExclusions()
         
         """Messages"""
@@ -238,6 +240,35 @@ class AVBOT():
                 aufrom = ""
         print("Loaded %d users from %s group" % (c, group))
     
+    def loadFilters(self):
+        """ Carga lista de filtros para detectar vandalismos """
+        """ Load filter list to detect vandalism """
+        
+        for filterLocation in self.filtersLocations:
+            if filterLocation['type'] == 'file':
+                location = '%s/%s' % (self.path, filterLocation['location'])
+                if os.path.isfile(location):
+                    with open(location, 'r') as f:
+                        for row in f.read().strip().splitlines():
+                            self.loadFilter(row)
+                else:
+                    print("Not found: %s" % (filterLocation['location']))
+            elif filterLocation['type'] == 'page':
+                filtersPage = pywikibot.Page(self.site, filterLocation['location'])
+                if filtersPage.exists() and not filtersPage.isRedirectPage():
+                    for row in filtersPage.text.strip().splitlines():
+                        self.loadFilter(row)
+                else:
+                    print("Not found or it is a redirect: %s" % (filterLocation['location']))
+        
+        print("Loaded %s filters" % (len(self.filters)))
+    
+    def loadFilter(self, row):
+        row = row.strip()
+        if row and not row.startswith('#'): # Remove comments
+            regexp, score, group = row.split(';;')
+            self.filters.append({'group': group, 'compiled': re.compile(r"(?im)%s%s%s" % (self.context, regexp, self.context)), 'regexp': regexp, 'score': score})
+    
     def loadExclusions(self):
         """ Carga lista de páginas excluidas """
         """ Load excluded pages list """
@@ -248,24 +279,26 @@ class AVBOT():
                 if os.path.isfile(location):
                     with open(location, 'r') as f:
                         for row in f.read().strip().splitlines():
-                            row = row.strip()
-                            if row and not row.startswith('#'): # Remove comments
-                                row = row.split('#')[0].strip() # Remove inline comments
-                                self.exclusions.append(re.compile(r"(?m)^%s$" % (row)))
+                            self.loadExclusion(row)
                 else:
                     print("Not found: %s" % (exclusionLocation['location']))
             elif exclusionLocation['type'] == 'page':
                 exclusionsPage = pywikibot.Page(self.site, exclusionLocation['location'])
                 if exclusionsPage.exists() and not exclusionsPage.isRedirectPage():
                     for row in exclusionsPage.text.strip().splitlines():
-                        row = row.strip()
-                        if row and not row.startswith('#'):
-                            row = row.split('#')[0].strip()
-                            self.exclusions.append(re.compile(r"(?m)^%s$" % (row)))
+                        self.loadExclusion(row)
                 else:
                     print("Not found or it is a redirect: %s" % (exclusionLocation['location']))
-
-    def getUserProps(user='', props=[]):
+                    
+        print("Loaded %s exclusions" % (len(self.exclusions)))
+    
+    def loadExclusion(self, row):
+        row = row.strip()
+        if row and not row.startswith('#'): # Remove comments
+            row = row.split('#')[0].strip() # Remove inline comments
+            self.exclusions.append(re.compile(r"(?m)^%s$" % (row)))
+    
+    def getUserProps(self, user='', props=[]):
         """ Carga propiedades de un usuario en concreto """
         """ Load user properties """
         
@@ -313,11 +346,83 @@ class AVBOT():
                     f.write("AVBOT is running")
             time.sleep(self.isAliveSeconds)
     
-    def getLocalTime():
+    def getLocalTime(self):
         """ Coge la hora del sistema """
         """ Get system time """
         
         return time.strftime('%H:%M:%S')
+    
+    def isUserWhiteListed(self, user):
+        if user in self.users:
+            if self.users[user]['whitelisted']:
+                return True
+        return False
+    
+    def isUserIP(self, user):
+        if re.search(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', user): #fix improve 1-255
+            return True
+        elif re.search(r'[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}:[0-9ABCDEF]{1,4}', user):
+            return True
+        return False
+    
+    def isUserNewbie(self, user):
+        if self.isUserIP(user):
+            return True
+        
+        if user in self.users:
+            if 'editcount' in self.users[user]:
+                if self.users[user]['editcount'] < self.newbieThreshold:
+                    return True
+                else:
+                    return False
+            else:
+                self.users[user]['editcount'] = self.getUserProps(user=user, props=['editcount'])
+        else:
+            userprops = self.getUserProps(user=user, props=['editcount', 'groups'])
+            self.users[user] = {'groups': userprops['groups'], 'whitelisted': False, 'editcount': userprops['editcount']}
+        return self.isUserNewbie(user)
+    
+    def analyseChange(self, change):
+        change['timestamp_utc'] = datetime.datetime.fromtimestamp(change['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+        if change['user'] == self.wikiBotName: # Ignore own edits
+            return
+        
+        if change['type'] == 'edit':
+            edittype = change['minor'] and '\03{lightyellow}m\03{default}' or ''
+            edittype += change['bot'] and '\03{lightpurple}b\03{default}' or ''
+            sizediff = change['length']['new'] - change['length']['old']
+            if sizediff < 0:
+                sizediff = '\03{lightred}%s\03{default}' % (sizediff)
+            else:
+                sizediff = '\03{lightgreen}+%s\03{default}' % (sizediff)
+            
+            if self.isUserIP(change['user']):
+                line = '\n[%s] %s[[%s]] (%s) edited by \03{lightred}%s\03{default} %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'])
+                pywikibot.output(line)
+                print("SI Deberiamos analizar la edicion de %s porque es IP" % (change['user']))
+                self.analyseEdit(change)
+            elif self.isUserWhiteListed(change['user']):
+                line = '\n[%s] %s[[%s]] (%s) edited by \03{lightblue}%s\03{default} %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'])
+                pywikibot.output(line)
+                print("NO vamos a analizar la edicion de %s porque es WHITELISTED" % (change['user']))
+            elif self.isUserNewbie(change['user']):
+                line = '\n[%s] %s[[%s]] (%s) edited by \03{lightyellow}%s\03{default} (%s ed.) %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], self.users[change['user']]['editcount'], change['server_url'], change['revision']['old'], change['revision']['new'])
+                pywikibot.output(line)
+                print("SI Deberiamos analizar la edicion de %s porque es novato" % (change['user']))
+                self.analyseEdit(change)
+            else:
+                line = '\n[%s] %s[[%s]] (%s) edited by \03{lightgreen}%s\03{default} (%s ed.) %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], self.users[change['user']]['editcount'], change['server_url'], change['revision']['old'], change['revision']['new'])
+                pywikibot.output(line)
+                print("NO vamos a analizar la edicion de %s porque ya no es novato" % (change['user']))
+            #_thread.start_new_thread(self.analyseEdit, (change,))
+        elif change['type'] == 'new':
+            line = '[%s] \03{lightred}N\03{default} [[%s]] created by %s' % (change['timestamp_utc'], change['title'], change['user'])
+            pywikibot.output(line)
+            #_thread.start_new_thread(self.analyseNewPage, (change,))
+        elif change['type'] == 'log':
+            pass
+        elif change['type'] == 'categorize':
+            pass
     
     def rcStream(self):
         """ Captura cambios recientes desde Stream """
@@ -332,25 +437,10 @@ class AVBOT():
             t = rcstream.rc_listener(wikihost=wikihost, rchost=rchost)
             for change in t:
                 #print(change['type'])
-                change['timestamp_utc'] = datetime.datetime.fromtimestamp(change['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
-                if change['user'] == self.wikiBotName: # Ignore own edits
-                    continue
-                
-                if change['type'] == 'edit':
-                    edittype = change['minor'] and '\03{lightred}m\03{default}' or ''
-                    edittype += change['bot'] and '\03{lightred}b\03{default}' or ''
-                    sizediff = change['length']['new'] - change['length']['old']
-                    line = '[%s] %s[[%s]] (%s) edited by [[User:%s]] %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff > 0 and '+%s' % (sizediff) or sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'], )
-                    pywikibot.output(line)
-                    #_thread.start_new_thread(self.analyseEdit, (change,))
-                elif change['type'] == 'new':
-                    line = '[%s] \03{lightred}N\03{default} [[%s]] created by [[User:%s]]' % (change['timestamp_utc'], change['title'], change['user'])
-                    pywikibot.output(line)
-                    #_thread.start_new_thread(self.analyseNewPage, (change,))
-                elif change['type'] == 'log':
-                    pass
-                elif change['type'] == 'categorize':
-                    pass
+                t1 = time.time()
+                self.analyseChange(change=change)
+                if change['type'] in ['edit', 'new']:
+                    print("Calculado en %f segundos" % (time.time()-t1))
             t.stop()
         else:
             print("Error, stream not available for %s:%s" % (self.wikiFamily, self.wikiLanguage))
@@ -417,7 +507,23 @@ class AVBOT():
             except socket.error:
                 print >>sys.stderr, 'Socket error!'
 
- 
+    def analyseEdit(self, change):
+        query = pywikibot.data.api.Request(parameters={'action': 'compare', 'fromrev': change['revision']['old'], 'torev': change['revision']['new']}, site=self.site)
+        data = query.submit()
+        if 'compare' in data and '*' in data['compare']:
+            added = []
+            m = re.findall(r'(?im)<ins [^<>]*?>([^<>]*?)</ins>', data['compare']['*'])
+            for i in m:
+                added.append(i)
+            m = re.findall(r'(?im)<td class="diff-addedline"><div>([^<>]*?)</div></td>', data['compare']['*'])
+            for i in m:
+                added.append(i)
+            added_plain = '\n'.join(added)
+            
+            for filterr in self.filters:
+                m = re.findall(filterr['compiled'], added_plain)
+                for i in m:
+                    print("!!!Encontrado %s (%s score)" % (filterr['regexp'], filterr['score']))
     """
 
             for m in match:
