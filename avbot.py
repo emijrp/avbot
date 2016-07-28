@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # AVBOT - Anti-vandalism bot for MediaWiki wikis
@@ -34,22 +35,21 @@
 import os
 import random
 import re
+import socket
 import sys
 import _thread
 import time
 
-""" pywikipediabot modules """
-import pywikibot
+""" Other modules """
+import pywikibot # git clone https://gerrit.wikimedia.org/r/pywikibot/core.git
+import socketIO_client # pip install socketIO_client==0.5.6
 
-""" AVBOT modules """
-"""
-import avbotglobals  #Shared info
-import avbotload     #Data and regexp loader
-import avbotsave     #Saving info in files
-import avbotmsg      #Send messages to vandals
-import avbotanalysis #Edit analysis to find vandalisms, blanking, and similar malicious edits
-import avbotcomb     #Trivia functions
-"""
+class WikiNamespace(socketIO_client.BaseNamespace):
+    def on_change(self, change):
+        print('%(user)s edited %(title)s' % change)
+
+    def on_connect(self):
+        self.emit('subscribe', 'en.wikipedia.org')
 
 class AVBOT():
     """ Clase AVBOT """
@@ -59,9 +59,9 @@ class AVBOT():
         """ Inicialización del bot """
         """ Bot initialization """
         
+        self.path = '/'.join(os.path.abspath( __file__ ).split('/')[:-1])
         self.repo = 'https://github.com/emijrp/avbot' # Repository with AVBOT source code
         self.version = self.getVersion() # AVBOT version
-        self.path = '/%s' % ('/'.join(os.path.abspath( __file__ ).split('/')[:-1]), )
         
         self.wikiBotName = 'Bot', # Bot username in wiki
         self.wikiManagerName = 'Manager' # Bot manager username in wiki
@@ -69,7 +69,8 @@ class AVBOT():
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
         
-        self.rcFeed = 'irc' # Feed mode for recent changes (irc or API)
+        self.rcFeed = 'stream' # Feed mode for recent changes (stream, irc or api)
+        
         self.ircNetwork = 'irc.wikimedia.org' # IRC network where is the recent changes IRC channel
         self.ircPort = 6667 # IRC network port number
         self.ircChannel = '#%s.%s' % (self.wikiLanguage, self.wikiFamily) # Recent changes IRC channel
@@ -128,18 +129,18 @@ class AVBOT():
         header += "#           Report vandalism attack waves to admins                        #\n"
         header += "#           Mark rubbish articles for deletion                             #\n"
         header += "############################################################################\n\n"
-        header += "Available parameters (* obligatory): --wikilang, --wikifamily, --newbieedits, --wikibotname*, --statsdelay, --ircnetwork, --ircchannel, --wikimanagername*, --nosave, --force\n"
-        header += "Example: python avbot.py --wikibotname:MyBot --wikimanagername:MyUser\n"
-        header +=  u"Loading data for %s:%s project\n" % (avbotglobals.preferences['family'], avbotglobals.preferences['language'])
-        header += u"Newbie users are those who have done %s edits or less" % (avbotglobals.preferences['newbie'])
+        header += "Available parameters (* obligatory):\n--wikilang, --wikifamily, --newbiethreshold, --wikibotname*, --statsdelay, --ircnetwork, --ircchannel, --wikimanagername*, --nosave, --force\n\n"
+        header += "Example: python avbot.py --wikibotname:MyBot --wikimanagername:MyUser\n\n"
+        header += u"Loading data for %s:%s project\n" % (self.wikiFamily, self.wikiLanguage)
+        header += u"Newbie users are those who have done %s edits or less" % (self.newbieThreshold)
         print(header)
         
         """ Avoid running two or more instances of AVBOT """
         #self.isAlive()
     
         """ Data loaders """
-        self.loadUsers()
-        self.loadExclusions()
+        #self.loadUsers()
+        #self.loadExclusions()
         
         """Messages"""
         """avbotload.loadMessages()
@@ -149,14 +150,16 @@ class AVBOT():
         """error=avbotload.loadRegexpList()
         wikipedia.output(u"Loaded and compiled %d regular expresions for vandalism edits...\n%s" % (len(avbotglobals.vandalRegexps.items()), error))"""
         
-        if self.rcFeed == 'irc':
+        if self.rcFeed == 'stream':
+            self.rcStream()
+        elif self.rcFeed == 'irc':
             self.rcIRC()
         elif self.rcFeed == 'api':
             self.rcAPI()
     
     def getVersion(self):
-        with open('%s/VERSION' % (self.path)) as g:
-            self.version = g.read().strip()
+        with open('%s/VERSION' % (self.path)) as f:
+            self.version = f.read().strip()
 
     def checkForUpdates(self):
         f = urllib.urlopen('%s/VERSION' % (self.repo))
@@ -171,11 +174,11 @@ class AVBOT():
         """ Carga información sobre usuarios (número de ediciones) """
         
         print("Loading info for users")
-        self.loadUsersByGroup('steward')
-        self.loadUsersByGroup('sysop')
-        self.loadUsersByGroup('bureaucrat')
-        self.loadUsersByGroup('checkuser')
-        self.loadUsersByGroup('bot')
+        self.loadUsersByGroup(group='steward')
+        self.loadUsersByGroup(group='sysop')
+        self.loadUsersByGroup(group='bureaucrat')
+        self.loadUsersByGroup(group='checkuser')
+        self.loadUsersByGroup(group='bot')
         
         if os.path.isfile('%s/%s' % (self.path, self.usersFile)):
             with open('%s/%s' % (self.path, self.usersFile), 'r') as f:
@@ -185,26 +188,33 @@ class AVBOT():
                         self.users[username] = {'groups': ['*']}
                     self.users[username]['editcount'] = int(editcount)
         
-        print("Loaded info for %d users from %s" % (len(self.users.keys()), self.usersFile))
+        print("Loaded info for %d users" % (len(self.users.keys())))
     
     def loadUsersByGroup(self, group):
         """ Captura lista de usuarios de un grupo """
         """ Fetch user list by group """
-    
+        
+        c = 0
         aufrom = "!"
         while aufrom:
-            query = pywikibot.query.GetData({'action': 'query', 'list': 'allusers', 'augroup': group, 'aulimit': '500', 'aufrom': aufrom}, site = self.site, useAPI = True)
-            for row in query['query']['allusers']:
-                username = allusers['name']
-                if username in self.usernames:
-                    self.users[username]['groups'].append(group)
+            query = pywikibot.data.api.Request(parameters={'action': 'query', 'list': 'allusers', 'augroup': group, 'aulimit': '500', 'aufrom': aufrom}, site=self.site)
+            data = query.submit()
+            #print(data)
+            if 'query' in data and 'allusers' in data['query']:
+                for row in data['query']['allusers']:
+                    username = row['name']
+                    if username in self.users:
+                        self.users[username]['groups'].append(group)
+                    else:
+                        self.users[username] = {'groups': [group]}
+                    c += 1
+                if 'continue' in data and 'aufrom' in data['continue']:
+                    aufrom = data['continue']['aufrom']
                 else:
-                    self.users[username] = {'groups': [group]}
-            if 'query-continue' in query:
-                aufrom = query['query-continue']
+                    aufrom = ""
             else:
                 aufrom = ""
-        print("Loaded %d users from %s group" % (len(query['query']['allusers']), group))
+        print("Loaded %d users from %s group" % (c, group))
     
     def loadExclusions(self):
         """ Carga lista de páginas excluidas """
@@ -266,6 +276,20 @@ class AVBOT():
                     f.write("AVBOT is running")
             time.sleep(self.isAliveSeconds)
     
+    def rcStream(self):
+        import pywikibot.comms.rcstream as rcstream
+        
+        wikimediafamilies = ['wikipedia', 'wiktionary']
+        if self.wikiFamily in wikimediafamilies:
+            wikihost = '%s.%s.org' % (self.wikiLanguage, self.wikiFamily)
+            rchost = 'stream.wikimedia.org'
+            t = rcstream.rc_listener(wikihost=wikihost, rchost=rchost)
+            for change in t:
+                print(change)
+            t.stop()
+        else:
+            print("Error, stream not available for %s:%s" % (self.wikiFamily, self.wikiLanguage))
+
     def rcIRC(self):
         # Partially from Bryan ircbot http://toolserver.org/~bryan/TsLogBot/TsLogBot.py (MIT License)
         print("Joining to recent changes IRC channel...\n")
@@ -274,9 +298,12 @@ class AVBOT():
                 conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 conn.connect((self.ircNetwork, self.ircPort))
                 
-                conn.sendall('USER %s * * %s\r\n' % (self.ircBotName, self.ircBotName))
-                conn.sendall('NICK %s\r\n' % (self.ircBotName))
-                conn.sendall('JOIN %s\r\n' % (self.ircChannel))
+                sendmsg = 'USER %s * * %s\r\n' % (self.ircBotName, self.ircBotName)
+                conn.sendall(sendmsg.encode('utf-8'))
+                sendmsg = 'NICK %s\r\n' % (self.ircBotName)
+                conn.sendall(sendmsg.encode('utf-8'))
+                sendmsg = 'JOIN %s\r\n' % (self.ircChannel)
+                conn.sendall(sendmsg.encode('utf-8'))
         
                 ircbuffer = ''
                 while True:
@@ -288,7 +315,8 @@ class AVBOT():
                         
                         data = line.split(' ', 3)
                         if data[0] == 'PING':
-                            conn.sendall('PONG %s\r\n' % data[1])
+                            sendmsg = 'PONG %s\r\n' % (data[1])
+                            conn.sendall(sendmsg.encode('utf-8'))
                         elif data[1] == 'PRIVMSG':
                             nick = data[0][1:data[0].index('!')]
                             target = data[2]
@@ -312,7 +340,7 @@ class AVBOT():
                     else:
                         data = conn.recv(1024)
                         if not data: raise socket.error
-                        ircbuffer += data
+                        ircbuffer += data.decode('utf-8')
             except socket.error:
                 print >>sys.stderr, 'Socket error!'
             
