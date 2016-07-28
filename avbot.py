@@ -66,7 +66,7 @@ class AVBOT():
         self.version = self.getLocalVersion() # AVBOT version
         
         self.wikiBotName = 'Bot', # Bot username in wiki
-        self.wikiManagerName = 'Manager' # Bot manager username in wiki
+        self.wikiBotManagerName = 'BotManager' # Bot manager username in wiki
         self.wikiLanguage = 'en' # Default wiki language is English
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
@@ -103,16 +103,16 @@ class AVBOT():
         self.filters = []
         self.filtersLocations = [ # Files with regexps and scores to detect vandalism
             {'type': 'file', 'location': 'filters/%s.%s.filters.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/filters.css' % (self.wikiBotName)}, 
+            {'type': 'page', 'location': 'User:%s/filters.css' % (self.wikiBotManagerName)}, 
         ]
         self.exclusions = []
         self.exclusionsLocations = [ # Files and pages that lists excluded pages (usual false positives)
             {'type': 'file', 'location': 'exclusions/%s.%s.exclusions.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/exclusions.css' % (self.wikiBotName)}, 
+            {'type': 'page', 'location': 'User:%s/exclusions.css' % (self.wikiBotManagerName)}, 
         ]
         self.messagesLocations = [ # Files with messages to leave in talk pages
             {'type': 'file', 'location': 'messages/%s.%s.messages.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/messages.css' % (self.wikiBotName)}, 
+            {'type': 'page', 'location': 'User:%s/messages.css' % (self.wikiBotManagerName)}, 
         ]
         self.namespaces = []
         self.isAliveFile = '%s.%s.alive.txt' % (self.wikiFamily, self.wikiLanguage) # File to check if AVBOT is working
@@ -132,7 +132,7 @@ class AVBOT():
         header += "#           Report vandalism attack waves to admins                        #\n"
         header += "#           Mark rubbish articles for deletion                             #\n"
         header += "############################################################################\n\n"
-        header += "Available parameters (* obligatory):\n--wikilang, --wikifamily, --newbiethreshold, --wikibotname*, --statsdelay, --ircnetwork, --ircchannel, --wikimanagername*, --nosave, --force\n\n"
+        header += "Available parameters (* obligatory):\n--wikilang, --wikifamily, --newbiethreshold, --wikibotname*, --statsdelay, --ircnetwork, --ircchannel, --wikibotmanagername*, --nosave, --force\n\n"
         header += "Example: python avbot.py --wikibotname:MyBot --wikimanagername:MyUser\n\n"
         header += u"Loading data for %s:%s project\n" % (self.wikiFamily, self.wikiLanguage)
         header += u"Newbie users are those who have done %s edits or less" % (self.newbieThreshold)
@@ -142,12 +142,12 @@ class AVBOT():
         #self.isAlive()
         
         if self.checkForUpdates():
-            print("\n\03{lightred}***New code available***\03{default} Please, update your copy of AVBOT from %s\n" % (self.repo))
+            pywikibot.output("\n\03{lightred}***New code available***\03{default} Please, update your copy of AVBOT from %s\n" % (self.repo))
             sys.exit()
    
         """ Data loaders """
-        #self.loadUsers()
-        #self.loadExclusions()
+        self.loadUsers()
+        self.loadExclusions()
         
         """Messages"""
         """avbotload.loadMessages()
@@ -188,7 +188,7 @@ class AVBOT():
         print("Loading info for users")
         
         # Load whitelisted users by group
-        with open(self.usersWhiteListFile) as f:
+        with open('%s/users/%s' % (self.path, self.usersWhiteListFile)) as f:
             for row in f.read().strip().splitlines():
                 x, y = row.split(',')
                 if y == 'group':
@@ -219,7 +219,6 @@ class AVBOT():
         while aufrom:
             query = pywikibot.data.api.Request(parameters={'action': 'query', 'list': 'allusers', 'augroup': group, 'aulimit': '500', 'aufrom': aufrom}, site=self.site)
             data = query.submit()
-            #print(data)
             if 'query' in data and 'allusers' in data['query']:
                 for row in data['query']['allusers']:
                     username = row['name']
@@ -229,8 +228,10 @@ class AVBOT():
                         self.users[username] = {'groups': [group]}
                     self.users[username]['whitelisted'] = whitelisted
                     c += 1
-                if 'continue' in data and 'aufrom' in data['continue']:
-                    aufrom = data['continue']['aufrom']
+                if 'query-continue' in data and \
+                   'allusers' in data['query-continue'] and \
+                   'aufrom' in data['query-continue']['allusers']:
+                    aufrom = data['query-continue']['allusers']['aufrom']
                 else:
                     aufrom = ""
             else:
