@@ -32,6 +32,7 @@
 
 """ External modules """
 """ Python modules """
+import datetime
 import os
 import random
 import re
@@ -39,6 +40,7 @@ import socket
 import sys
 import _thread
 import time
+import urllib
 
 """ Other modules """
 import pywikibot # git clone https://gerrit.wikimedia.org/r/pywikibot/core.git
@@ -61,7 +63,7 @@ class AVBOT():
         
         self.path = '/'.join(os.path.abspath( __file__ ).split('/')[:-1])
         self.repo = 'https://github.com/emijrp/avbot' # Repository with AVBOT source code
-        self.version = self.getVersion() # AVBOT version
+        self.version = self.getLocalVersion() # AVBOT version
         
         self.wikiBotName = 'Bot', # Bot username in wiki
         self.wikiManagerName = 'Manager' # Bot manager username in wiki
@@ -96,7 +98,8 @@ class AVBOT():
         self.trial = False
         self.users = {}
         self.usersFile = '%s.%s.users.txt' % (self.wikiFamily, self.wikiLanguage)
-        self.historyLen = 10 # Numer of edits to retrieve by history
+        self.usersWhiteListFile = '%s.%s.users.whitelist.txt' % (self.wikiFamily, self.wikiLanguage)
+        self.historyLen = 10 # Numer of edits to retrieve per history
         self.filters = []
         self.filtersLocations = [ # Files with regexps and scores to detect vandalism
             {'type': 'file', 'location': 'filters/%s.%s.filters.txt' % (self.wikiFamily, self.wikiLanguage)}, 
@@ -137,7 +140,11 @@ class AVBOT():
         
         """ Avoid running two or more instances of AVBOT """
         #self.isAlive()
-    
+        
+        if self.checkForUpdates():
+            print("\n\03{lightred}***New code available***\03{default} Please, update your copy of AVBOT from %s\n" % (self.repo))
+            sys.exit()
+   
         """ Data loaders """
         #self.loadUsers()
         #self.loadExclusions()
@@ -157,40 +164,53 @@ class AVBOT():
         elif self.rcFeed == 'api':
             self.rcAPI()
     
-    def getVersion(self):
+    def getLocalVersion(self):
         with open('%s/VERSION' % (self.path)) as f:
-            self.version = f.read().strip()
+            return f.read().strip()
 
     def checkForUpdates(self):
-        f = urllib.urlopen('%s/VERSION' % (self.repo))
-        remoteversion = f.read().strip()
+        versionurl = 'https://raw.githubusercontent.com/emijrp/avbot/master/VERSION'
         
-        if remoteversion != preferences['version']:
+        try:
+            req = urllib.request.Request(versionurl, headers={ 'User-Agent': 'Mozilla/5.0' })
+            remoteversion = urllib.request.urlopen(req).read().decode().strip()
+        except:
+            print("Error while retrieving VERSION file")
+            sys.exit()
+        if remoteversion != self.version:
             return True
-        return False    
+        return False
 
     def loadUsers(self):
         """ Load info about users (editcount) """
         """ Carga información sobre usuarios (número de ediciones) """
         
         print("Loading info for users")
-        self.loadUsersByGroup(group='steward')
-        self.loadUsersByGroup(group='sysop')
-        self.loadUsersByGroup(group='bureaucrat')
-        self.loadUsersByGroup(group='checkuser')
-        self.loadUsersByGroup(group='bot')
         
+        # Load whitelisted users by group
+        with open(self.usersWhiteListFile) as f:
+            for row in f.read().strip().splitlines():
+                x, y = row.split(',')
+                if y == 'group':
+                    self.loadUsersByGroup(group=x, whitelisted=True)
+                elif y == 'user':
+                    if x in self.users:
+                        self.users[x]['whitelisted'] = True
+                    else:
+                        self.users[x] = {'groups': ['*'], 'whitelisted': True}
+        
+        # Load users from file
         if os.path.isfile('%s/%s' % (self.path, self.usersFile)):
             with open('%s/%s' % (self.path, self.usersFile), 'r') as f:
                 for row in f.read().splitlines():
-                    username, editcount = row.split(';')
+                    username, editcount = row.split(',')
                     if not username in self.users:
-                        self.users[username] = {'groups': ['*']}
+                        self.users[username] = {'groups': ['*'], 'whitelisted': False}
                     self.users[username]['editcount'] = int(editcount)
         
         print("Loaded info for %d users" % (len(self.users.keys())))
     
-    def loadUsersByGroup(self, group):
+    def loadUsersByGroup(self, group='', whitelisted=False):
         """ Captura lista de usuarios de un grupo """
         """ Fetch user list by group """
         
@@ -207,6 +227,7 @@ class AVBOT():
                         self.users[username]['groups'].append(group)
                     else:
                         self.users[username] = {'groups': [group]}
+                    self.users[username]['whitelisted'] = whitelisted
                     c += 1
                 if 'continue' in data and 'aufrom' in data['continue']:
                     aufrom = data['continue']['aufrom']
@@ -243,6 +264,21 @@ class AVBOT():
                 else:
                     print("Not found or it is a redirect: %s" % (exclusionLocation['location']))
 
+    def getUserProps(user='', props=[]):
+        """ Carga propiedades de un usuario en concreto """
+        """ Load user properties """
+        
+        user_ = re.sub(' ', '_', user)
+        propsdic = {}
+        query = pywikibot.data.api.Request(parameters={'action': 'query', 'list': 'users', 'ususers': user_, 'usprop': '|'.join(props)}, site=self.site)
+        data = query.submit()
+        if 'query' in data and 'users' in data['query']:
+            for row in data['query']['users']:
+                if row['name'] == user: 
+                    for prop in props:
+                        propsdic[prop] = row[prop]
+        return propsdic
+            
     def isAlive(self):
         isAliveFile = '%s/%s' % (self.path, self.isAliveFile)
         pidFile = '%s/%s' % (self.path, self.pidFile)
@@ -276,21 +312,57 @@ class AVBOT():
                     f.write("AVBOT is running")
             time.sleep(self.isAliveSeconds)
     
+    def getLocalTime():
+        """ Coge la hora del sistema """
+        """ Get system time """
+        
+        return time.strftime('%H:%M:%S')
+    
     def rcStream(self):
+        """ Captura cambios recientes desde Stream """
+        """ Get recent changes from Stream """
+        
         import pywikibot.comms.rcstream as rcstream
         
-        wikimediafamilies = ['wikipedia', 'wiktionary']
+        wikimediafamilies = ['wikipedia', 'wiktionary', 'wikibooks', 'wikiversity', 'wikisource', 'wikivoyage']
         if self.wikiFamily in wikimediafamilies:
             wikihost = '%s.%s.org' % (self.wikiLanguage, self.wikiFamily)
             rchost = 'stream.wikimedia.org'
             t = rcstream.rc_listener(wikihost=wikihost, rchost=rchost)
             for change in t:
-                print(change)
+                #print(change['type'])
+                change['timestamp_utc'] = datetime.datetime.fromtimestamp(change['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                if change['user'] == self.wikiBotName: # Ignore own edits
+                    continue
+                
+                if change['type'] == 'edit':
+                    edittype = change['minor'] and '\03{lightred}m\03{default}' or ''
+                    edittype += change['bot'] and '\03{lightred}b\03{default}' or ''
+                    sizediff = change['length']['new'] - change['length']['old']
+                    line = '[%s] %s[[%s]] (%s) edited by [[User:%s]] %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff > 0 and '+%s' % (sizediff) or sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'], )
+                    pywikibot.output(line)
+                    #_thread.start_new_thread(self.analyseEdit, (change,))
+                elif change['type'] == 'new':
+                    line = '[%s] \03{lightred}N\03{default} [[%s]] created by [[User:%s]]' % (change['timestamp_utc'], change['title'], change['user'])
+                    pywikibot.output(line)
+                    #_thread.start_new_thread(self.analyseNewPage, (change,))
+                elif change['type'] == 'log':
+                    pass
+                elif change['type'] == 'categorize':
+                    pass
             t.stop()
         else:
             print("Error, stream not available for %s:%s" % (self.wikiFamily, self.wikiLanguage))
-
+    
+    def rcAPI(self):
+        # TODO
+        pass
+    
     def rcIRC(self):
+        """ Captura cambios recientes desde IRC """
+        """ Get recent changes from Stream """
+        # it doesn't work, stream is better
+        
         # Partially from Bryan ircbot http://toolserver.org/~bryan/TsLogBot/TsLogBot.py (MIT License)
         print("Joining to recent changes IRC channel...\n")
         while True:
@@ -343,98 +415,36 @@ class AVBOT():
                         ircbuffer += data.decode('utf-8')
             except socket.error:
                 print >>sys.stderr, 'Socket error!'
-            
-    def on_welcome(self, c, e):
-        """ Se une al canal de IRC de Cambios recientes """
-        """ Joins to IRC channel with Recent changes """
-        
-        c.join(self.channel)
-    
-    def on_privmsg(self, c, e):
-        line = (e.arguments()[0])
-        line = avbotcomb.encodeLine(line)
-        nick = nm_to_n(e.source())
-        
-        f = open('privados.txt', 'a')
-        timestamp = time.strftime('%X %x')
-        line = timestamp+' '+nick+' > '+line+'\n'
-        f.write(line.encode('utf-8'))
-        f.close()
-    
-    def on_pubmsg(self, c, e):
-        """ Captura cada línea del canal de IRC """
-        """ Fetch and parse each line in the IRC channel """
-        
-        
-        """
-        editData = {}
-        
-        line = (e.arguments()[0])
-        line = avbotcomb.encodeLine(line)
-        line = avbotcomb.cleanLine(line)
-        nick = nm_to_n(e.source())
-        
-        editData['line'] = line
-        if re.search(avbotglobals.parserRegexps['edit'], line):
-            match = avbotglobals.parserRegexps['edit'].finditer(line)
+
+ 
+    """
+
             for m in match:
-                editData['pageTitle'] = m.group('pageTitle')
-                editData['diff'] = int(m.group('diff'))
-                editData['oldid'] = int(m.group('oldid'))
-                editData['author'] = m.group('author')
+
                 editData['userClass'] = avbotcomb.getUserClass(editData)
-                    
-                nm=m.group('nm')
-                editData['new'] = editData['minor']=False
-                if re.search('N', nm):
-                    editData['new'] = True
-                if re.search('M', nm):
-                    editData['minor'] = True
-                editData['resume'] = m.group('resume')
+
                 
                 avbotanalysis.updateStats('total')
                 avbotglobals.statsTimersDic['speed'] += 1
                 
-                #Reload vandalism regular expresions if needed
-                #if re.search(ur'%s\:%s\/Lista del bien y del mal\.css' %(avbotglobals.namespaces[2], avbotglobals.preferences['ownerNick']), editData['pageTitle']):
-                #   avbotload.reloadRegexpList(editData['author'], editData['diff'])
-                if re.search(avbotglobals.parserRegexps['goodandevil'], editData['pageTitle']):
-                    avbotload.reloadRegexpList(editData['author'], editData['diff'])
-                
-                #Reload exclusion list #fix hacer independiente localization
-                if re.search(avbotglobals.parserRegexps['exclusions'], editData['pageTitle']):
-                    avbotload.loadExclusions()
-                
-                #Reload messages list
-                if re.search(avbotglobals.parserRegexps['messages'], editData['pageTitle']):
-                    avbotload.loadMessages()
-                
+
                 _thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
-                
-                # Avoid to check our edits, aunque ya se chequea en editAnalysis
-                if editData['author'] == avbotglobals.preferences['botNick']: 
-                    return #Exit
+
         
                 #Check resume for reverts
                 if avbotglobals.preferences['language']=='es' and re.search(ur'(?i)(Revertidos los cambios de.*%s.*a la última edición de|Deshecha la edición \d+ de.*%s)' % (avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick']), editData['resume']) and editData['pageTitle']!=u'Usuario:AVBOT/Errores/Automático':
                     if not avbotglobals.preferences['nosave']:
                         wiii=wikipedia.Page(avbotglobals.preferences['site'], u'User:AVBOT/Errores/Automático')
                         wiii.put(u'%s\n# [[%s]], {{subst:CURRENTDAY}} de {{subst:CURRENTMONTHNAME}} de {{subst:CURRENTYEAR}}, http://%s.wikipedia.org/w/index.php?diff=%s&oldid=%s, {{u|%s}}' % (wiii.get(), editData['pageTitle'], avbotglobals.preferences['language'], editData['diff'], editData['oldid'], editData['author']), u'BOT - Informe automático. [[User:%s|%s]] ha revertido a [[User:%s|%s]] en [[%s]]' % (editData['author'], editData['author'], avbotglobals.preferences['botNick'], avbotglobals.preferences['botNick'], editData['pageTitle']), botflag=False, maxTries=3)
+                        
         elif re.search(avbotglobals.parserRegexps['newpage'], line):
             match=avbotglobals.parserRegexps['newpage'].finditer(line)
             for m in match:
-                editData['pageTitle'] = m.group('pageTitle')
                 
                 editData['diff'] = editData['oldid']=0
-                editData['author'] = m.group('author')
+
                 editData['userClass'] = avbotcomb.getUserClass(editData)
-                
-                nm = m.group('nm')
-                editData['new'] = True
-                editData['minor'] = False
-                if re.search('M', nm):
-                    editData['minor'] = True
-                editData['resume']=u''
+
                 
                 avbotanalysis.updateStats('total')
                 avbotglobals.statsTimersDic['speed'] += 1
@@ -442,6 +452,7 @@ class AVBOT():
                 #time.sleep(5) #sino esperamos un poco, es posible que exists() devuelva false, hace que se quede indefinidamente intentando guardar la pagina, despues de q la destruyan #fix arreglado con el .exists() antes de .put?
                 #insertado time.sleep(5) justo antes de llamar a newArticleAnalysis(editData) en editAnalysis()
                 _thread.start_new_thread(avbotanalysis.editAnalysis, (editData,))
+                
         elif re.search(avbotglobals.parserRegexps['block'], line):
             match = avbotglobals.parserRegexps['block'].finditer(line)
             for m in match:
@@ -450,17 +461,20 @@ class AVBOT():
                 block=m.group('block')
                 wikipedia.output(u'\03{lightblue}Log: [[User:%s]] (%d) has been blocked by [[User:%s]] (%d) for %s\03{default}' % (blocked, len(blocked), blocker, len(blocker), block))
                 _thread.start_new_thread(avbotcomb.blockedUser, (blocker, blocked, block))
+                
         elif re.search(avbotglobals.parserRegexps['nuevousuario'], line):
             match = avbotglobals.parserRegexps['nuevousuario'].finditer(line)
             for m in match:
                 usuario = m.group('usuario')
                 wikipedia.output(u'\03{lightblue}Log: [[User:%s]] (%d) has signed up.\03{default}' % (usuario, len(usuario)))
+                
         elif re.search(avbotglobals.parserRegexps['borrado'], line):
             match = avbotglobals.parserRegexps['borrado'].finditer(line)
             for m in match:
                 pageTitle = m.group('pageTitle')
                 usuario = m.group('usuario')
                 wikipedia.output(u'\03{lightblue}Log: [[%s]] has been deleted by [[User:%s]]\03{default}' % (pageTitle, usuario))
+                
         elif re.search(avbotglobals.parserRegexps['traslado'], line):
             match = avbotglobals.parserRegexps['traslado'].finditer(line)
             for m in match:
@@ -468,6 +482,7 @@ class AVBOT():
                 origen = m.group('origen')
                 destino = m.group('destino')
                 wikipedia.output(u'\03{lightblue}Log: [[%s]] has been moved to [[%s]] by [[User:%s]]\03{default}' % (origen, destino, usuario))
+                
         elif re.search(avbotglobals.parserRegexps['protegida'], line):
             match = avbotglobals.parserRegexps['protegida'].finditer(line)
             for m in match:
@@ -479,6 +494,7 @@ class AVBOT():
                 #http://es.wikipedia.org/w/index.php?oldid=23222363#Candados
                 #if re.search(ur'autoconfirmed', edit) and re.search(ur'autoconfirmed', move):
                 #   _thread.start_new_thread(avbotcomb.semiprotect, (pageTitle, protecter))
+                
         else:
             #wikipedia.output(u'No gestionada ---> %s' % line)
             f = open('lineasnogestionadas.txt', 'a')
@@ -514,13 +530,12 @@ class AVBOT():
                 avbotsave.saveStats(avbotglobals.statsDic, period, avbotglobals.preferences['site'])     #Saving statistics in Wikipedia pages for historical reasons
                 avbotglobals.statsTimersDic[period] = time.time()                                        #Saving start time
                 avbotglobals.statsDic[period]       = {'v':0,'bl':0,'t':0,'s':0,'good':0,'bad':0,'total':0,'d':0} #Blanking statistics for a new period
-        """
-        
+    """
+ 
 def main():
     """ Crea un objeto AVBOT y lo lanza """
     """ Creates AVBOT object and launch it """
     
-    # Starting AVBOT
     avbot = AVBOT()
     avbot.start()
 
