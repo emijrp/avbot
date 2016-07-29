@@ -73,7 +73,7 @@ class AVBOT():
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
         
-        self.rcFeed = 'stream' # Feed mode for recent changes (corpus, stream, irc or api)
+        self.rcFeed = 'corpus' # Feed mode for recent changes (corpus, stream, irc or api)
         
         self.ircNetwork = 'irc.wikimedia.org' # IRC network where is the recent changes IRC channel
         self.ircPort = 6667 # IRC network port number
@@ -104,16 +104,16 @@ class AVBOT():
         self.filters = []
         self.filtersLocations = [ # Files with regexps and scores to detect vandalism
             {'type': 'file', 'location': 'filters/%s.%s.filters.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/filters.css' % (self.wikiBotManagerName)}, 
+            #{'type': 'page', 'location': 'User:%s/filters.css' % (self.wikiBotManagerName)}, 
         ]
         self.exclusions = []
         self.exclusionsLocations = [ # Files and pages that lists excluded pages (usual false positives)
             {'type': 'file', 'location': 'exclusions/%s.%s.exclusions.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/exclusions.css' % (self.wikiBotManagerName)}, 
+            #{'type': 'page', 'location': 'User:%s/exclusions.css' % (self.wikiBotManagerName)}, 
         ]
         self.messagesLocations = [ # Files with messages to leave in talk pages
             {'type': 'file', 'location': 'messages/%s.%s.messages.txt' % (self.wikiFamily, self.wikiLanguage)}, 
-            {'type': 'page', 'location': 'User:%s/messages.css' % (self.wikiBotManagerName)}, 
+            #{'type': 'page', 'location': 'User:%s/messages.css' % (self.wikiBotManagerName)}, 
         ]
         self.namespaces = []
         self.isAliveFile = '%s.%s.alive.txt' % (self.wikiFamily, self.wikiLanguage) # File to check if AVBOT is working
@@ -273,7 +273,7 @@ class AVBOT():
         row = row.strip()
         if row and not row.startswith('#'): # Remove comments
             regexp, score, group = row.split(';;')
-            group = group.split('#')[0].strip() # Remove inline comments
+            group = group.split('#')[0].strip().lower() # Remove inline comments
             if regexp and len(regexp) > 5: # Min len for regexps
                 self.filters.append({
                     'group': group, 
@@ -459,42 +459,81 @@ class AVBOT():
         from mw.lib import reverts
         
         xmlDumpFilename = 'eswiki-20160701-pages-meta-history1.xml-p000178030p000229076.7z'
-        if xmlDumpFilename.endswith('.bz2'):
-            import bz2
-            source = bz2.BZ2File(xmlDumpFilename)
-        elif xmlDumpFilename.endswith('.gz'):
-            import gzip
-            source = gzip.open(xmlDumpFilename)
-        elif xmlDumpFilename.endswith('.7z'):
-            import subprocess
-            source = subprocess.Popen('7za e -bd -so %s 2>/dev/null' % xmlDumpFilename, shell=True, stdout=subprocess.PIPE, bufsize=65535).stdout
-        else:
-            source = open(xmlDumpFilename)
-            pass
+        
+        cpageslimit = 10
+        for vandalismDensity in range(150, 160, 10):
+            for vandalismThreshold in range(-1, -11, -1):
+                if xmlDumpFilename.endswith('.bz2'):
+                    import bz2
+                    source = bz2.BZ2File(xmlDumpFilename)
+                elif xmlDumpFilename.endswith('.gz'):
+                    import gzip
+                    source = gzip.open(xmlDumpFilename)
+                elif xmlDumpFilename.endswith('.7z'):
+                    import subprocess
+                    source = subprocess.Popen('7za e -bd -so %s 2>/dev/null' % xmlDumpFilename, shell=True, stdout=subprocess.PIPE, bufsize=65535).stdout
+                else:
+                    source = open(xmlDumpFilename)
 
-        dump = Iterator.from_file(source)
-        cpage = 0
-        cpagelimit = 10
-        for page in dump:
-            if page.namespace != 0:
-                continue
-            if cpage >= cpagelimit:
-                break
-            checksum_revisions = []
-            for revision in page:
-                #print(page.id, page.title, revision.id, revision.contributor.user_text, revision.timestamp)
-                checksum_revisions.append((revision.sha1, {'rev_id': revision.id, 'rev_text': revision.text}))
-            print("\n","-"*50, "\n", page.title, "\n", "-"*50, "\n")
-            
-            rr = list(reverts.detect(checksum_revisions))
-            print("Tiene %d reversiones" % (len(rr)))
-            for r in rr:
-                print('https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (r.reverted_to['rev_id'], r.reverteds[-1]['rev_id']))
-                #pywikibot.showDiff(r.reverted_to['rev_text'], r.reverteds[-1]['rev_text'])
-                change = {}
-                change['text'] = {'old': r.reverted_to['rev_text'], 'new': r.reverteds[-1]['rev_text']}
-                self.getDiff(change=change)
-            cpage += 1
+                dump = Iterator.from_file(source)
+                cpages = 0
+                crevisions = 0
+                creverts = 0
+                falsepositives = 0
+                truepositives = 0
+                for page in dump:
+                    if page.namespace != 0:
+                        continue
+                    if cpages >= cpageslimit:
+                        break
+                    checksum_revisions = []
+                    for revision in page:
+                        #print(page.id, page.title, revision.id, revision.contributor.user_text, revision.timestamp)
+                        checksum_revisions.append((revision.sha1, {'rev_id': revision.id, 'rev_text': revision.text}))
+                    
+                    #print("\n","-"*50, "\n", page.title, "\n", "-"*50, "\n")
+                    
+                    # reversions
+                    rr = list(reverts.detect(checksum_revisions))
+                    #print("%s tiene %d reversiones" % (page.title, len(rr)))
+                    revblacklist = []
+                    for r in rr:
+                        change = {}
+                        change['text'] = {'old': r.reverted_to['rev_text'], 'new': r.reverteds[-1]['rev_text']}
+                        change['length'] = {'old': len(r.reverted_to['rev_text']), 'new': len(r.reverteds[-1]['rev_text'])}
+                        score = self.getScoreFromOldAndNewText(change=change)
+                        revblacklist += [x['rev_id'] for x in r.reverteds]
+                        
+                        if self.isEditVandalism(change=change, score=score, training={'vandalismThreshold': vandalismThreshold, 'vandalismDensity': vandalismDensity}):
+                            truepositives += 1
+                            """print('-'*50)
+                            print('True positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (r.reverted_to['rev_id'], r.reverteds[-1]['rev_id']))
+                            print(score['score'], score['group'])
+                            pywikibot.showDiff(r.reverted_to['rev_text'], r.reverteds[-1]['rev_text'])"""
+                        crevisions += 1
+                        creverts += 1
+                    
+                    # good edits
+                    prev_rev = None
+                    for rev_sha1, rev_props in checksum_revisions:
+                        if rev_props['rev_id'] not in revblacklist:
+                            if prev_rev and not prev_rev['rev_id'] in revblacklist:
+                                change = {}
+                                change['text'] = {'old': prev_rev['rev_text'], 'new': rev_props['rev_text']}
+                                change['length'] = {'old': len(prev_rev['rev_text']), 'new': len(rev_props['rev_text'])}
+                                score = self.getScoreFromOldAndNewText(change=change)
+                                
+                                if self.isEditVandalism(change=change, score=score, training={'vandalismThreshold': vandalismThreshold, 'vandalismDensity': vandalismDensity}):
+                                    falsepositives += 1
+                                    """print('-'*50)
+                                    print('False positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (prev_rev['rev_id'], rev_props['rev_id']))
+                                    print(score['score'], score['group'])
+                                    pywikibot.showDiff(change['text']['old'], change['text']['new'])"""
+                                crevisions += 1
+                        prev_rev = rev_props
+                    cpages += 1
+                
+                print("Pages [%d], Revisions [%d], Reverts [%d, %.1f%%], True positives [%d, %.1f%%], False positives [%d, %0.1f%%], vanThreshold [%d], vanDensity [%d]" % (cpages, crevisions, creverts, creverts/(crevisions/100.0), truepositives, truepositives/(creverts/100.0), falsepositives, falsepositives/((truepositives+falsepositives)/100.0), vandalismThreshold, vandalismDensity))
     
     def rcAPI(self):
         # TODO
@@ -576,12 +615,16 @@ class AVBOT():
         """ Calcula la puntuación para un par de textos al pasarle los filtros """
         """ Calculate score for two texts using filters """
         
-        score = {'score': 0, 'group': 'unknown'}
+        score = {'score': 0, 'group': 'unknown', 'filters': []}
         for ifilter in self.filters:
             m = re.findall(ifilter['compiled'], change['text']['new'])
             for i in m:
                 score['score'] += ifilter['score']
-                score['group'] = ifilter['group']
+                if ifilter['group'] == 'vandalism':
+                    score['group'] = ifilter['group']
+                elif ifilter['group'] == 'test' and score['group'] != 'vandalism':
+                    score['group'] = ifilter['group']
+                score['filters'].append([ifilter['regexp'], i])
             m = re.findall(ifilter['compiled'], change['text']['old'])
             for i in m:
                 score['score'] -= ifilter['score']
@@ -629,14 +672,14 @@ class AVBOT():
                 return True
         return False
     
-    def isEditVandalism(self, change, score=0, training={}):
+    def isEditVandalism(self, change, score, training={}):
         vandalismThreshold = training and training['vandalismThreshold'] or self.vandalismThreshold
         vandalismDensity = training and training['vandalismDensity'] or self.vandalismDensity
-        allowed = (change['length']['new']-change['length']['old'])/(vandalismDensity) * -1
-        if score['group'] == 'vandalism':
+        allowed = change['length']['new'] > change['length']['old'] and ((change['length']['new']-change['length']['old'])/vandalismDensity * -1) or 0
+        if score['score'] < 0 and score['group'] == 'vandalism':
             if score['score'] <= vandalismThreshold:
                 return True
-            elif score['score'] < 0 and score['score'] < allowed:
+            elif score['score'] < allowed:
                 return True 
         return False
     
