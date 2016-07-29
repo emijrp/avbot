@@ -9,9 +9,6 @@
 
 
 
-
-
-
 [ck]+o+m+e+ *(u+n+a+|l+a+|m+i+|t+u+)? *(c+o+n+c+h+a+s*|d+o+[bv]+l+a+d+a+s*|p+e+n+e+s*|p+i+j+a+s*|p+o+l+a+s*|p+o+y+a+s*|v+a+[gj]+i+n+a+s*);;-3;;vandalism
 [ck]+o+m+e+([rs]+e*|r+o+s+)(l+o+|l+a+);;-1;;vandalism#cuidado con Come on http://es.wikipedia.org/w/index.php?diff=prev&oldid=36476273
 [ck]+o+m+e+[dr]*m+e+(l+[ao]+)?;;-1;;vandalism
