@@ -1,119 +1,17 @@
 
-([g-z])\1{4,};;-1;;test #repeticiones de consonantes, aunque el hexadedcimal acaba en la f
-([hg]+u+|w+)e+[bv]+[oó]+n+e*s*;;-2;;vandalism
-([hjw]+o+l+a+s*|a+d+i+[oó]+s+|a+d+i+o+s+i+t+o+|s+a+l+u+d+o+s*) *a+ *(m+i+|e+l+|l+a+|t+o+d+[oa]+[sz]*);;-1;;test #hola a todo el mundo, hola a mi mami
-(\[\[(imagen?|archivo|file)\:){2,};;-10;;test #[[imagen:[[imagen:[[imagen: típico novato pulsando el botón como un poseso
-(asdf?|asfd?){2,};;-1;;t;;
-(c+h+|x)u+l+[ao]+s*;;-1;;vandalism
-(c+h+|x)u+m+i+n+o+s*;;-2;;vandalism
-(cgi|img)\.4chan\.org\/[a-z0-9]{1,3}\/src;;-10;;vandalism#rule 1 & 2
-(ch|x)i[bv]at[ao]s*;;-1;;vandalism
-(ch|x)u+p+a+m+e+ *l+a+s+ *b+o+l+a+s+;;-3;;vandalism
-(ch|x)upolo[gj][ií]a;;-10;;vandalism
-(come|comen|comer|comerse|comete) *(los|tus|sus|mis) *m+o+c+o+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=aleksandr_oparin&diff=25245225&oldid=25245043
-(e+l+|l+a+|l+o+s+|l+a+s+) (m+e+j+o+r+e*s*|p+e+o+r+e*s*)\!;;-1;;vandalism
-(e+l+|l+a+|l+o+s+|l+a+s+) *[kq]+u*e* *(l+[oa]+s*)? *(l+e+e+n*|l+e+a+n*) *(e+s+t+[aeo]+)?;;-1;;vandalism#aunque ya lo arreglé, cuidado http://es.wikipedia.org/w/index.php?title=club_olimpia&diff=16912342&oldid=16909706
-(e+n+[sc]+e+ñ+a+n+d+o+|e+n+[sc]+e+ñ+a+r+) *(1|u+n+[ao]*s*|l+a+|e+l+|l+a+s+|l+o+s+) *(t+e+t+a+s*|c+o+ñ+o+s*|p+o+l+l+a+s*|p+o+y+a+s*|p+i+c+h+a+s*|p+i+x+a+s*);;-2;;vandalism
-(e+r+e+s+|s+o+[iy]+) (u+n+|una+|r+e+);;-1;;vandalism
-(e+s+t*o+ *)?(e+s+|s+o+n) *m+e+n+t+i+r+a+s*;;-1;;vandalism
-(e+s+t+o+[iy]+|t+o+[iy]+) v+a+n+d+a+l+i+[sz]+a+n+d+o+;;-1;;vandalism
-(e+s+|s+o+n+) (m+u+y+ )?(b+o+n+i+t+[ao]+s*|f+e+[ao]+s*);;-1;;vandalism
-(e+s+|s+o+n+) d+e* m+e+n+t+i+r+a+;;-1;;vandalism
-(es|son) pesim[oa]s*;;-1;;vandalism
-(h[aeiou]){6,};;-1;;vandalism#también vale para http://es.wikipedia.org/w/index.php?title=bernardo_o%27higgins&diff=prev&oldid=19750306
-(j+a+l+a+r+|j+a+l+e+n+[ms]+e+) *(l+a+s+)? *b+o+l+a+s+;;-1;;vandalism
-(j[aeiouj]+){3,};;-1;;t;;
-(k+e*|q+u*e*) *h*a+c+e+s+\??;;-1;;vandalism#"que hace" peligroso http://es.wikipedia.org/w/index.php?title=liceo_andr%c3%a9s_bello&diff=prev&oldid=19276961
-(l+e+s*|l+o+s*|t+e*|o+s+) *(a+d+o+r+o+|a+d+o+r+a+m+o+s+|a+m+o+|a+m+a+m+o+s+|q+u*e+r+e+m+o+s*|k+e+r+e+m+o+s*|q+u*i+e+r+o+|k+i+e+r+o+|o+d+i+o+|o+d+i+a+m+o+s+);;-1;;t;;
-(l+o+s+|l+e+s+|o+s+) +(a+m+o+|o+d+i+o+);;-1;;t;;
-(m+i+|t+u+) *(n+o+[vb]+i+[ao]+|v+i+e+j+a+);;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=prev&oldid=24785110
-(ministr[ao]s*|ministerio) de incultura;;-3;;vandalism
-(n+e+w+|o+l+d+) *f+a+g+s*;;-1;;vandalism
-(oe){2,};;-1;;t;;
-(ole){2,};;-1;;t;;
-(p+a+r+t+o+|p+a+r+t+e+s+|p+a+r+t+i+r+s+e+) *(l+a+ +[ck]+a+j+a+|e+l+ +[ck]+u+l+o+);;-1;;vandalism
-(p+o+n+e+r*|h*a+[cs]+e+r*) +l+o+s* +[ck]+u+e+r*n+o+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=25751986&oldid=25751982
-(p+u+t+a+s*|r+a+m+e+r+a+s*) *(b+a+r+a+t+a+s*|g+r+a+t+i+s+);;-1;;vandalism
-(pone|ponía) *en *frente;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=conquista_de_m%c3%a9xico&diff=prev&oldid=35634354
-(q+u*e*|k+e*) *(a+s+[ck]+o+|a+s+q+u+e+r+o+s+[ao]+s*|a+s+q+u+e+r+o+s+i+d+a+d+);;-1;;vandalism
-(q+u*e*|k+e*) *(t+e*|m+e*) *p+a+r+i+[óo]+;;-1;;vandalism
-(q+u*e*|k+e*) +(l+[oa]+s*|o+s+|t+e+) +p+a+r+i+[oó]+;;-1;;vandalism
-(q+u*e*|k+e*) +o+n+d+a+s*;;-1;;t;;
-(q+u+i+e+r+o+|k+i+e+r+o+) (q+u*e+|q+|ke?);;-1;;vandalism
-(r+e+)?c+u+l+[ei]+[áa]+d*[ao]+s*;;-1;;vandalism
-(r+e+)?c+u+l+[ei]+a+n+;;-1;;vandalism
-(r+e+)?c+u+l+[ei]+a+r+(s+e+)?;;-1;;vandalism
-(r+e+)?c+u+l+[ei]+a+r+o+n+;;-1;;vandalism
-(t+a+n+g+a+s*|t+a+n+g+u+i+t+a+s*) *(r+o+j+o+s*|d+e+ *l+e+o+p+a+r+d+o+);;-1;;vandalism
-(t+e+n+e+r+|t+e+n+g+o+) *s+e+x+o+;;-1;;vandalism
-(t+o+c+a+r+[ms]+e+|r+a+s+c+a+r+[ms]+e+) l+[ao]+s* (c+o+j+o+n+e+s*|h+u+e+v+o+s*|p+e+l+o+t+a+s*|p+o+ll+a+|po+y+a+);;-5;;vandalism
-(un|1) (b+e*s+o+|s+a+l+u+d+o+);;-1;;t;;
-.*? [\:\;]\-?[\(\)do]+( |\;\;);;-1;;test #caras, caritas, emoticonos;; al final porque es la separación entre líneas
-.*?\=\= texto de titular \=\=.*?;;-1;;t;;
-.*?felices *reyes.*?;;-100;;vandalismcaso peaje
-.*?feliz *(año|semana santa|navidad).*?;;-100;;vandalismcaso peaje
-.*j+[aeiou]+j+[aeiou]+j+[aeiou]+j+[aeiou]+.*;;-1;;t;;
-.+([a-z])\1{10,}.+;;-1;;test #http://es.wikipedia.org/w/index.php?title=parkour&diff=prev&oldid=23458311 para más seguridad lo separamos de la anterior
-.?\[\[.*?\]\].?;;2;;g;;#los enlaces son buenos
-.?\[\[..\:.*?\]\].?;;3;;g;;#interwikis son buenos
+
 .\(.+\).;;2;;g;;#cosas enre paréntesis (parece texto elaborado)
 0(_0){1,};;-1;;t;;
 69;;5;;g;;#término sexual bien dicho
-[38]\=\=\=+d;;-1;;vandalism
 [\*\#] *[a-z0-9áéíóú]{,15};;3;;g;;#asterisco o almohadilla y una palabra (15 letras max.) o números, luego espacio (en contexto)
 [\/\.]att\.;;5;;g;;#http://es.wikipedia.org/w/index.php?diff=next&oldid=27702263
 [^\.a-z]a+tt+e*;;-1;;test #http://es.wikipedia.org/w/index.php?title=abraham_lincoln&diff=22960097&oldid=22958503 http://es.wikipedia.org/w/index.php?title=wwe_no_mercy&diff=prev&oldid=24423717 http://es.wikipedia.org/w/index.php?title=una_pareja_dispareja&diff=next&oldid=24343827
-[a-z ]+[áéíóú][a-z ]+;;1;;g;;#palabras con tildes son buenas (los vándalos suelen escribir mal)
-[a-z ]\"[a-z ];;2;;g;;#las citas literales pueden contener palabras soeces
-[a-z0-9\_\.\-]+\@(gmail|hotmail|latinmail|live|msn|yahoo);;-1;;test #no poner .com ni similares
-[a-z\-]+\.(net|com|es|mil|edu|org);;2;;g;;#dominios famosos
-[a-zñçáéíóú]{40,};;-2;;test #palabras de 40 letras? no habra muchas
-[aeiouáéíóú]{10,};;-2;;test #cuidado con los id de youtube http://es.wikipedia.org/w/index.php?title=xaloztoc&diff=next&oldid=19278907 subir a 12 por los id de youtube?
-[bcdfghjklmnñpqrstvwxyz]{10,};;-2;;test #repeticiones de consonantes
-[bv]+a+[bv]+o+s+o+s*;;-2;;vandalism#babosa es el animal
-[bv]+a+l+e+ *(h+o+n+g+o+|[bv]+e+r+g+a+|c+a+l+a+[mn]+p+a+);;-3;;vandalism
-[bv]+a+s+t+a+r+d+[ao]+s*;;-2;;vandalism
-[bv]+i+[bv]+l+i+o+t+e+c+a+r+i+o+s*[^a-z0-9]{,5}(q+u+e+|k+e*)[^a-z0-9]{,5}e+[xs]+p+u+l+s+a+n*;;-9999;;vandalismhttp://es.wikipedia.org/w/index.php?title=otto_heinrich_frank&diff=prev&oldid=19810736
-[bv]+i+[bv]+l+i+o+t+e+c+a+r+i+o+s*[^a-z0-9]{,5}[cs]+i+o+n+i+s+t+a+s*;;-9999;;vandalismhttp://es.wikipedia.org/w/index.php?title=otto_heinrich_frank&diff=prev&oldid=19810736
-[bv]+o+l+a+ *d+e* *[cs]e+[bv]+o+;;-1;;vandalism
-[ck]+[oó]+m+o+ *(a+n+d+a+n*|e+s+t+[aá]+[ns]*) *\?+;;-1;;test #tipico saludo
-[ck]+a+(l+l|y)[eé]n?s+e+;;-1;;vandalism
-[ck]+a+(l+l|y)a+t[eé]+;;-1;;vandalism
-[ck]+a+(q+u*|k+)i+t+a+s*;;-1;;vandalism
-[ck]+a+[bv]+e+[zs]+[oó]+n+[ae]*s*;;-1;;vandalism
-[ck]+a+[bv]+r+[óo]+n+[ae]*s*;;-2;;vandalism
-[ck]+a+[bv]+r+o+n+a+d+a+s*;;-2;;vandalism
-[ck]+a+[ck]+a+ d+e+ l+a+ v+a+[ck]+a+;;-1;;vandalism
-[ck]+a+[ck]+a+s*;;-1;;vandalism
-[ck]+a+b+e+[zs]+a+ *d+e* *h*u+e+[vb]+o+;;-1;;vandalism
-[ck]+a+c+h+o+n+d+[ao]+s*;;-2;;vandalism
-[ck]+a+c+h+o+s*;;-1;;vandalism
-[ck]+a+g+[oó]+n+[ae]*s*;;-1;;vandalism
-[ck]+a+g+[oó]+n+e*s*;;-1;;vandalism
-[ck]+a+g+a+d*o+s*;;-1;;vandalism
-[ck]+a+g+a+d+a+s*;;-1;;vandalism
-[ck]+a+g+a+d+e+r+a+s*;;-1;;vandalism
-[ck]+a+g+a+d+i+t+a+s*;;-1;;vandalism
-[ck]+a+g+a+d+o+r+[ae]*s*;;-1;;vandalism
-[ck]+a+g+a+r+ *(l+[aeo]+s*)?;;-2;;vandalism
-[ck]+a+g+a+r+r+o+n*e*s*;;-1;;vandalism
-[ck]+a+g+a+r+s+e+;;-1;;vandalism
-[ck]+a+l+i+e+n+t+a+ *p+o+(ll+|y+)a+s*;;-2;;vandalism
-[ck]+a+le+n+t[oó]+n+a*e*s*;;-1;;vandalism
-[ck]+a+p+u+(l+l|y+)[aio]+s*;;-2;;vandalism
-[ck]+a+q+u*i+t+a+s*;;-1;;vandalism
-[ck]+a+r+a+ *d*e* *(p+a+n+|o+r+t+o+|c+u+l+o+|h+u+e+v+o+n?|n+a+b+o+|p+i+c+h+a+|p+o+l+la+|p+o+y+a+|[bv]+e+r+g+a+);;-1;;vandalism
-[ck]+a+r+a+ *r+o+t+a+s*;;-1;;vandalism
-[ck]+a+r+a+j+[ao]+s*;;-1;;vandalism
-[ck]+a+r+a+s* *(m+[aá]+s+)? *d+u+r+a+s*;;-1;;vandalism
-[ck]+a+s+[ck]+[aá]+r+[sc]+e+l+a+s*;;-2;;vandalism
-[ck]+a+s[ck]+a+r+;;-1;;vandalism
-[ck]+a+x+o+s*;;-1;;vandalism
-[ck]+a+z+u+rr+[ao]+s*;;-1;;vandalism
-[ck]+a[bv]+r+o+n+a+[zs]+[ao]+s*;;-2;;vandalism
-[ck]+e+r+o+t+e+s*;;-1;;vandalism
-[ck]+o+j+[oó]+n+e*s*;;-1;;vandalism
-[ck]+o+l+o+r+[ií]+n+ [ck]+o+l+o+r+a+d+o+;;-1;;vandalism
+
+
+
+
+
+
 [ck]+o+m+e+ *(u+n+a+|l+a+|m+i+|t+u+)? *(c+o+n+c+h+a+s*|d+o+[bv]+l+a+d+a+s*|p+e+n+e+s*|p+i+j+a+s*|p+o+l+a+s*|p+o+y+a+s*|v+a+[gj]+i+n+a+s*);;-3;;vandalism
 [ck]+o+m+e+([rs]+e*|r+o+s+)(l+o+|l+a+);;-1;;vandalism#cuidado con Come on http://es.wikipedia.org/w/index.php?diff=prev&oldid=36476273
 [ck]+o+m+e+[dr]*m+e+(l+[ao]+)?;;-1;;vandalism

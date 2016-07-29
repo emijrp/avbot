@@ -73,7 +73,7 @@ class AVBOT():
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
         
-        self.rcFeed = 'corpus' # Feed mode for recent changes (corpus, stream, irc or api)
+        self.rcFeed = 'stream' # Feed mode for recent changes (corpus, stream, irc or api)
         
         self.ircNetwork = 'irc.wikimedia.org' # IRC network where is the recent changes IRC channel
         self.ircPort = 6667 # IRC network port number
@@ -460,9 +460,13 @@ class AVBOT():
         
         xmlDumpFilename = 'eswiki-20160701-pages-meta-history1.xml-p000178030p000229076.7z'
         
-        cpageslimit = 10
+        cpageslimit = 100
+        verboseTP = False
+        verboseFP = True
         for vandalismDensity in range(150, 160, 10):
-            for vandalismThreshold in range(-1, -11, -1):
+            for vandalismThreshold in [-4]: #range(-10, -11, -1):
+                training = {'vandalismThreshold': vandalismThreshold, 'vandalismDensity': vandalismDensity}
+                
                 if xmlDumpFilename.endswith('.bz2'):
                     import bz2
                     source = bz2.BZ2File(xmlDumpFilename)
@@ -488,28 +492,31 @@ class AVBOT():
                         break
                     checksum_revisions = []
                     for revision in page:
+                        time.sleep(0.01)
                         #print(page.id, page.title, revision.id, revision.contributor.user_text, revision.timestamp)
                         checksum_revisions.append((revision.sha1, {'rev_id': revision.id, 'rev_text': revision.text}))
                     
                     #print("\n","-"*50, "\n", page.title, "\n", "-"*50, "\n")
                     
                     # reversions
-                    rr = list(reverts.detect(checksum_revisions))
+                    revertslist = list(reverts.detect(checksum_revisions))
                     #print("%s tiene %d reversiones" % (page.title, len(rr)))
                     revblacklist = []
-                    for r in rr:
+                    for revert in revertslist:
+                        time.sleep(0.01)
                         change = {}
-                        change['text'] = {'old': r.reverted_to['rev_text'], 'new': r.reverteds[-1]['rev_text']}
-                        change['length'] = {'old': len(r.reverted_to['rev_text']), 'new': len(r.reverteds[-1]['rev_text'])}
+                        change['text'] = {'old': revert.reverted_to['rev_text'], 'new': revert.reverteds[-1]['rev_text']}
+                        change['length'] = {'old': len(revert.reverted_to['rev_text']), 'new': len(revert.reverteds[-1]['rev_text'])}
                         score = self.getScoreFromOldAndNewText(change=change)
-                        revblacklist += [x['rev_id'] for x in r.reverteds]
+                        [revblacklist.append(r['rev_id']) for r in revert.reverteds]
                         
-                        if self.isEditVandalism(change=change, score=score, training={'vandalismThreshold': vandalismThreshold, 'vandalismDensity': vandalismDensity}):
+                        if self.isEditVandalism(change=change, score=score, training=training):
                             truepositives += 1
-                            """print('-'*50)
-                            print('True positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (r.reverted_to['rev_id'], r.reverteds[-1]['rev_id']))
-                            print(score['score'], score['group'])
-                            pywikibot.showDiff(r.reverted_to['rev_text'], r.reverteds[-1]['rev_text'])"""
+                            if verboseTP:
+                                print('-'*50)
+                                print('True positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (revert.reverted_to['rev_id'], revert.reverteds[-1]['rev_id']))
+                                print(score['score'], score['group'])
+                                pywikibot.showDiff(revert.reverted_to['rev_text'], revert.reverteds[-1]['rev_text'])
                         crevisions += 1
                         creverts += 1
                     
@@ -518,17 +525,22 @@ class AVBOT():
                     for rev_sha1, rev_props in checksum_revisions:
                         if rev_props['rev_id'] not in revblacklist:
                             if prev_rev and not prev_rev['rev_id'] in revblacklist:
+                                time.sleep(0.01)
                                 change = {}
                                 change['text'] = {'old': prev_rev['rev_text'], 'new': rev_props['rev_text']}
                                 change['length'] = {'old': len(prev_rev['rev_text']), 'new': len(rev_props['rev_text'])}
                                 score = self.getScoreFromOldAndNewText(change=change)
                                 
-                                if self.isEditVandalism(change=change, score=score, training={'vandalismThreshold': vandalismThreshold, 'vandalismDensity': vandalismDensity}):
+                                if self.isEditVandalism(change=change, score=score, training=training):
                                     falsepositives += 1
-                                    """print('-'*50)
-                                    print('False positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (prev_rev['rev_id'], rev_props['rev_id']))
-                                    print(score['score'], score['group'])
-                                    pywikibot.showDiff(change['text']['old'], change['text']['new'])"""
+                                    if verboseFP:
+                                        print('-'*50)
+                                        print('False positive: https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (prev_rev['rev_id'], rev_props['rev_id']))
+                                        print(score['score'], score['group'])
+                                        for f in score['filters']:
+                                            if f[0]['group'] == 'vandalism':
+                                                print(f[0]['regexp'], '->', f[1])
+                                        pywikibot.showDiff(change['text']['old'], change['text']['new'])
                                 crevisions += 1
                         prev_rev = rev_props
                     cpages += 1
@@ -617,17 +629,18 @@ class AVBOT():
         
         score = {'score': 0, 'group': 'unknown', 'filters': []}
         for ifilter in self.filters:
-            m = re.findall(ifilter['compiled'], change['text']['new'])
+            m = ifilter['compiled'].finditer(change['text']['new'])
             for i in m:
-                score['score'] += ifilter['score']
-                if ifilter['group'] == 'vandalism':
-                    score['group'] = ifilter['group']
-                elif ifilter['group'] == 'test' and score['group'] != 'vandalism':
-                    score['group'] = ifilter['group']
-                score['filters'].append([ifilter['regexp'], i])
-            m = re.findall(ifilter['compiled'], change['text']['old'])
+                if not re.search(ifilter['compiled'], change['text']['old']):
+                    score['score'] += ifilter['score']
+                    if ifilter['group'] == 'vandalism':
+                        score['group'] = ifilter['group']
+                    elif ifilter['group'] == 'test' and score['group'] != 'vandalism':
+                        score['group'] = ifilter['group']
+                    score['filters'].append([ifilter, i.group(0)])
+            """m = ifilter['compiled'].finditer(change['text']['old'])
             for i in m:
-                score['score'] -= ifilter['score']
+                score['score'] -= ifilter['score']"""
         return score
     
     def getScoreFromDiff(self, change):
@@ -723,6 +736,11 @@ class AVBOT():
             self.revertEdit(change)
             self.sendMessage(change, message='blanking')
         elif self.isEditVandalism(change, score=scoretext):
+            print("!!!Es vandalismo")
+            for f in scoretext['filters']:
+                if f[0]['group'] == 'vandalism':
+                    print(f[0]['regexp'], '->', f[1])
+            pywikibot.showDiff(change['text']['old'], change['text']['new'])
             self.revertEdit(change)
             self.sendMessage(change, message='vandalism')
     
