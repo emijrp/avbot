@@ -704,16 +704,21 @@ class AVBOT():
         #TODO
         pass
     
+    def undoHTMLEntities(self, text):
+        text = re.sub(r'&lt;', '<', text)
+        text = re.sub(r'&gt;', '>', text)
+        return text
+    
     def getOldAndNewText(self, change):
         text = {'old': '', 'new': ''}
         query = pywikibot.data.api.Request(parameters={'action': 'parse', 'oldid': change['revision']['old'], 'prop': 'wikitext'}, site=self.site)
         data = query.submit()
         if 'parse' in data and 'wikitext' in data['parse'] and '*' in data['parse']['wikitext']:
-            text['old'] = data['parse']['wikitext']['*']
+            text['old'] = self.undoHTMLEntities(data['parse']['wikitext']['*'])
         query = pywikibot.data.api.Request(parameters={'action': 'parse', 'oldid': change['revision']['new'], 'prop': 'wikitext'}, site=self.site)
         data = query.submit()
         if 'parse' in data and 'wikitext' in data['parse'] and '*' in data['parse']['wikitext']:
-            text['new'] = data['parse']['wikitext']['*']
+            text['new'] = self.undoHTMLEntities(data['parse']['wikitext']['*'])
         return text
     
     def analyseEdit(self, change):
@@ -723,26 +728,26 @@ class AVBOT():
         if change['namespace'] != 0:
             return
         
-        change['diff'] = self.getDiff(change)
-        scorediff = self.getScoreFromDiff(change)
-        change['text'] = self.getOldAndNewText(change)
-        scoretext = self.getScoreFromOldAndNewText(change)
+        change['diff'] = self.getDiff(change=change)
+        scorediff = self.getScoreFromDiff(change=change)
+        change['text'] = self.getOldAndNewText(change=change)
+        scoretext = self.getScoreFromOldAndNewText(change=change)
         print("Score: %s (diff), %s (text)" % (scorediff, scoretext))
         
-        if self.isEditTest(change, score=scoretext):
+        if self.isEditTest(change=change, score=scoretext):
             self.revertEdit(change)
-            self.sendMessage(change, message='test')
-        elif self.isEditBlanking(change):
-            self.revertEdit(change)
-            self.sendMessage(change, message='blanking')
-        elif self.isEditVandalism(change, score=scoretext):
+            self.sendMessage(change=change, message='test')
+        elif self.isEditBlanking(change=change):
+            self.revertEdit(change=change)
+            self.sendMessage(change=change, message='blanking')
+        elif self.isEditVandalism(change=change, score=scoretext):
             print("!!!Es vandalismo")
             for f in scoretext['filters']:
                 if f[0]['group'] == 'vandalism':
                     print(f[0]['regexp'], '->', f[1])
             pywikibot.showDiff(change['text']['old'], change['text']['new'])
-            self.revertEdit(change)
-            self.sendMessage(change, message='vandalism')
+            self.revertEdit(change=change)
+            self.sendMessage(change=change, message='vandalism')
     
     """
 
