@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #TODO
+# https://meta.wikimedia.org/wiki/Research:Content_persistence
 # https://meta.wikimedia.org/wiki/Objective_Revision_Evaluation_Service
 #sameoldid, evitar que cargue siempr y aproveche el oldtext anterior
 #evitar guerras de edicion por clones de avbot, sol: pagina que liste los clones? lin 135 avbotanalysis
@@ -72,7 +73,7 @@ class AVBOT():
         self.wikiFamily = 'wikipedia' # Default wiki family is Wikipedia
         self.site = pywikibot.Site(self.wikiLanguage, self.wikiFamily)
         
-        self.rcFeed = 'stream' # Feed mode for recent changes (stream, irc or api)
+        self.rcFeed = 'stream' # Feed mode for recent changes (corpus, stream, irc or api)
         
         self.ircNetwork = 'irc.wikimedia.org' # IRC network where is the recent changes IRC channel
         self.ircPort = 6667 # IRC network port number
@@ -91,7 +92,6 @@ class AVBOT():
             'reg': 'lightgreen',
             'anon': 'lightyellow', 
         }
-        self.context = r'[ \@\º\ª\·\#\~\$\<\>\/\(\)\'\-\_\:\;\,\.\r\n\?\!\¡\¿\"\=\[\]\|\{\}\+\&]'
         self.msg = {}
         self.testmode = False
         self.dryrun = False # Don't save any edit in wiki
@@ -119,6 +119,8 @@ class AVBOT():
         self.isAliveFile = '%s.%s.alive.txt' % (self.wikiFamily, self.wikiLanguage) # File to check if AVBOT is working
         self.isAliveSeconds = 60 # Touches isAliveFile every X seconds
         self.pidFile = '%s.%s.pid.txt' % (self.wikiFamily, self.wikiLanguage) # File with process ID
+        self.vandalismThreshold = -4
+        self.vandalismDensity = 150
         
     def start(self):
         # Welcome message
@@ -142,14 +144,16 @@ class AVBOT():
         """ Avoid running two or more instances of AVBOT """
         #self.isAlive()
         
-        if self.checkForUpdates():
+        """if self.checkForUpdates():
             pywikibot.output("\n\03{lightred}***New code available***\03{default} Please, update your copy of AVBOT from %s\n" % (self.repo))
             sys.exit()
+        else:
+            print("Your code is updated, no action needed")"""
    
         """ Data loaders """
-        self.loadUsers()
+        #self.loadUsers()
         self.loadFilters()
-        self.loadExclusions()
+        #self.loadExclusions()
         
         """Messages"""
         """avbotload.loadMessages()
@@ -165,6 +169,8 @@ class AVBOT():
             self.rcIRC()
         elif self.rcFeed == 'api':
             self.rcAPI()
+        elif self.rcFeed == 'corpus':
+            self.rcCorpus()
     
     def getLocalVersion(self):
         with open('%s/VERSION' % (self.path)) as f:
@@ -267,7 +273,14 @@ class AVBOT():
         row = row.strip()
         if row and not row.startswith('#'): # Remove comments
             regexp, score, group = row.split(';;')
-            self.filters.append({'group': group, 'compiled': re.compile(r"(?im)%s%s%s" % (self.context, regexp, self.context)), 'regexp': regexp, 'score': score})
+            group = group.split('#')[0].strip() # Remove inline comments
+            if regexp and len(regexp) > 5: # Min len for regexps
+                self.filters.append({
+                    'group': group, 
+                    'compiled': re.compile(r"%s" % (regexp)), 
+                    'regexp': regexp, 
+                    'score': int(score), 
+                    })
     
     def loadExclusions(self):
         """ Carga lista de páginas excluidas """
@@ -382,8 +395,6 @@ class AVBOT():
             self.users[user] = {'groups': userprops['groups'], 'whitelisted': False, 'editcount': userprops['editcount']}
         return self.isUserNewbie(user)
     
-    
-    
     def analyseChange(self, change):
         change['timestamp_utc'] = datetime.datetime.fromtimestamp(change['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
         if change['user'] == self.wikiBotName: # Ignore own edits
@@ -401,21 +412,17 @@ class AVBOT():
             if self.isUserIP(change['user']):
                 line = '\n[%s] %s[[%s]] (%s) edited by \03{lightred}%s\03{default} %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'])
                 pywikibot.output(line)
-                print("SI Deberiamos analizar la edicion de %s porque es IP" % (change['user']))
-                self.analyseEdit(change)
+                self.analyseEdit(change=change)
             elif self.isUserWhiteListed(change['user']):
                 line = '\n[%s] %s[[%s]] (%s) edited by \03{lightblue}%s\03{default} %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], change['server_url'], change['revision']['old'], change['revision']['new'])
-                pywikibot.output(line)
-                print("NO vamos a analizar la edicion de %s porque es WHITELISTED" % (change['user']))
+                #pywikibot.output(line)
             elif self.isUserNewbie(change['user']):
                 line = '\n[%s] %s[[%s]] (%s) edited by \03{lightyellow}%s\03{default} (%s ed.) %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], self.users[change['user']]['editcount'], change['server_url'], change['revision']['old'], change['revision']['new'])
                 pywikibot.output(line)
-                print("SI Deberiamos analizar la edicion de %s porque es novato" % (change['user']))
-                self.analyseEdit(change)
+                self.analyseEdit(change=change)
             else:
                 line = '\n[%s] %s[[%s]] (%s) edited by \03{lightgreen}%s\03{default} (%s ed.) %s/w/index.php?oldid=%s&diff=%s' % (change['timestamp_utc'], edittype and '%s ' % (edittype) or '', change['title'], sizediff, change['user'], self.users[change['user']]['editcount'], change['server_url'], change['revision']['old'], change['revision']['new'])
-                pywikibot.output(line)
-                print("NO vamos a analizar la edicion de %s porque ya no es novato" % (change['user']))
+                #pywikibot.output(line)
             #_thread.start_new_thread(self.analyseEdit, (change,))
         elif change['type'] == 'new':
             line = '[%s] \03{lightred}N\03{default} [[%s]] created by %s' % (change['timestamp_utc'], change['title'], change['user'])
@@ -432,7 +439,7 @@ class AVBOT():
         
         import pywikibot.comms.rcstream as rcstream
         
-        wikimediafamilies = ['wikipedia', 'wiktionary', 'wikibooks', 'wikiversity', 'wikisource', 'wikivoyage']
+        wikimediafamilies = ['wikipedia', 'wiktionary', 'wikibooks', 'wikiversity', 'wikisource', 'wikiquote', 'wikivoyage']
         if self.wikiFamily in wikimediafamilies:
             wikihost = '%s.%s.org' % (self.wikiLanguage, self.wikiFamily)
             rchost = 'stream.wikimedia.org'
@@ -446,6 +453,48 @@ class AVBOT():
             t.stop()
         else:
             print("Error, stream not available for %s:%s" % (self.wikiFamily, self.wikiLanguage))
+    
+    def rcCorpus(self):
+        from mw.xml_dump import Iterator
+        from mw.lib import reverts
+        
+        xmlDumpFilename = 'eswiki-20160701-pages-meta-history1.xml-p000178030p000229076.7z'
+        if xmlDumpFilename.endswith('.bz2'):
+            import bz2
+            source = bz2.BZ2File(xmlDumpFilename)
+        elif xmlDumpFilename.endswith('.gz'):
+            import gzip
+            source = gzip.open(xmlDumpFilename)
+        elif xmlDumpFilename.endswith('.7z'):
+            import subprocess
+            source = subprocess.Popen('7za e -bd -so %s 2>/dev/null' % xmlDumpFilename, shell=True, stdout=subprocess.PIPE, bufsize=65535).stdout
+        else:
+            source = open(xmlDumpFilename)
+            pass
+
+        dump = Iterator.from_file(source)
+        cpage = 0
+        cpagelimit = 10
+        for page in dump:
+            if page.namespace != 0:
+                continue
+            if cpage >= cpagelimit:
+                break
+            checksum_revisions = []
+            for revision in page:
+                #print(page.id, page.title, revision.id, revision.contributor.user_text, revision.timestamp)
+                checksum_revisions.append((revision.sha1, {'rev_id': revision.id, 'rev_text': revision.text}))
+            print("\n","-"*50, "\n", page.title, "\n", "-"*50, "\n")
+            
+            rr = list(reverts.detect(checksum_revisions))
+            print("Tiene %d reversiones" % (len(rr)))
+            for r in rr:
+                print('https://es.wikipedia.org/w/index.php?oldid=%s&diff=%s' % (r.reverted_to['rev_id'], r.reverteds[-1]['rev_id']))
+                #pywikibot.showDiff(r.reverted_to['rev_text'], r.reverteds[-1]['rev_text'])
+                change = {}
+                change['text'] = {'old': r.reverted_to['rev_text'], 'new': r.reverteds[-1]['rev_text']}
+                self.getDiff(change=change)
+            cpage += 1
     
     def rcAPI(self):
         # TODO
@@ -512,7 +561,7 @@ class AVBOT():
     def getDiff(self, change):
         """ Devuelve el diff de dos revisiones """
         """ Return a diff of two revisions """
-        
+
         query = pywikibot.data.api.Request(parameters={'action': 'compare', 'fromrev': change['revision']['old'], 'torev': change['revision']['new']}, site=self.site)
         data = query.submit()
         diff = {'added': [], 'deleted': []}
@@ -523,37 +572,43 @@ class AVBOT():
             diff['deleted'] += re.findall(r'(?im)<td class="diff-deletedline"><div>([^<>]*?)</div></td>', data['compare']['*'])
         return diff
     
-    def getScore(self, diff):
+    def getScoreFromOldAndNewText(self, change):
+        """ Calcula la puntuación para un par de textos al pasarle los filtros """
+        """ Calculate score for two texts using filters """
+        
+        score = {'score': 0, 'group': 'unknown'}
+        for ifilter in self.filters:
+            m = re.findall(ifilter['compiled'], change['text']['new'])
+            for i in m:
+                score['score'] += ifilter['score']
+                score['group'] = ifilter['group']
+            m = re.findall(ifilter['compiled'], change['text']['old'])
+            for i in m:
+                score['score'] -= ifilter['score']
+        return score
+    
+    def getScoreFromDiff(self, change):
         """ Calcula la puntuación para un diff al pasarle los filtros """
         """ Calculate score for diff using filters """
         
-        score = {
-            'test': {'added_score': 0, 'deleted_score': 0}, 
-            'vandalism': {'added_score': 0, 'deleted_score': 0}, 
-            'global': {'score': 0, 'group': 'unknown'}, 
-        }
+        score = {'score': 0, 'group': 'unknown'}
         for ifilter in self.filters:
-            for iadded in diff['added']:
+            for iadded in change['diff']['added']:
                 m = re.findall(ifilter['compiled'], iadded)
                 for i in m:
-                    print("!!!Añadido %s (%s score)" % (ifilter['regexp'], ifilter['score']))
-                    score[ifilter['group']]['added_score'] += ifilter['score']
-            for ideleted in diff['deleted']:
+                    score['score'] += ifilter['score']
+                    score['group'] = ifilter['group']
+            for ideleted in change['diff']['deleted']:
                 m = re.findall(ifilter['compiled'], ideleted)
                 for i in m:
-                    print("!!!Eliminado %s (%s score)" % (ifilter['regexp'], ifilter['score'] * -1))
-                    score[ifilter['group']]['deleted_score'] += ifilter['score'] * -1
-        
-        score['global']['score'] = (score['test']['added_score'] + score['vandalism']['added_score']) + \
-                                   (score['test']['deleted_score'] + score['vandalism']['deleted_score'])
-        score['global']['group'] = score['test']['added_score'] <= score['vandalism']['added_score'] and 'test' or 'vandalism'
+                    score['score'] -= ifilter['score']
         return score
     
     def revertEdit(self, change, alledits=False):
         """ Revierte una edición de un usuario o todas sus ediciones """
         """ Revert one or all edits by a user """
         
-        print("---> Reverting %s edit(s) by %s" % (change['revision']['new'], change['user']))
+        print("---> DEMO: Reverting %s edit(s) by %s" % (change['revision']['new'], change['user']))
         pass
     
     def isEditBlanking(self, change):
@@ -574,32 +629,57 @@ class AVBOT():
                 return True
         return False
     
-    def isEditVandalism(self, change, score):
-        vandalismthreshold = -4
-        vandalismdensity = 150
-        if score['global']['group'] == 'vandalism':
-            if score['global']['score'] <= vandalismthreshold:
+    def isEditVandalism(self, change, score=0, training={}):
+        vandalismThreshold = training and training['vandalismThreshold'] or self.vandalismThreshold
+        vandalismDensity = training and training['vandalismDensity'] or self.vandalismDensity
+        allowed = (change['length']['new']-change['length']['old'])/(vandalismDensity) * -1
+        if score['group'] == 'vandalism':
+            if score['score'] <= vandalismThreshold:
                 return True
-            elif score['global']['score'] < 0 and 
+            elif score['score'] < 0 and score['score'] < allowed:
+                return True 
         return False
+    
+    def isEditTest(self, change, score, training={}):
+        #TODO
+        return False
+    
+    def sendMessage(self, change, message=''):
+        #TODO
+        pass
+    
+    def getOldAndNewText(self, change):
+        text = {'old': '', 'new': ''}
+        query = pywikibot.data.api.Request(parameters={'action': 'parse', 'oldid': change['revision']['old'], 'prop': 'wikitext'}, site=self.site)
+        data = query.submit()
+        if 'parse' in data and 'wikitext' in data['parse'] and '*' in data['parse']['wikitext']:
+            text['old'] = data['parse']['wikitext']['*']
+        query = pywikibot.data.api.Request(parameters={'action': 'parse', 'oldid': change['revision']['new'], 'prop': 'wikitext'}, site=self.site)
+        data = query.submit()
+        if 'parse' in data and 'wikitext' in data['parse'] and '*' in data['parse']['wikitext']:
+            text['new'] = data['parse']['wikitext']['*']
+        return text
     
     def analyseEdit(self, change):
         """ Analiza una edición """
         """ Analyse one edit """
         
-        diff = self.getDiff(change)
-        change['diff'] = diff
-        score = self.getScore(diff)
-        print("Score: %s" % (score))
+        if change['namespace'] != 0:
+            return
         
-        # calcular score general o por tipos mejor?
-        if self.isEditTest(change, score):
+        change['diff'] = self.getDiff(change)
+        scorediff = self.getScoreFromDiff(change)
+        change['text'] = self.getOldAndNewText(change)
+        scoretext = self.getScoreFromOldAndNewText(change)
+        print("Score: %s (diff), %s (text)" % (scorediff, scoretext))
+        
+        if self.isEditTest(change, score=scoretext):
             self.revertEdit(change)
             self.sendMessage(change, message='test')
         elif self.isEditBlanking(change):
             self.revertEdit(change)
             self.sendMessage(change, message='blanking')
-        elif self.isEditVandalism(change, score):
+        elif self.isEditVandalism(change, score=scoretext):
             self.revertEdit(change)
             self.sendMessage(change, message='vandalism')
     

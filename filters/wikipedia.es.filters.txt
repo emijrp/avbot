@@ -1,10 +1,35 @@
-([A-Za-z])\1{9,};;-1;;vandalism
-(e+l+|l+a|l+o+s+|l+a+s+) m+e+j+o+r+e*s*;;-1;;vandalism
-g+u+a+p+[oa]+s*;;-1;;vandalism
-(l+e+|t+e+) g+u+s+t+a+s*;;-1;;vandalism
-m+i+e+r+d+a+s*;;-1;;vandalism
-p+o+l+l+a+s*;;-1;;vandalism
-t+[íi]+[oa]+s*;;-1;;vandalism
-t+o+n+t+[oa]+s*;;-1;;vandalism
-'''Texto en negrita''';;-1;;test
-''Texto en cursiva'';;-1;;test
+(?im)\b1234567890?;;-1;;vandalism
+(?im)\b([A-Za-z0-9,\.])\1{9,}\b;;-1;;vandalism
+(?im)\b(e+l+|l+a|l+o+s+|l+a+s+) m+e+j+o+r+e*s*\b;;-1;;vandalism
+(?im)\bg+u+a+p+[oa]+s*\b;;-1;;vandalism
+(?im)\b(l+e+|t+e+) g+u+s+t+a+s*\b;;-1;;vandalism
+(?im)\bm+i+e+r+d+a+s*\b;;-1;;vandalism
+(?im)\bp+o+l+l+a+s*\b;;-1;;vandalism
+(?im)\bt+[íi]+[oa]+s*\b;;-1;;vandalism
+(?im)\bt+o+n+t+[oa]+s*\b;;-1;;vandalism
+(?im)\b'''Texto en negrita'''\b;;-1;;test
+(?im)\b''Texto en cursiva''\b;;-1;;test
+(?im)<ref>;;+1;;good
+(?im)<ref name;;+1;;good
+(?im)\[\[[^\[\]]+\]\];;+1;;good
+#(?im)\b(redirect)\b;;+1;;good
+(?im)\{\{reflist\}\};;+1;;good
+(?im)\balign=;;+1;;good
+
+(?im)\bla teta asustada\b;;1;;good #película
+(?im)\bs+o+n+ *(u+n+a+|1) *p+a+n+d+a+ *d+e*\b;;-1;;vandalism #son una panda de hijos de puta
+(?im)(19|20)\d\d\b;;1;;good #años actuales
+
+(?im)\b([\!\¡\?\¿])\1{2,}\b;;-1;;test #repeticiones de ??? !!!!, hay contrapeso para [[\?+]] (fecha desconocida)
+(?im)\b([\.\,])\1{4,}\b;;-1;;test #cinco para dar mayor seguridad, 4 puntos suspensivos puede ser un error
+(?im)\b([a-z])\1{6,}\b;;-1;;test #cuidado con los colores rgb #bbbbbb es valido, mínimo 7 repeticiones
+(?im)\b([a-záéíóúñç]{2,})\1{4,}\b;;-1;;test #nananana, lalalala, rorororo, jasjasjasjas minimo 4 repeticiones para estar seguro http://es.wikipedia.org/w/index.php?title=david_tavar%c3%a9&diff=prev&oldid=19229039
+(?im)\b([a-záéíóúñç]{3,} )\1{4,}\b;;-1;;test #repeticiones (5 ó más) de cadenas de 3 o más caracteres, muy muy muy muy muy muy
+(?im)\b([bcdfghjklmnñpqrstvwxyz])\1{14,}\b;;-1;;vandalism
+(?im)\b([cs]+h+|x)u+(ch|x)+a+s*\b;;-1;;vandalism
+(?im)\b([cs]+h+|x+)u+p+[ao]+ *(c+o+ñ+o+s*|c+o+n+c+h+a+s*|f+a+l+o+s*|n+a+[bv]+o+s*|p+i+c+h+a+s*|p+i+[ck]+o+s*|p+i+x+a+s*|p+i+j+a+s*|po+l+la+s*|p+o+r+o+n+g+a+s*|p+o+y+a+s*|[vb]+e+r+g+a+s*)\b;;-1;;vandalism
+(?im)\b([cs]+h+|x+)u+p+a+[dr]*m+e+\b;;-1;;vandalism
+(?im)\b([cs]+h+|x+)u+p+a+m+e+\b;;-1;;vandalism
+(?im)\b([cs]+h+|x+)u+p+a+m+e+l+[ao]+\b;;-1;;vandalism
+(?im)\b([cs]+h+|x+)u+p+e+n+(m+e+|s+e+)?l+[aeo]+\b;;-1;;vandalism
+

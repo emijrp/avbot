@@ -1,12 +1,21 @@
-a+m+a+z+i+n+g;;-1;;vandalism
-c+o+c+k+s*;;-1;;vandalism
-f+a+g+g+o+t+;;-1;;vandalism
-f+u+n+n+y;;-1;;vandalism
-p+u+s+s+y+;;-1;;vandalism
-p+u+s+s+i+e+s+;;-1;;vandalism
-s+h+i+t+;;-1;;vandalism
-s+i+l+l+y+;;-1;;vandalism
-s+t+u+p+i+d+;;-1;;vandalism
-s+u+c+k+s*;;-1;;vandalism
-'''Bold text''';;-1;;test
-''Italic text'';;-1;;test
+#bad
+(?im)\b([A-Za-z])\1{9,}\b;;-1;;vandalism
+(?im)\ba+m+a+z+i+n+g\b;;-1;;vandalism
+(?im)\bc+o+c+k+s*\b;;-1;;vandalism
+(?im)\bf+a+g+g+o+t+\b;;-1;;vandalism
+(?im)\bf+u+n+n+y\b;;-1;;vandalism
+(?im)\bp+u+s+s+y+\b;;-1;;vandalism
+(?im)\bp+u+s+s+i+e+s+\b;;-1;;vandalism
+(?im)\bs+h+i+t+\b;;-1;;vandalism
+(?im)\bs+i+l+l+y+\b;;-1;;vandalism
+(?im)\bs+t+u+p+i+d+\b;;-1;;vandalism
+(?im)\bs+u+c+k+s*\b;;-1;;vandalism
+(?im)\b'''Bold text'''\b;;-1;;test
+(?im)\b''Italic text''\b;;-1;;test
+
+#good
+(?im)<ref>;;+1;;good
+(?im)<ref name;;+1;;good
+(?im)\[\[[^\[\]]+\]\];;+1;;good
+#(?im)\b(redirect)\b;;+1;;good
+(?im)\{\{reflist\}\};;+1;;good

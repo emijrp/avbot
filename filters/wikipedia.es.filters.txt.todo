@@ -1,0 +1,865 @@
+
+([g-z])\1{4,};;-1;;test #repeticiones de consonantes, aunque el hexadedcimal acaba en la f
+([hg]+u+|w+)e+[bv]+[oó]+n+e*s*;;-2;;vandalism
+([hjw]+o+l+a+s*|a+d+i+[oó]+s+|a+d+i+o+s+i+t+o+|s+a+l+u+d+o+s*) *a+ *(m+i+|e+l+|l+a+|t+o+d+[oa]+[sz]*);;-1;;test #hola a todo el mundo, hola a mi mami
+(\[\[(imagen?|archivo|file)\:){2,};;-10;;test #[[imagen:[[imagen:[[imagen: típico novato pulsando el botón como un poseso
+(asdf?|asfd?){2,};;-1;;t;;
+(c+h+|x)u+l+[ao]+s*;;-1;;vandalism
+(c+h+|x)u+m+i+n+o+s*;;-2;;vandalism
+(cgi|img)\.4chan\.org\/[a-z0-9]{1,3}\/src;;-10;;vandalism#rule 1 & 2
+(ch|x)i[bv]at[ao]s*;;-1;;vandalism
+(ch|x)u+p+a+m+e+ *l+a+s+ *b+o+l+a+s+;;-3;;vandalism
+(ch|x)upolo[gj][ií]a;;-10;;vandalism
+(come|comen|comer|comerse|comete) *(los|tus|sus|mis) *m+o+c+o+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=aleksandr_oparin&diff=25245225&oldid=25245043
+(e+l+|l+a+|l+o+s+|l+a+s+) (m+e+j+o+r+e*s*|p+e+o+r+e*s*)\!;;-1;;vandalism
+(e+l+|l+a+|l+o+s+|l+a+s+) *[kq]+u*e* *(l+[oa]+s*)? *(l+e+e+n*|l+e+a+n*) *(e+s+t+[aeo]+)?;;-1;;vandalism#aunque ya lo arreglé, cuidado http://es.wikipedia.org/w/index.php?title=club_olimpia&diff=16912342&oldid=16909706
+(e+n+[sc]+e+ñ+a+n+d+o+|e+n+[sc]+e+ñ+a+r+) *(1|u+n+[ao]*s*|l+a+|e+l+|l+a+s+|l+o+s+) *(t+e+t+a+s*|c+o+ñ+o+s*|p+o+l+l+a+s*|p+o+y+a+s*|p+i+c+h+a+s*|p+i+x+a+s*);;-2;;vandalism
+(e+r+e+s+|s+o+[iy]+) (u+n+|una+|r+e+);;-1;;vandalism
+(e+s+t*o+ *)?(e+s+|s+o+n) *m+e+n+t+i+r+a+s*;;-1;;vandalism
+(e+s+t+o+[iy]+|t+o+[iy]+) v+a+n+d+a+l+i+[sz]+a+n+d+o+;;-1;;vandalism
+(e+s+|s+o+n+) (m+u+y+ )?(b+o+n+i+t+[ao]+s*|f+e+[ao]+s*);;-1;;vandalism
+(e+s+|s+o+n+) d+e* m+e+n+t+i+r+a+;;-1;;vandalism
+(es|son) pesim[oa]s*;;-1;;vandalism
+(h[aeiou]){6,};;-1;;vandalism#también vale para http://es.wikipedia.org/w/index.php?title=bernardo_o%27higgins&diff=prev&oldid=19750306
+(j+a+l+a+r+|j+a+l+e+n+[ms]+e+) *(l+a+s+)? *b+o+l+a+s+;;-1;;vandalism
+(j[aeiouj]+){3,};;-1;;t;;
+(k+e*|q+u*e*) *h*a+c+e+s+\??;;-1;;vandalism#"que hace" peligroso http://es.wikipedia.org/w/index.php?title=liceo_andr%c3%a9s_bello&diff=prev&oldid=19276961
+(l+e+s*|l+o+s*|t+e*|o+s+) *(a+d+o+r+o+|a+d+o+r+a+m+o+s+|a+m+o+|a+m+a+m+o+s+|q+u*e+r+e+m+o+s*|k+e+r+e+m+o+s*|q+u*i+e+r+o+|k+i+e+r+o+|o+d+i+o+|o+d+i+a+m+o+s+);;-1;;t;;
+(l+o+s+|l+e+s+|o+s+) +(a+m+o+|o+d+i+o+);;-1;;t;;
+(m+i+|t+u+) *(n+o+[vb]+i+[ao]+|v+i+e+j+a+);;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=prev&oldid=24785110
+(ministr[ao]s*|ministerio) de incultura;;-3;;vandalism
+(n+e+w+|o+l+d+) *f+a+g+s*;;-1;;vandalism
+(oe){2,};;-1;;t;;
+(ole){2,};;-1;;t;;
+(p+a+r+t+o+|p+a+r+t+e+s+|p+a+r+t+i+r+s+e+) *(l+a+ +[ck]+a+j+a+|e+l+ +[ck]+u+l+o+);;-1;;vandalism
+(p+o+n+e+r*|h*a+[cs]+e+r*) +l+o+s* +[ck]+u+e+r*n+o+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=25751986&oldid=25751982
+(p+u+t+a+s*|r+a+m+e+r+a+s*) *(b+a+r+a+t+a+s*|g+r+a+t+i+s+);;-1;;vandalism
+(pone|ponía) *en *frente;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=conquista_de_m%c3%a9xico&diff=prev&oldid=35634354
+(q+u*e*|k+e*) *(a+s+[ck]+o+|a+s+q+u+e+r+o+s+[ao]+s*|a+s+q+u+e+r+o+s+i+d+a+d+);;-1;;vandalism
+(q+u*e*|k+e*) *(t+e*|m+e*) *p+a+r+i+[óo]+;;-1;;vandalism
+(q+u*e*|k+e*) +(l+[oa]+s*|o+s+|t+e+) +p+a+r+i+[oó]+;;-1;;vandalism
+(q+u*e*|k+e*) +o+n+d+a+s*;;-1;;t;;
+(q+u+i+e+r+o+|k+i+e+r+o+) (q+u*e+|q+|ke?);;-1;;vandalism
+(r+e+)?c+u+l+[ei]+[áa]+d*[ao]+s*;;-1;;vandalism
+(r+e+)?c+u+l+[ei]+a+n+;;-1;;vandalism
+(r+e+)?c+u+l+[ei]+a+r+(s+e+)?;;-1;;vandalism
+(r+e+)?c+u+l+[ei]+a+r+o+n+;;-1;;vandalism
+(t+a+n+g+a+s*|t+a+n+g+u+i+t+a+s*) *(r+o+j+o+s*|d+e+ *l+e+o+p+a+r+d+o+);;-1;;vandalism
+(t+e+n+e+r+|t+e+n+g+o+) *s+e+x+o+;;-1;;vandalism
+(t+o+c+a+r+[ms]+e+|r+a+s+c+a+r+[ms]+e+) l+[ao]+s* (c+o+j+o+n+e+s*|h+u+e+v+o+s*|p+e+l+o+t+a+s*|p+o+ll+a+|po+y+a+);;-5;;vandalism
+(un|1) (b+e*s+o+|s+a+l+u+d+o+);;-1;;t;;
+.*? [\:\;]\-?[\(\)do]+( |\;\;);;-1;;test #caras, caritas, emoticonos;; al final porque es la separación entre líneas
+.*?\=\= texto de titular \=\=.*?;;-1;;t;;
+.*?felices *reyes.*?;;-100;;vandalismcaso peaje
+.*?feliz *(año|semana santa|navidad).*?;;-100;;vandalismcaso peaje
+.*j+[aeiou]+j+[aeiou]+j+[aeiou]+j+[aeiou]+.*;;-1;;t;;
+.+([a-z])\1{10,}.+;;-1;;test #http://es.wikipedia.org/w/index.php?title=parkour&diff=prev&oldid=23458311 para más seguridad lo separamos de la anterior
+.?\[\[.*?\]\].?;;2;;g;;#los enlaces son buenos
+.?\[\[..\:.*?\]\].?;;3;;g;;#interwikis son buenos
+.\(.+\).;;2;;g;;#cosas enre paréntesis (parece texto elaborado)
+0(_0){1,};;-1;;t;;
+69;;5;;g;;#término sexual bien dicho
+[38]\=\=\=+d;;-1;;vandalism
+[\*\#] *[a-z0-9áéíóú]{,15};;3;;g;;#asterisco o almohadilla y una palabra (15 letras max.) o números, luego espacio (en contexto)
+[\/\.]att\.;;5;;g;;#http://es.wikipedia.org/w/index.php?diff=next&oldid=27702263
+[^\.a-z]a+tt+e*;;-1;;test #http://es.wikipedia.org/w/index.php?title=abraham_lincoln&diff=22960097&oldid=22958503 http://es.wikipedia.org/w/index.php?title=wwe_no_mercy&diff=prev&oldid=24423717 http://es.wikipedia.org/w/index.php?title=una_pareja_dispareja&diff=next&oldid=24343827
+[a-z ]+[áéíóú][a-z ]+;;1;;g;;#palabras con tildes son buenas (los vándalos suelen escribir mal)
+[a-z ]\"[a-z ];;2;;g;;#las citas literales pueden contener palabras soeces
+[a-z0-9\_\.\-]+\@(gmail|hotmail|latinmail|live|msn|yahoo);;-1;;test #no poner .com ni similares
+[a-z\-]+\.(net|com|es|mil|edu|org);;2;;g;;#dominios famosos
+[a-zñçáéíóú]{40,};;-2;;test #palabras de 40 letras? no habra muchas
+[aeiouáéíóú]{10,};;-2;;test #cuidado con los id de youtube http://es.wikipedia.org/w/index.php?title=xaloztoc&diff=next&oldid=19278907 subir a 12 por los id de youtube?
+[bcdfghjklmnñpqrstvwxyz]{10,};;-2;;test #repeticiones de consonantes
+[bv]+a+[bv]+o+s+o+s*;;-2;;vandalism#babosa es el animal
+[bv]+a+l+e+ *(h+o+n+g+o+|[bv]+e+r+g+a+|c+a+l+a+[mn]+p+a+);;-3;;vandalism
+[bv]+a+s+t+a+r+d+[ao]+s*;;-2;;vandalism
+[bv]+i+[bv]+l+i+o+t+e+c+a+r+i+o+s*[^a-z0-9]{,5}(q+u+e+|k+e*)[^a-z0-9]{,5}e+[xs]+p+u+l+s+a+n*;;-9999;;vandalismhttp://es.wikipedia.org/w/index.php?title=otto_heinrich_frank&diff=prev&oldid=19810736
+[bv]+i+[bv]+l+i+o+t+e+c+a+r+i+o+s*[^a-z0-9]{,5}[cs]+i+o+n+i+s+t+a+s*;;-9999;;vandalismhttp://es.wikipedia.org/w/index.php?title=otto_heinrich_frank&diff=prev&oldid=19810736
+[bv]+o+l+a+ *d+e* *[cs]e+[bv]+o+;;-1;;vandalism
+[ck]+[oó]+m+o+ *(a+n+d+a+n*|e+s+t+[aá]+[ns]*) *\?+;;-1;;test #tipico saludo
+[ck]+a+(l+l|y)[eé]n?s+e+;;-1;;vandalism
+[ck]+a+(l+l|y)a+t[eé]+;;-1;;vandalism
+[ck]+a+(q+u*|k+)i+t+a+s*;;-1;;vandalism
+[ck]+a+[bv]+e+[zs]+[oó]+n+[ae]*s*;;-1;;vandalism
+[ck]+a+[bv]+r+[óo]+n+[ae]*s*;;-2;;vandalism
+[ck]+a+[bv]+r+o+n+a+d+a+s*;;-2;;vandalism
+[ck]+a+[ck]+a+ d+e+ l+a+ v+a+[ck]+a+;;-1;;vandalism
+[ck]+a+[ck]+a+s*;;-1;;vandalism
+[ck]+a+b+e+[zs]+a+ *d+e* *h*u+e+[vb]+o+;;-1;;vandalism
+[ck]+a+c+h+o+n+d+[ao]+s*;;-2;;vandalism
+[ck]+a+c+h+o+s*;;-1;;vandalism
+[ck]+a+g+[oó]+n+[ae]*s*;;-1;;vandalism
+[ck]+a+g+[oó]+n+e*s*;;-1;;vandalism
+[ck]+a+g+a+d*o+s*;;-1;;vandalism
+[ck]+a+g+a+d+a+s*;;-1;;vandalism
+[ck]+a+g+a+d+e+r+a+s*;;-1;;vandalism
+[ck]+a+g+a+d+i+t+a+s*;;-1;;vandalism
+[ck]+a+g+a+d+o+r+[ae]*s*;;-1;;vandalism
+[ck]+a+g+a+r+ *(l+[aeo]+s*)?;;-2;;vandalism
+[ck]+a+g+a+r+r+o+n*e*s*;;-1;;vandalism
+[ck]+a+g+a+r+s+e+;;-1;;vandalism
+[ck]+a+l+i+e+n+t+a+ *p+o+(ll+|y+)a+s*;;-2;;vandalism
+[ck]+a+le+n+t[oó]+n+a*e*s*;;-1;;vandalism
+[ck]+a+p+u+(l+l|y+)[aio]+s*;;-2;;vandalism
+[ck]+a+q+u*i+t+a+s*;;-1;;vandalism
+[ck]+a+r+a+ *d*e* *(p+a+n+|o+r+t+o+|c+u+l+o+|h+u+e+v+o+n?|n+a+b+o+|p+i+c+h+a+|p+o+l+la+|p+o+y+a+|[bv]+e+r+g+a+);;-1;;vandalism
+[ck]+a+r+a+ *r+o+t+a+s*;;-1;;vandalism
+[ck]+a+r+a+j+[ao]+s*;;-1;;vandalism
+[ck]+a+r+a+s* *(m+[aá]+s+)? *d+u+r+a+s*;;-1;;vandalism
+[ck]+a+s+[ck]+[aá]+r+[sc]+e+l+a+s*;;-2;;vandalism
+[ck]+a+s[ck]+a+r+;;-1;;vandalism
+[ck]+a+x+o+s*;;-1;;vandalism
+[ck]+a+z+u+rr+[ao]+s*;;-1;;vandalism
+[ck]+a[bv]+r+o+n+a+[zs]+[ao]+s*;;-2;;vandalism
+[ck]+e+r+o+t+e+s*;;-1;;vandalism
+[ck]+o+j+[oó]+n+e*s*;;-1;;vandalism
+[ck]+o+l+o+r+[ií]+n+ [ck]+o+l+o+r+a+d+o+;;-1;;vandalism
+[ck]+o+m+e+ *(u+n+a+|l+a+|m+i+|t+u+)? *(c+o+n+c+h+a+s*|d+o+[bv]+l+a+d+a+s*|p+e+n+e+s*|p+i+j+a+s*|p+o+l+a+s*|p+o+y+a+s*|v+a+[gj]+i+n+a+s*);;-3;;vandalism
+[ck]+o+m+e+([rs]+e*|r+o+s+)(l+o+|l+a+);;-1;;vandalism#cuidado con Come on http://es.wikipedia.org/w/index.php?diff=prev&oldid=36476273
+[ck]+o+m+e+[dr]*m+e+(l+[ao]+)?;;-1;;vandalism
+[ck]+o+m+e+r+ *(p+o+l+l+a+s*|[ck]+o+ñ+o+s*);;-1;;vandalism
+[ck]+o+n+([cs]+h+|x+)[ae]+s* *d+e* *(l+a+|m+i+|s+u+|t+u+) *(l+o+r+a+|m+a+d*r+e+s*|a+[bv]+u+e+l+[ao]+s*|p+a+d+r+e+s*);;-1;;vandalism
+[ck]+o+n+(c+h+|x+)u+d+[ao]+s*;;-1;;vandalism
+[ck]+o+n+[cs]+h+[ae]+ *[st]+u+ *m+a+r+e+s*;;-2;;vandalism#http://es.wikipedia.org/w/index.php?title=muro_de_berl%c3%adn&diff=prev&oldid=24588823
+[ck]+o+r+n+u+d+[ao]+s*;;-1;;vandalism
+[ck]+o+r+r+e+r+o+s+;;-1;;vandalism
+[ck]+o+r+re+r+s+e+;;-1;;vandalism
+[ck]+o+ñ+i+t+o+s*;;-1;;vandalism
+[ck]+o+ñ+o+s*;;-2;;vandalism
+[ck]+u+[ck]+a+s*;;-1;;vandalism
+[ck]+u+a+[ck]+s*;;-1;;t;;
+[ck]+u+l+[ei]+a+d*o*s*;;-1;;vandalism
+[ck]+u+l+[ei]+a+d+[ao]+s*;;-1;;vandalism
+[ck]+u+l+[ei]+a+r+s*e*;;-1;;vandalism
+[ck]+u+l+[ei]+r+[ao]+s*;;-1;;vandalism
+[ck]+u+l+[ei]+r+[ií]+s+i+m+[ao]+s*;;-1;;vandalism
+[ck]+u+l+i+t+o+s*;;-1;;vandalism
+[ck]+u+l+o+n+e+s+;;-1;;vandalism
+[ck]+u+l+o+s* *[ck]+a+g+a+d*o+s*;;-2;;vandalism
+[ck]+u+l+o+s*;;-1;;vandalism#cullo http://es.wikipedia.org/w/index.php?title=a_little_bit_longer&diff=prev&oldid=19276988
+[ck]+u+ñ+a+o+s*;;-1;;vandalism#el cuñaooooooo
+[ck]omo *(la|el) *m[ií][ao];;-1;;p;;#http://es.wikipedia.org/w/index.php?title=organigrama&diff=prev&oldid=35879433
+[cz]+i+p+[o0]+t+[e€];;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=complemento_circunstancial&diff=32594529&oldid=32594390
+[gj]+i+l+i+ *p+o+(l+|y+)a+s*;;-2;;vandalism
+[gj]+i+l+i+ *p+o+(l+|y+)e+[csz]e+s*;;-2;;vandalism
+[hjw]+o+l+a+s*;;-1;;t;;
+[iy]o+ *s+o+[iy]+;;-1;;t;;
+[kq]u*e* (t+e*|o+s+);;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=next&oldid=22701696
+[sz]+a+l+u+ *2+;;-1;;vandalism
+[sz]+o+p+l+a+ *p+o+(ll+|y+)a+s*;;-1;;vandalism
+[vb]+a+(y+|l+l+)a+n+[sc]+e+ +a+;;-1;;vandalism
+[vb]+a+[gj]+i+n+a+s*;;-1;;vandalism
+[vb]+a+c+a+ *b+u+r+r+[ao]+s*;;-1;;vandalism
+[vb]+a+l+e+ *[vb]+e+r+[gj]+a+s*;;-1;;vandalism
+[vb]+a+l+e+ *h*o+n+g+o+s*;;-1;;vandalism
+[vb]+a+l+e+ +m+a+d+r+e+;;-1;;t;;
+[vb]+a+le+ *(p+i+[ck]+o+|[vb]+e+rga+s*);;-2;;vandalism
+[vb]+e+r+g+a+s*;;-2;;vandalism
+[vb]+e+r+g+u+d+[ao]+s*;;-2;;vandalism
+[vb]+i+[cs]+i+t+e+n+ *m+i+;;-1;;vandalism
+[vb]+i+[vb]+a+ (la|el|[iy]+o+|españa+|colombia+|m[eé][jx]ico+|per[uú]|chile+|argentina+|usa);;-1;;vandalism
+[vb]+o+[yi]+ *a+ *m+a+t+a+r+;;-1;;vandalism
+[vb]+o+m+i+t+a+r+[íi]*[aá]+s*;;-1;;vandalism
+[vb]+o+m+i+t+i+[vb]+[ao]+s*;;-1;;vandalism
+[vb]+o+s+o+t+r+o+s+ *s+o+[iy]+s+;;-1;;vandalism
+[vb][aá]+(y|ll)a+nse+ *a+;;-1;;vandalism
+[vb]oñiga cient[ií]fica;;-9999;;vandalism
+[ww]ikipedia tiene un c[aá]ncer;;-9999;;vandalism
+[yi]+o+ *[ck]+r+e+o+;;-1;;t;;
+\";;2;;g;;#a ver si sirve para cosas como esta http://es.wikipedia.org/w/index.php?diff=next&oldid=18539105
+\&lt\;math\&gt\;\&lt\;math\&gt\;.;;-1;;test #.para evitar error al hacer split
+\&lt\;math\&gt\;escribe aquí una fórmula\&lt\;\/math\>;-1;;t;;
+\&lt\;nowiki\&gt\;aquí inserta texto sin formato\&lt\;\/nowiki\>;-1;;t;;
+\&lt\;ref;;3;;g;;#referencias
+\&ltbr;;1;;g;;#etiquetas html buenas
+\'\'[^\']+\'\';;2;;g;;#las negritas y cursivas son buenas
+\'\'\'texto en negrita\'\'\';;-1;;t;;
+\'\'texto en cursiva\'\';;-1;;t;;
+\( *en (español|ingl[ée]s|franc[ée]s|alem[áa]n) *\);;1;;g;;#aclaraciones de idioma de enlaces
+\.esgay\.com;;-10;;vandalism
+\.fotolog\.com\/[a-z_\#\?]+;;-10;;vandalism
+\.metroflog\.com\/[a-z_\#\?]+;;-10;;vandalism
+\.nimp\.org;;-10;;vandalism
+\.tuenti\.com\/[a-z_\#\?]+;;-10;;vandalism
+\.{3,}\&lt\;\/td;;-100;;vandalism#vandalismo tipo grawp <td bgcolor=#634917>....</td>
+\;\=[^\=\r\n\;]{200,}\=;;-30;;vandalism#secciones extremadamente grandes? cuidado http://es.wikipedia.org/w/index.php?title=freno_regenerativo&diff=prev&oldid=20053637, añadimos \; para evitar que cuente varias líneas http://es.wikipedia.org/w/index.php?title=rep%c3%bablica_de_la_nueva_granada&diff=next&oldid=23022920
+\=\=[^\=]{4,}\=\=;;5;;g;;#secciones
+\@_\@;;-1;;t;;
+\[ *(ftp|http)s?\:\/\/;;2;;g;;#enlaces web
+\[(editar|ocultar)\];;-1;;test #copiapegas http://es.wikipedia.org/w/index.php?title=nave_espacial&diff=prev&oldid=25757581
+\[\[ *categor(y|ía) *\:.*?\]\];;3;;g;;#las categorías son buenas
+\[\[(3[2-9]|3\d\d+|[4-9]\d+) de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\]\];;-1;;vandalism#fechas imposibles
+\[\[(archivo|file|imagen?)\:ejemplo\.jpg\]\];;-1;;t;;
+\[\[(archivo|file|imagen?)\:http\:\/\/;;-1;;test #esto necesitaría un mensaje que hable sobre cómo subir imágenes. p es ambiguo
+\[\[\={2,}[^\=]*?\={2,}\]\];;-1;;vandalism#secciones dentro de enlaces, wtf?
+\[\[\?+\]\];;2;;g;;#enlaces con interrogaciones actuan de fechas desconocidas, http://es.wikipedia.org/w/index.php?title=a_prueba_de_todo&diff=prev&oldid=25730736
+\[\[\]\];;-1;;t;;
+\[\[archivo\:\]\];;-1;;t;;
+\[\[media\:\&lt\;nowiki\>;-1;;t;;
+\[\[media\:ejemplo\.ogg\]\];;-1;;t;;
+\[\[texto de titular\]\];;-1;;t;;
+\[\[título del enlace\]\];;-1;;t;;
+\[http\:\/\/www\.ejemplo\.com título del enlace\];;-1;;t;;
+\[{6,};;-2;;test #[[[[[[[[[[[[[[[[[[ prueba seguro
+\^[_\.\·]+\^;;-1;;t;;
+\^{3,};;-1;;t;;
+\d+ *[\.\)\-\:] *[a-z0-9áéíóú]{,15};;3;;g;;#listas hechas a mano
+\{\{ *(infobox|ficha);;3;;g;;#infoboxes buenas
+\{\{ *?cita *?\|;;2;;g;;#plantilla cita
+\{\{.*?\}\};;3;;g;;#las plantillas son buenas
+\¬[_\-\.]*\¬[\'\"\*u];;-1;;test #¬_¬ ¬¬u, permitimos ¬¬ como doble negación
+\º_\º;;-1;;t;;
+a *c *m *1 *p *t;;-1;;vandalism
+a+(q+u*|k+)[ií]+ *e+s+t+u+[vb]+e+ *y+o+;;-1;;vandalism
+a+b+u+rr+i+d+[ao]+s*;;-1;;vandalism
+a+d+i+o+s*;;-2;;t;;
+a+g+r+[áa]+n+d+a+m+e+l+[ao]+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=agua_potable&diff=prev&oldid=19250649
+a+g+u+a+n+t+e+ +\w;;-1;;vandalism
+a+h+ s+i+;;-1;;t;;
+a+h+u+e+v+a+d*[ao]+s*;;-2;;vandalism
+a+l+ *p+e+d+o+s*;;-10;;vandalism
+a+p+e+s+t+a+s*;;-1;;vandalism
+a+p+e+s+t+o+s+[ao]+s*;;-1;;vandalism
+a+q+u+[íi]+[^a-z0-9]{,5}l+e+s+[^a-z0-9]{,5}d+e+j+o+[^a-z0-9]{,5}a+l+g+[úu]+n+[^a-z0-9]{,5}m+a+t+e+r+i+a+l+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=elephunk&diff=prev&oldid=19787799
+a+r+g+h+;;-1;;t;;
+a+s+(q+u+e+|ke?)r+o+s+[ao]+s*;;-1;;vandalism
+a+s+(q+u+e+|ke?)r+o+s+a+m+e+n+t+e+;;-1;;vandalism
+a+s+[íi]+ *n+o+ *m+[áa]+s+;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=curanipe&diff=prev&oldid=35631292
+a+s+s+ *h+o+l+e+s*;;-1;;vandalism
+a+t+o+n+t+a+d+[ao]+s*;;-1;;vandalism
+a+v+b+o+t+;;-5;;vandalism#alusión a bot antivandalismo, vándalo cabreado?
+a+w+e+o+n+a+d*[ao]*s*;;-10;;vandalism
+a+y+u+d+e+n+m+e+;;-1;;t;;
+agregu*en(me)?;;-1;;t;;
+amidoinitrite;;-1;;vandalism
+ano;;5;;g;;#término sexual bien dicho
+aquí inserta texto sin formato;;-1;;t;;
+asdfsdf;;-1;;t;;
+b+[áa]+j+a+t+e+ *e+s+t+o+;;-1;;vandalism
+b+a+j+a+t+e+;;-1;;vandalism#bajate esto...
+b+e+s+i+t+o+s+;;-1;;test #http://es.wikipedia.org/w/index.php?title=la_vida_es_sue%c3%b1o&curid=156379&diff=35775796&oldid=35775784
+b+e+s+o+t+e+s*;;-1;;t;;
+b+i*e*n+ +r+i+[ck]+o+s*;;-1;;t;;
+b+i+g+o+t+u+d+[ao]+s*;;-2;;vandalism
+b+i+t+c+h+e*s*;;-2;;vandalism
+b+l+o+w+ *j+o+b+s*;;-1;;vandalism
+b+o+b+[ao]+s*;;-1;;vandalism
+b+o+b+a+d+a+s*;;-1;;vandalism
+b+o+l+u+d+[ao]+s*;;-10;;vandalism
+b+o+l+u+d+e+[csz]+e*s*;;-1;;vandalism
+b+o+l+u+d+e+a+r+;;-10;;vandalism
+b+o+n+i+[ck]+[ao]+s*;;-1;;t;;
+b+o+s+t+a+s*;;-10;;vandalism
+b+o+t+p+o+l+i+c+[íi]+a+;;-5;;vandalism#alusión a bot antivandalismo, vándalo cabreado?
+b+u+a+h*;;-1;;t;;
+b+u+e+n+[ií]+s+i+m+[ao]+s*;;-1;;vandalism
+b+u+j+a+r+r[oó]+n+e*s*;;-1;;vandalism
+b+u+j+a+rr+a+s*;;-1;;vandalism
+b+u+s+[ck]+[ao]+ *(n+o+v+i+[ao]+s*|a* *a+l+g+u*i+e+n+);;-1;;vandalism
+b+y+ *h+a+g+e+r+;;-100;;vandalism
+bar(es)? gay;;3;;g;;#[[bar gay]]
+benito camela;;-2;;vandalism
+bett?y la fea;;2;;g;;
+bibliotecarios hijos de la grand[íi]sima promiscua madre;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=bibliotecario&diff=19772101&oldid=19772089
+c+a+(k+|q+u*)i+t+a+s*;;-1;;vandalism
+c+a+l+a+ñ+a+;;-1;;vandalism
+c+e+n+s+u+r+a+ *\= *f+a+s+c+i+s+m+o+;;-3;;vandalism
+c+h+a+[ou]+;;-1;;t;;
+c+h+a+c+h+o+;;-1;;vandalism
+c+h+i+n+g+[ao]+s* *(a+|a+ *[st]+u+s*|[st]+u+s*)? *(p+u+t+[ao]+s*)? *(a+b+u+e+l+a+|h+e+r+m+a+n[ao]+|m+a+d+r+e+|p+a+d+r+e+|m+a+m+[aái]+|p+a+p+[aái]+)?;;-100;;vandalism
+c+h+i+n+g+[oó]+n*e*s*;;-10;;vandalism
+c+h+i+n+g+a+d+e+r+[ao]+s*;;-10;;vandalism
+c+h+i+n+g+a+r+;;-10;;vandalism
+c+h+i+n+g+a+s*;;-10;;vandalism
+c+h+i+n+g+o+;;-1;;vandalism
+c+h+i+n+g+u*e+n+([sc]+e+)? *a+ *s+u+ *(a+b+u+e+l+a+|h+e+r+m+a+n+[ao]+|m+a+d+r+e+|p+a+d+r+e+);;-100;;vandalism
+c+h+i+n+g+u*e+n+([sc]+e+)?;;-100;;vandalism
+c+h+i+n+ga+d+[ao]+s*;;-10;;vandalism
+c+h+o+c+h+[ao]+s*;;-1;;vandalism
+c+h+o+c+h+a+z+o+s*;;-1;;vandalism
+c+h+o+c+h+e+a+[rs]*;;-1;;vandalism
+c+h+o+c+h+e+t+e+s*;;-1;;vandalism
+c+h+o+c+h+i+t+o+s*;;-1;;vandalism
+c+h+o+l+i+t+o+s*;;-1;;vandalism
+c+h+o+l+o+s*;;-1;;vandalism
+c+h+u+c+k+ *n+o+r+r+i+s+ *t+e+;;-1;;vandalism
+c+l+u+e+b+o+t+;;-5;;vandalism#alusión a bot antivandalismo, vándalo cabreado?
+c+o+c+k+ *s+u+c+k+e+r+s*;;-1;;vandalism
+c+o+n+c+h+e+t+o+s*;;-1;;vandalism
+c+u+[ií­]+d+e+n+s+e+;;-1;;t;;
+c[aá]ncer de [ww]ikipedia;;-9999;;vandalism#pedido http://es.wikipedia.org/w/index.php?diff=22665271&oldid=22664811
+caja (boba|tonta);;3;;g;;
+central obesity 008\.jpg;;-100;;vandalism
+cocks*;;-1;;vandalism
+como dice nuestro gran president[re];;-9999;;vandalism
+criticar[^a-z0-9]{,5}a[^a-z0-9]{,5}la[^a-z0-9]{,5}mafia[^a-z0-9]{,5}y[^a-z0-9]{,5}los[^a-z0-9]{,5}porn.grafos[^a-z0-9]{,5}que[^a-z0-9]{,5}la[^a-z0-9]{,5}gobiernan;;-9999;;vandalism
+cuack?;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=astrolog%c3%ada&diff=prev&oldid=35636534
+cuadroxe\.jpg;;-10;;vandalism#imagen vandálica
+d+e* *m+i+e+r+d+a+s*;;-1;;vandalism
+d+e+f+a+c+e+a+d+[ao]+ +p+o+r+;;-1;;vandalism
+d+e+f+a+c+e+a+r+;;-1;;vandalism
+d+e+f+a+c+e+d+ +b+y+;;-1;;vandalism
+d+e+j+e+n+ +e+s+t+[ao]+s*;;-1;;t;;
+d+e+s+[ck]+o+j+o+n+(e+s*|o+|a+s*);;-1;;vandalism
+d+e+s+b+l+o+(q+u*e*|k+e*)+a+[dr]+ *a* *r+e+b+e+l+i+[oó]+n+(\.+o+r+g+)?;;-3;;vandalism
+d+e+s+c+[áa]+r+g+a+t+e+ *e+s+t+o+;;-1;;vandalism
+d+e+s+c+a+n+[sc]+e+ *e+n+ *p+a+[zs]+;;-1;;t;;
+d+e+s+e+o+ c+o+n+o+[cs]+e+r+;;-1;;vandalism
+d+e+s+p+o+(l+l+|y+)a+r+s+e+;;-1;;vandalism
+d+e+s+p+o+(l+l+|y+)a+s*;;-1;;vandalism
+d+e+s+p+o+(l+l+|y+)o+;;-1;;vandalism
+d+i+o+s+ +(l+[oea]+s+|t+e+|o+s+) +b+e+n+d+i+g+a+;;-1;;t;;
+d+i[cs]e+ k;;-1;;vandalism
+dejad esto;;-1;;test #http://es.wikipedia.org/w/index.php?title=world_wrestling_entertainment&diff=prev&oldid=35632287
+dios nos bendiga;;-1;;test #http://es.wikipedia.org/w/index.php?title=las_siete_palabras&diff=prev&oldid=35634021
+disney ?xd;;3;;g;;#el canal de tv
+div *style\=[\"\']visibility\: *hidden\;[\"\'];;-100;;vandalism#vandalbot #http://es.wikipedia.org/w/index.php?diff=prev&oldid=22283254
+e+b+a+u+m+s+( *w+o+r+l+d+)? *[\>\<\-\=]* *w+i+k+i+p+e+d+i+a+;;-100;;vandalism
+e+l+ m+[áa]+s+ c+r+a+c+k+;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=francia&diff=prev&oldid=35631696
+e+l+[^a-z0-9]{,5}s+e+c+r+e+t+o+[^a-z0-9]{,5}d+e*[^a-z0-9]{,5}w+i+k+i+p+e+d+i+a+;;-9999;;vandalism#documental de chichinabo http://es.wikipedia.org/w/index.php?title=samuel_beckett&diff=19850555&oldid=19850514
+e+n+ *(b+r+a+g+a+s*|t+a+n+g+a+);;-1;;vandalism
+e+n+ +[ts]+u+ +[bv]+o+[ck]+a*s*;;-1;;vandalism
+e+n+c+u+l+a+d+[ao]+s*;;-1;;vandalism
+e+n+t+i+e+n+d+e+n+;;-1;;test #http://es.wikipedia.org/w/index.php?title=till_lindemann&diff=prev&oldid=25838274
+e+n+t+r+e+ *l+a+s *p+i+e+r+n+a+s*;;-1;;vandalism
+e+p+i+c+ *(l+o+l+|l+u+l+z+|t+h+r+e+a+d+);;-100;;vandalism
+e+s+ +u+n+ +c+a+p+o+;;-1;;vandalism
+e+s+t+[aá]+n* b+i+e+n+ b+u+e+n+[oa]+s*;;-1;;vandalism
+e+s+t+[uú]+p+i+d+[ao]+s*;;-1;;vandalism
+e+s+t+o+ e+s+ u+n+a+ p+r+u+e+b+a+;;-1;;vandalism
+e+s+t+o+[iy]+ (c+a+l+i+e+n+t+e+|p+r+o+[bv]+a+n+d+o+p*);;-1;;vandalism
+e+s+t+u+[vb]+[eo]+ *a+(q+u*|k+)[ií]+;;-1;;vandalism
+e+s+t+u+p+i+d+e+[cs]+e*[sz]*;;-1;;vandalism
+e+x+p+u+l+s+a+n+[^a-z0-9]{,5}(a+[^a-z0-9]{,5}m+a+n+s+a+l+v+a+)?[^a-z0-9]{,5}s+i+n+[^a-z0-9]{,5}j+u+s+t+i+f+i+c+a+c+i+[óo]+n+;;-9999;;vandalism
+e?special\:(contributions|contribuciones);;-10;;t;;
+ejemplo\.jpg;;-1;;t;;
+ejemplo\.ogg;;-1;;t;;
+ejemplo\.ogg;;-1;;t;;
+escribe aquí una fórmula;;-1;;t;;
+escroto;;5;;g;;#término sexual bien dicho
+especial:contributions;;-3;;test #http://es.wikipedia.org/w/index.php?title=r%c3%ados_de_m%c3%a9xico&diff=prev&oldid=35631275
+esto[^a-z0-9]{,5}que[^a-z0-9]{,5}lo[^a-z0-9]{,5}arregle[^a-z0-9]{,5}el[^a-z0-9]{,5}(ro)?bot;;-9999;;vandalism
+f+a+c+h+[ao]+s*;;-1;;vandalism
+f+a+g+g+o+t+s*;;-1;;vandalism
+f+a+g+s+;;-1;;vandalism
+f+a+p+[ \-\*\!]*f+a+p+[ \-\*\!]*f+a+p+;;-1;;vandalism
+f+a+t+x+[ao]+s*;;-1;;vandalism
+f+e+[ao]+s*;;-1;;vandalism
+f+e+l+i+[sz]* (c+u+m+p+l+e+|c+u+m+p+l+e+a+[nñ]+o+s*|a+n+i+v+e+r+s+a+r+i+o+);;-1;;t;;
+f+i+j+e+n+s+e+ +e+n+;;-1;;t;;
+f+o+(l+l|y+)[ae]+n+;;-1;;vandalism
+f+o+(l+l|y+)[eé]s*;;-1;;vandalism
+f+o+(l+l|y+)a+b+a+;;-1;;vandalism
+f+o+(l+l|y+)a+b+l+e+s*;;-1;;vandalism
+f+o+(l+l|y+)a+d+a+s*;;-1;;vandalism
+f+o+(l+l|y+)a+d+e+r+o+s*;;-1;;vandalism
+f+o+(l+l|y+)a+d+o+r*;;-1;;vandalism
+f+o+(l+l|y+)a+o+s*;;-1;;vandalism
+f+o+(l+l|y+)a+r+;;-1;;vandalism
+f+o+(l+l|y+)a+r+s+e+;;-1;;vandalism
+f+o+(l+l|y+)a+s*;;-1;;vandalism
+f+o+(l+l|y+)o+;;-1;;vandalism
+f+o+r+ *g+r+e+a+t+ *j+u+s+t+i+c+e+;;-100;;vandalism
+f+u+c+\%;;-1;;vandalism
+f+u+c+k+ +o+f+f+;;-1;;vandalism
+f+u+c+k+;;-1;;vandalism
+f+u+c+k+e+n+ b+e+s+t+;;-1;;vandalism
+f+u+c+k+i+n+g*;;-1;;vandalism
+f+u+m+e+t+a+[sz]*;;-1;;vandalism
+f+u+r+c+i+[ao]+s*;;-1;;vandalism
+felaci[oó]n;;5;;g;;#término sexual bien dicho
+from basque country not china or hong kong;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=reuters&diff=prev&oldid=20100306
+g+a+y+e+r+;;-1;;vandalism
+g+a+y+o+l+a+s*;;-1;;vandalism
+g+a+y+s*;;-1;;vandalism
+g+o+l+f+a+s*;;-1;;vandalism#golfo es accidente geográfico
+g+o+l+f+i+(l+l+|y+)[ao]+s*;;-1;;vandalism
+g+o+n+o+rr+e+a+s+;;-1;;vandalism#gonorrea es una enfermedad, pero en plural se usa como insulto
+g+o+r+d+o+ d+e+ m+i+e+r+d+a+;;-2;;vandalism
+g+r+a+x+;;-1;;test #gracias
+g+u+a+p+e+t+[oó]+n+[ae]*s*;;-1;;t;;
+g+u+a+r+r+a+s*;;-1;;vandalism
+g+u+a+r+r+e+r+i+d*a+s*;;-1;;vandalism
+g+u+a+t+e+p+e+o+r*;;-1;;vandalism
+g+u+a+u+;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=escultura_de_la_antigua_grecia&diff=prev&oldid=35631715
+g+u+a+y+s*;;-1;;t;;
+g+u+s+t+a+ *e+l+ *p+i+[ck]+o+;;-1;;vandalism
+gafa *pastas*;;-1;;vandalism
+gauge[_ ]\(porn star\)\.jpg;;-100;;vandalism#http://es.wikipedia.org/w/index.php?title=holocausto&diff=next&oldid=23094834
+gay ?pride;;2;;g;;
+h*a+[cs]+e+ +m+u+(c+h+|x+)o+ (f+r+[íi]+o+|[ck]+a*l+[oó]+r*);;-1;;t;;
+h*a+s+t+a+ *l+a+s+ *t+r+a+n+[ck]+a*s*;;-1;;vandalism
+h*a+s+t+a+ *l+u+e+g+o+r*;;-1;;t;;
+h*e+ *(c+r+a+c*k+e+a+d+o+|[hj]+a+c*k+e+a+d+o+|j+u+a+n+k+e+a+d+o+);;-1;;vandalism
+h*i+[mn]+[bv]+[eé]+[cs]+i+l+;;-1;;vandalism
+h*i+j+[aoue]+s*[^a-z0-9]{,5}(d+e*)?[^a-z0-9]{,5}(r+e+)?[^a-z0-9]{,5}(u+n+a+[^a-z0-9]{,5}g+r+a+n+|m+i+l+|l+a+[^a-z0-9]{,5}g+r+a+n+|l+a+[^a-z0-9]{,5}g+r+a+n+d+[ií]+s+i+m+a+|t+u+)?[^a-z0-9]{,5}(p+e+r+r+[ao]+s*|p+u+t+[ao]+s*|\*+);;-1;;vandalism
+h+[\.\-\+\* ]*[?aàáâãäåaaaaa???????????????????æ?\@4\.\*]+[\.\-\+\* ]*[ggggg?gg??]+[\.\-\+\* ]*[ggggg?gg??]*[\.\-\+\* ]*[eéèëê3\.\*]+[\.\-\+\* ]*[rrrr??????]+[\.\-\+\* ]*\?*;;-5;;vandalism#hay contrapeso para hager (apellido?)
+h+[\.\-\+\* ]*[?aàáâãäåaaaaa???????????????????æ?\@4\.\*]+[\.\-\+\* ]*d+[\.\-\+\* ]*d*[\.\-\+\* ]*[eéèëê3\.\*]+[\.\-\+\* ]*[rrrr??????]+[\.\-\+\* ]*\?*;;-5;;vandalism#hay contrapeso para hader (apellido?)
+h+[\.\-\+\* ]*[eéèëê3\.\*]+[\.\-\+\* ]*r+[\.\-\+\* ]*m+[\.\-\+\* ]*[i1]+[\.\-\+\* ]*[eéèëê3\.\*]+[\.\-\+\* ]*\?*;;-5;;vandalism#hay contrapeso para hermie (apellido?)
+h+a+[sz]+m+e+ *e+l+ *a+m+o+r+;;-1;;vandalism
+h+a+c+e+r+(s+e+)?( u+n+a*s* )(g+a+y+o+l+a+s*|g+a+l+lo+l+a+s*|m+a+c+o+c+a+s*|m+a+n+o+l+a+s*|m+a+n+u+e+l+a+s*|p+a+j+a+s*);;-1;;vandalism
+h+a+i+2+u+ *g+u+y+s+;;-100;;vandalism
+h+e+y+;;-1;;vandalism
+h+i+ *w+h+i+s+p+e+s+;;-100;;vandalism
+h+i+o+ *p+u+t+a+s*;;-1;;vandalism
+h+o+[iy]+g+a+n+s*;;-1;;vandalism
+h+o+l+o+[\- ]*c+u+e+n+t+o+;;-100;;vandalism#http://es.wikipedia.org/w/index.php?title=holocausto&diff=23070518&oldid=23070492
+h+u+e+[vb]+a+d+a+s*;;-1;;vandalism
+h+u+e+a+s*;;-10;;vandalism
+h?aceme un pete;;-3;;vandalism
+h[ae] *h[ae];;-1;;vandalism#risa inglesa
+ha[gd]er;;10;;g;;#hager y hader normal mejor lo ponemos positivo http://es.wikipedia.org/w/index.php?title=money_in_the_bank&diff=35704797&oldid=35704795
+hermie;;10;;g;;#hermie al igual que hager y hader lo ponemos positivo http://es.wikipedia.org/w/index.php?title=money_in_the_bank&diff=35704797&oldid=35704795
+http\:\/\/es\.wikipedia\.org\/skins\-1\.5\/common\/images\/;;-1;;test #sale al arrastrar imágenes de la botonera
+i+ *h+a+t+e+ *w+i+k+i+p+e+d+i+a+;;-3;;vandalism
+i+d+i+o+t+[ao]+s*;;-1;;vandalism
+i+n+[úu]+t+i+l+ *\!+;;-1;;vandalism#al menos un ! porque inútil es válido a veces
+i+n+e+[cp]+t+[ao]+s*;;-1;;vandalism
+i+r+ +a+l+ +h*u+e+[vb]+o+;;-1;;vandalism#http://es.wikipedia.org/w/index.php?diff=prev&oldid=25735909
+irrumaci[oó]n;;5;;g;;#término sexual bien dicho
+isbn;;3;;g;;
+j+[ae]+ *j+[ae]+;;-1;;test #risas
+j+[aeiou]+j+[aeiou]+ *x+[\'\"]*d+;;-2;;vandalism
+j+[ao]+r+l+;;-1;;t;;
+j+[oó]+d+a+n*s+e+;;-1;;vandalism
+j+[oó]+d+e+r* *(t+e+|l+[eao]+s*|m+e+|s+e+|o+s+)?;;-2;;vandalism
+j+i+ +o+m+e+;;-1;;test #sí hombre (en andaluz)
+j+o+ *p+u+t+a+[sz]*[oa]*[sz]*;;-2;;vandalism
+j+o+d+[ií]+d*[ao]+s*;;-1;;vandalism
+j+o+d+a+[íi]+s+m+o+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=nombres_de_dios_en_el_juda%c3%adsmo&diff=prev&oldid=20173402
+j+o+d+i+d+[ao]+s*;;-1;;vandalism
+j+o+d+i+e+n+d+[oa]+;;-1;;vandalism
+j+o+t+o+s*;;-1;;vandalism
+j+u+a+[sz]+;;-2;;t;;
+j+u+d+a+s+[^a-z0-9]{,5}l+a+d+r+o+n+e*s*;;-10;;vandalism
+j+u+d+i*[ao]+s*[^a-z0-9]{,5}(a+s+e+s+i+n+o+s*|m+e+n+t+i+r+o+s+[ao]+s*);;-9999;;vandalism
+j+u+e+g+a+z+o+;;-1;;t;;
+j+u+l+a+n+d+r+[oó]+n+e*s*;;-1;;vandalism
+j[^a-z0-9]{,5}u[^a-z0-9]{,5}d[^a-z0-9]{,5}a[^a-z0-9]{,5}s[^a-z0-9]{,5}h[^a-z0-9]{,5}i[^a-z0-9]{,5}j[^a-z0-9]{,5}o[^a-z0-9]{,5}s[^a-z0-9]{,5}d[^a-z0-9]{,5}e[^a-z0-9]{,5}u[^a-z0-9]{,5}n[^a-z0-9]{,5}a[^a-z0-9]{,5}g[^a-z0-9]{,5}r[^a-z0-9]{,5}a[^a-z0-9]{,5}n[^a-z0-9]{,5}p[^a-z0-9]{,5}u[^a-z0-9]{,5}t[^a-z0-9]{,5}a;;-99;;vandalism
+ja *ja festival;;5;;g;;#http://es.wikipedia.org/w/index.php?title=%c3%81ngel_mart%c3%adn&diff=next&oldid=21258899
+jenna[_ ]jameson[_ ]jan12[_ ]2007\.jpg;;-100;;vandalism#http://es.wikipedia.org/w/index.php?title=holocausto&diff=next&oldid=23094834
+k+ *(b+u+e+n+[ao]+|m+a+s+|w+e+n+[ao]+);;-1;;t;;
+k+a*g+a+r+;;-1;;vandalism
+k+e*r+e+m+o+s*;;-1;;vandalism
+k+i+e+r+o+;;-1;;vandalism
+kuka robotics;;3;;g;;
+l+[aá]+[bv]+a+t+e+;;-1;;vandalism
+l+[aá]+[bv]+e+n+s+e+;;-1;;vandalism
+l+[aá]+r+g+a+t+e+;;-1;;vandalism
+l+[aá]+v+a+t+e+ (e+l+|l+a+|l+o+s+|l+a+s+);;-1;;vandalism
+l+a+[^a-z0-9]{,5}v+e+r+d+a+d+[^a-z0-9]{,5}q+u+e+[^a-z0-9]{,5}w+i+k+i+p+e+d+i+a+[^a-z0-9]{,5}n+o+[^a-z0-9]{,5}p+e+r+m+i+t+e+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=shelley_winters&diff=prev&oldid=19753407
+l+a+m+e+[dr]*m+e+;;-1;;vandalism
+l+a+m+e+r+;;-1;;vandalism
+l+a+s+ *b+o+la+s+;;-1;;vandalism
+l+a+s+ *p+e+l+o+ta+s+;;-1;;vandalism
+l+e+a+r+n+ (e+n+g+l+i+s+h+|s+p+a+n+i+s+h+);;-1;;vandalism
+l+e+f+a+s*;;-2;;vandalism
+l+e+f+a+z+o+s*;;-1;;vandalism
+l+e+s+[bv]+i+a+n+a+s*;;-1;;vandalism
+l+e+s+[bv]+i+s*;;-1;;vandalism
+l+i+m+p+i+a+r+m+e+;;-1;;vandalism#limpiarme el culo, por ejemplo
+l+o+ *(k+|q+) *p+a+s+a+;;-1;;t;;
+l+o+ l+e+a+ e+s+ t+o+n+t+[oa]+;;-1;;vandalism
+l+o+l+a+z+o+s*;;-2;;vandalism
+l+o+l+z*;;-1;;vandalism
+l[ao] (quiero|kiero) (con|kn) lo[ck]ura;;-1;;t;;
+laika;;10;;g;;#contrapeso para perra
+lbgt;;2;;g;;
+llamen[^a-z0-9]{,5}al[^a-z0-9]{,5}(ro)?bot[^a-z0-9]{,5}que[^a-z0-9]{,5}arregla[^a-z0-9]{,5}f.cil;;-9999;;vandalism
+llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch;;5;;g;;#topónimo largo
+lo[^a-z0-9]{,5}he[^a-z0-9]{,5}dicho[^a-z0-9]{,5}una[^a-z0-9]{,5}y[^a-z0-9]{,5}mil[^a-z0-9]{,5}veces[^a-z0-9]{,5}siempre[^a-z0-9]{,5}volver[ée];;-9999;;vandalism
+luss?ac;;2;;g;;#charles y gay-lussac
+m+[aá]+s+ (f+e+[ao]+|m+a+l+[ao]+) d+e+l*;;-1;;vandalism
+m+[ée]+t+e+t+e+[^a-z0-9]{,5}e+s+t+o+;;-9999;;vandalism
+m+a+c+o+c+a+s*;;-1;;vandalism
+m+a+d+r+e+ m+[íi]+a+;;-1;;vandalism
+m+a+l+ *n+a+c+i+d+[ao]+s*;;-1;;vandalism
+m+a+l+ *p+a+r+i+d+[ao]+s*;;-2;;vandalism
+m+a+l+ *p+e+n+s+a+d+[oa]+s*;;-1;;vandalism
+m+a+l+[íi]+s+i+m+[ao]+s*;;-1;;vandalism
+m+a+l+a+ *(p+e+r+s+o+n+a+);;-1;;vandalism
+m+a+m+[óo]+n+e*s*;;-1;;vandalism
+m+a+m+a+ *[gh]*[uü]+e+[vb]+a+d+a+s*;;-1;;vandalism
+m+a+m+a+ *[hg]*u+e+[bv]+o+s*;;-1;;vandalism
+m+a+m+a+[bv]+a+s*;;-1;;vandalism
+m+a+m+a+d+a+s*;;-1;;vandalism
+m+a+m+a+d+o+r+[ae]*s*;;-1;;vandalism
+m+a+m+a+m+e+(l+[ao]+s*)?;;-1;;vandalism
+m+a+m+a+n+d+o+;;-1;;vandalism
+m+a+m+a+z+o+s*;;-1;;vandalism
+m+a+m+e+n+[^a-z0-9]{,5}e+s+t+o+;;-9999;;vandalism
+m+a+m+o+n+a+[sz]+[ao]+s*;;-2;;vandalism
+m+a+mo+n+a+s*;;-1;;vandalism
+m+a+n+o+l+a+s*;;-1;;vandalism
+m+a+n+u+e+l+a+s+;;-1;;vandalism#manuela es un nombre válido, exigimos una s al menos
+m+a+r+a+[ck]+o+s*;;-1;;vandalism
+m+a+r+i+(k|qu)i+t+a+s*;;-1;;vandalism
+m+a+r+i+[ck]+[ao]+s*;;-1;;vandalism
+m+a+r+i+[ck]+[oó]+n+e*s*;;-1;;vandalism
+m+a+r+i+[ck]+o+n+a+[sz]+o+s*;;-1;;vandalism
+m+a+r+i+[ck]+o+n+i+s+m+o+;;-1;;vandalism
+m+a+r+i+c+o+n+a+d+a+s*;;-1;;vandalism
+m+a+r+i+p+o+s+[oó]+n+e*s*;;-1;;vandalism
+m+a+s+c+a+d+a+s*;;-1;;vandalism
+m+a+s+t+u+r+[bv]+a+([tms]+e+);;-1;;vandalism
+m+a+s+t+u+r+[bv]+a+s*;;-1;;vandalism
+m+e* *([ck]+a+e+s*|[ck]+a+e+i+s+);;-1;;vandalism#me cae mal, me caes fatal
+m+e* *([ck]+o+m+e+i*s*|[ck]+o+m+i+[oó]+|[ck]+o+m+i+s+t+e+s*);;-2;;vandalism
+m+e* *([ck]+o+r+r+o+|[ck]+o+r+r+e+r+[eé]+|[ck]+o+r+r+[ií]+);;-2;;vandalism
+m+e* *(c+h+|x+)u+p+a+s*;;-1;;vandalism
+m+e* *[ck]+a+g+o+( en)?;;-2;;vandalism
+m+e* *a+[bv]+u+r+[oe]+s*;;-1;;vandalism
+m+e* *d+a+ *l+a+ *(r+e+a+l)? *g+a+n+a+;;-1;;vandalism
+m+e* *d+u+e+l+e+[ns]*;;-1;;t;;
+m+e* *e+n+[ck]+a+n+t+a+[ns]*;;-1;;t;;
+m+e* *e+x+[cs]*i+t+[ao]+;;-1;;vandalism
+m+e* *g+u+s+t+a+[ns]*;;-1;;t;;
+m+e* *g+u+s+t+a+r+[ií]+a+;;-1;;t;;
+m+e* *l+[oa]+ *c+h+u+p+a+s*;;-1;;vandalism
+m+e* *l+[oa]+ *c+o+j+o+;;-1;;vandalism
+m+e* *l+[oa]+ *p+e+l+a+i*[ns]*;;-1;;vandalism
+m+e* *ll+a+m+o+;;-1;;t;;
+m+e* *p+i+c+a+n*;;-1;;vandalism
+m+e* *p+o+n+e+[ns]*;;-1;;vandalism
+m+e* *s+a+l+e+;;-1;;vandalism#me sale de la polla
+m+e*[^a-z0-9]{,5}(h*e+c+h+a+r+o+n+|e+[xs]+p+u+l+s+a+r+o+n+)[^a-z0-9]{,5}d+e*[^a-z0-9]{,5}w+i+k+i+p+e+d+i+a+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?diff=prev&oldid=19796029
+m+e+ *d+e+s+p+i+d+o+;;-1;;t;;
+m+e+c+o+s*;;-1;;vandalism
+t+o+d+o+ *(e+s+t+o+)? *(e+s+|s+o+n+)? *m+e+n+t+i+r+a+s*;;-1;;vandalism
+m+e+n+t+i+r+a+s* +c+o+(c+h+|x+)i+n+a+s*;;-1;;vandalism
+m+e+n+t+i+r+o+s+[ao]+s*;;-1;;vandalism
+m+e+t+e+m+e+l+[ao]+;;-1;;vandalism
+m+i*e*r+d+a+ *c+o+n+ *p+a+t+a+s*;;-2;;vandalism
+m+i+ *(b+l+o+g+|c+e+l+u+l+a+r+|c+o+r+r+e+o+|e?\-?m+a+i+l+|f+o+t+o+l+o+g+|n+o+m+b+r+e+|n+[uú]+m+e+r+o+|t+e+l+[eé]+f+o+n+o+) *e+s+;;-1;;t;;
+m+i+ *(n+i+ñ+o+|n+i+ñ+a+);;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=cohete&diff=prev&oldid=19275213
+m+i+ *o+p+i+n+i+[oó]+n+;;-1;;vandalism
+m+i+ *t+e+l+[eé]+f+o+n+o+ *e+s+;;-1;;test #cuidado, pueden dar telefonos de ayuntamientos o cosas asi
+m+i+ +(b+l+o+g+|w+e+b+|p+[aá]+g+i+n+a+ *w+e+b+|s+i+t+i+o+ *w+e+b+);;-1;;vandalism
+m+i+e+r+d+a+s*;;-1;;vandalism
+m+i+e+r+d+e+[csz]+i+[ly]+a+s*;;-1;;vandalism
+m+i+e+r+d+i+s+t+a+s*;;-1;;vandalism
+m+i+n+d+u+n+d+i+s*;;-1;;vandalism
+m+i+s* (e+x+a+m+e+n+|t+a+r+e+a+s+|t+r+a+b+a+j+o+s*);;-1;;vandalism
+m+i+s* *h+u+e+v+o+s*;;-1;;vandalism
+m+i+s* *p+r+e+f+e+r+i+d+[ao]+s*;;-1;;vandalism
+m+o+a+r+ *\!+;;-1;;vandalism
+m+o+j+[oó]+n+e*s*;;-1;;vandalism
+m+o+j+[oó]+n+e+r+o+s*;;-1;;vandalism
+m+o+j+a+r+ +p+a+n+;;-1;;vandalism#está para mojar pan
+m+o+l+a+s* *([ck]+a+n+t+i+d+u+[bv]+i+|m+a+[zs]+o+|m+u+(c+h+|x+)o+|t+e+l+a+);;-1;;vandalism
+m+o+n+o+ *d+e* *f+e+r+i+a+;;-1;;vandalism
+m+o+r+e+n+a+z+[ao]+s*;;-1;;vandalism
+m+o+r+o+c+h+a+s*;;-1;;vandalism
+m+o+t+h+e+r+s* *f+u+c+k+e*r*s*;;-1;;vandalism
+m+u+[eé]+r+e+t+e+;;-1;;vandalism
+m+u+[yi]+ +l+o+[ck]+[oa]+s*;;-1;;vandalism
+m+u+a+c*k+a*s*;;-1;;vandalism
+m+u+c+h+a+s+ g+r+a+c+i+a+s+;;-1;;vandalism
+m+u+d+k+i+p+z+;;-100;;vandalism
+m+u+e+r+t+e+ a+;;-1;;vandalism
+m+u+n+d+o+ m+u+n+d+i+a+l+;;-1;;vandalism
+m+u+t+h+a+f+u+c+k+a+;;-1;;vandalism
+m+u+x+[ao]+s*;;-1;;t;;
+m+u+y+ +b+o+n+i+t+[ao]+s*;;-1;;vandalism
+m+u+y+ +d+i+[bv]+e+r+t+i+d+[ao]+s*;;-1;;vandalism
+m+u+y+ +l+i+n+d+[ao]+s*;;-1;;vandalism
+m[^a-z0-9]{,3}a[^a-z0-9]{,3}f[^a-z0-9]{,3}i[^a-z0-9]{,3}a[^a-z0-9]{,3}d[^a-z0-9]{,3}e*[^a-z0-9]{,3}j[^a-z0-9]{,3}u[^a-z0-9]{,3}d[^a-z0-9]{,3}a[^a-z0-9]{,3}s*;;-9999;;vandalism
+mama[cs]ita;;-1;;vandalism
+manu chao;;5;;g;;#chao de despedida http://es.wikipedia.org/w/index.php?diff=next&oldid=23018447
+me llamo earl;;5;;g;;#http://es.wikipedia.org/w/index.php?diff=23781234&oldid=23781232
+mentira piadosa;;2;;g;;
+mentiras peligrosas;;2;;g;;#mentiras peligrosas, programa de tv http://es.wikipedia.org/w/index.php?diff=prev&oldid=19159374
+mojones del reino;;5;;g;;#http://es.wikipedia.org/w/index.php?diff=25244494&oldid=25244486
+n+a+c+[íi]+ +y+o+;;-1;;test #http://es.wikipedia.org/w/index.php?diff=prev&oldid=25857809
+n+a+l+g+o+n+a+s*;;-1;;vandalism
+n+a+r+i+g+[oó]+n+;;-1;;vandalism
+n+a+r+u+t+a+r+d+s*;;-1;;vandalism
+n+e+[cs]+e+s+i+t+o+;;-1;;t;;
+n+e+g+r+a+t+a+s*;;-2;;vandalism
+n+e+n+[ae]+s*;;-1;;vandalism
+n+e+n+a+z+a+s*;;-1;;vandalism
+n+e+n+g+s*;;-1;;vandalism#el nengg
+n+e+w+ *f+a+g+s*;;-1;;vandalism
+n+i+ *(t+r+e+s+|q+u+e+ +o+c+h+o+|q+ +o+c+h+o+) +c+u+a+r+t+o+s*;;-1;;t;;
+n+i+ *p+u+t+a+ *i+d+e+a+s*;;-2;;vandalism
+n+i+g+a+s* *s+t+o+l+e+;;-5;;vandalism
+n+i+g+a+s+;;-1;;vandalism#nigga es el título de una canción - http://es.wikipedia.org/w/index.php?&oldid=32535548#187.139.27.95
+n+i+g+e+r+s*;;-1;;vandalism
+n+i+ñ+a+t+[ao]+s*;;-1;;vandalism
+n+i+ñ+a+t+[oa]+s*;;-1;;vandalism
+n+o+ *([tsm]+e+)? *c+o+p+i+e+[ns];;-1;;vandalism
+n+o+ *(e+n+c+u+e+n+t+r+o+|e+n+t+i+e+n+d+o+);;-1;;t;;
+n+o+ *(s+a+b+e+s+|s+a+b+e+i+s+|s+a+b+e+n+);;-1;;vandalism
+n+o+ *[ts]+e+ *b+a+ñ+a+s*;;-2;;vandalism
+n+o+ *b+o+r+r+e+i+s+;;-1;;vandalism
+n+o+ *e+l+i+m+i+n+e+i+s+;;-1;;vandalism
+n+o+ *e+s+ v+a+n+d+a+l+i+s+m+o+;;-1;;vandalism
+n+o+ *l+[ao]+s* *r+e+c+o+m+i+e+n+d+o+;;-1;;t;;
+n+o+ *lo *h*a+g+o+ *m+[áa]+s+;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=membrana_plasm%c3%a1tica&diff=prev&oldid=35634161
+n+o+ *m+a+m+e+s*;;-1;;vandalism
+n+o+ *m+e+ *c+a+l+a+r+[ée]+i+s+;;-3;;vandalism
+n+o+ *m+e+ *s+i+r+[bv]+e+;;-1;;t;;
+n+o+ *s+e+ *([ck]+o+m+o+|q+u*[ée]*);;-1;;test #http://es.wikipedia.org/w/index.php?title=electrizaci%c3%b3n&diff=prev&oldid=35631579
+n+o+ *s+i+r+v+e+ *(d+n+[aá]+|d+e *n[aá]+|d+e* *n+a+d+a+|pa+n[aá]+|pa+ *n[aá]+|pa+ra+ *na+da+);;-1;;vandalism
+n+o+ *t+e* i+m+p+o+r+t+a+;;-1;;vandalism
+n+o+ *t+i+e+n+e+s* (c+o+j+o+n+e+s*|h+u+e+v+o+s*|p+e+l+o+t+a+s*);;-1;;vandalism
+n+o+ o+s+ f+i+e+i+s+;;-1;;t;;
+o(_o){1,};;-1;;t;;
+o+d+i+o+ *a* *w+i+k+i+p+e+d+i+a+;;-3;;vandalism
+o+h* (m+[yi]+|m+a+[iy]+) g+o+d+;;-1;;t;;
+o+h+ +h+a+i+;;-1;;vandalism
+o+h+ s+i+;;-1;;t;;
+o+i+n+[ck]+ +o+i+n+[ck]+;;-1;;t;;
+o+j+a+l+[aá]+;;-1;;vandalism
+o+j+e+t+e+s*;;-1;;vandalism
+o+k+ss+;;-1;;t;;
+o+kk+s*;;-1;;t;;
+o+l+a{3,};;-1;;t;;
+o+l+d+ *f+a+g+s*;;-1;;vandalism
+o+n+ *w+h+e+l+s+;;-1;;vandalism
+o+r+t+o+s*;;-1;;vandalism
+o+s+t+i+a+s*;;-1;;vandalism#seria raro que sea la del cura
+o\.?k\.? *\?;;-1;;test #http://es.wikipedia.org/w/index.php?title=mate_%28baloncesto%29&diff=prev&oldid=35632668
+orgullo ?gay;;2;;g;;
+p+[^a-z0-9]{,3}u+[^a-z0-9]{,3}t+[^a-z0-9]{,3}4;;-5;;vandalism
+p+[^a-z0-9]{,3}u+[^a-z0-9]{,3}t+[^a-z0-9]{,3}[ao]+[^a-z0-9]{,3}s*;;-1;;vandalism
+p+[oó]+n+g+a+n*s+e+ a+;;-1;;vandalism
+p+a+[cs]+e+n+[cs]+e+ *p+o+r+;;-1;;vandalism
+p+a+[gj]+e+r+o+s*;;-1;;vandalism#cuidado con el coche modelo pajero
+p+a+[gj]e+a+[bv]a+n*;;-1;;vandalism
+p+a+g+a+ *f+a+n+t+a+s*;;-1;;vandalism
+p+a+g+a+f+a+n+t+i+s+m+o+s*;;-1;;vandalism
+p+a+j+a+[sz]*o*s*;;-1;;vandalism
+p+a+j+a+s* +[ck]+u+[bv]+a+n+a+s*;;-3;;vandalism
+p+a+j+a+s* m+e+n+t+a+l+e*s*;;-2;;vandalism
+p+a+j+e+a+r*o*s*;;-1;;vandalism
+p+a+j+e+a+r+ *[mst]+e+;;-1;;vandalism
+p+a+j+e+r+[ao]+s*;;-1;;vandalism#cuidado con el coche que se llama [[pajero]]
+p+a+j+i+l+l+a+s*;;-1;;vandalism
+p+a+j+u+e+l+a+s*;;1;;vandalism
+p+a+l+e+t+o+s*;;-1;;vandalism
+p+a+n+o+(c+h+|x+)a+s*;;-1;;vandalism
+p+a+n+o+(c+h+|x+)i+t+a+s*;;-1;;vandalism
+p+a+p+o+s*;;-1;;vandalism
+p+a+r+a+d+i+t+[ao]+s*;;-1;;vandalism
+p+a+s+[óo]+ +p+o+r+ +(a+q+u*|k+)[íi]+;;-1;;test #http://es.wikipedia.org/w/index.php?title=tragedia&curid=2733&diff=25750814&oldid=25750558
+p+e+[mn]+[^a-z]{,3}d+e+j+[ao]+s*;;-1;;vandalism
+p+e+[mn]+d+e+j+a+d+a+s*;;-1;;vandalism
+p+e+d+o+rr+[ao]+s*;;-2;;vandalism
+p+e+d?o+s*;;-1;;vandalism
+p+e+l+o+s* *(d+e+l+|d+e* *m+i+|d+e*) *c+u+l+o+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=pelo&diff=prev&oldid=19283792
+p+e+l+o+t+a+s+ +l+e+n+a+s*;;-1;;vandalism
+p+e+l+o+t+u+d+[ao]+s*;;-1;;vandalism
+p+e+l+o+t+u+d+i+t+[ao]+s*;;-1;;t;;
+p+e+n+e+[sz]+[óo]+n+e*s*;;-1;;vandalism
+p+e+n+e+[sz]+o+t+e+s*;;-1;;vandalism
+p+e+n+e+s*;;-1;;vandalism
+p+e+r+r[ao]+s* *j+u+d+[ií]+o+s*;;-2;;vandalism
+p+e+r+ra+s*;;-1;;vandalism
+p+e+r+ro+ *f+l+a+u+t+a+s*;;-1;;vandalism
+p+e+s+t+a+z+o+s*;;-1;;vandalism
+p+e+s+t+e+s*;;-1;;vandalism
+p+e+t+a+r+d+a+s*;;-1;;vandalism
+p+e+t+a+r+d+a+z+o+s*;;-1;;vandalism
+p+e+t+e+r+[ao]+s*;;-1;;vandalism#siempre con la misma petera
+p+e+t+e+s*;;-1;;vandalism
+p+i*[ck]+o+s* *(p+a+l+|p+a+ *e+l+|p+a+ *l+a+);;-1;;vandalism#pico es pene en jerga, pero puede confundirse con el de una montaña
+p+i+(c+h+|x+)a+ *c+o+r+t+a+s*;;-1;;vandalism
+p+i+(c+h+|x+)a+s*;;-1;;vandalism
+p+i+(c+h+|x+)i+t+a+s*;;-1;;vandalism
+p+i+e+n+s+a+s* +e+n+;;-1;;t;;
+p+i+j+a+s*;;-1;;vandalism
+p+i+k+o+s*;;-1;;vandalism
+p+i+n+c+h+e+s*;;-2;;vandalism
+p+i+n+g+a+s*;;-2;;vandalism
+p+i+r+o+[bv]+o+s*;;-1;;vandalism
+p+i+t+o+s*;;-1;;vandalism
+p+i+t+u+d+[ao]+s*;;-1;;vandalism
+p+i[bv]+[oó]n+e*s*;;-1;;vandalism
+p+i[bv]+e+s*;;-1;;vandalism
+p+i[bv]+o+n+a+[sz]+o+s*;;-1;;vandalism
+p+o+(l+l|y+)a+ *c+o+r+t+a+s*;;-2;;vandalism
+p+o+(l+l|y+)a+s*;;-2;;vandalism
+p+o+(ll+|y+)[oó]+n+e*s*;;-2;;vandalism
+p+o+l+la+[sz]+o+s*;;-2;;vandalism
+p+o+ll+[oó]+n+e*s*;;-1;;vandalism
+p+o+r+ *f+a+;;-1;;t;;
+p+o+r+o+n+g+a+s*;;-1;;vandalism
+p+o+r+q+u+e+r+[ií]+a+s*;;-1;;vandalism
+p+o+t+o+rr+o+s*;;-1;;vandalism
+p+op[oó]+s*;;-1;;vandalism
+p+r+i+n+g+a+o+s*;;-1;;vandalism
+p+r+o+f+i+t+ *[\!\?]+;;-1;;vandalism
+p+r+o+f+i+t+ *\!;;-3;;vandalism
+p+u*fff+;;-1;;vandalism#al menos 3 f
+p+u+[rt]a+ *(b+a+s+u+r+a+|m+i+e+r+d+a+s*);;-1;;vandalism
+p+u+a+[gj]+s*;;-1;;vandalism
+p+u+n+t+a+z+[ao]+s*;;-1;;vandalism
+p+u+t+[ií]+[scz]+i+m+[ao]+s*;;-1;;vandalism
+p+u+t+[oó]+n+e*s* *[vb]+e+r+[bv]+e+n+e+r+o+s*;;-2;;vandalism
+p+u+t+[íi]+s+i+m+[ao]+s*;;-1;;vandalism
+p+u+t+a+[sz]+[ao]+s*;;-1;;vandalism
+p+u+t+a+[zs]+[ao]+[sz]*;;-2;;vandalism
+p+u+t+a+d+a+s*;;-2;;vandalism
+p+u+t+a+s* *m+a+d*r+e+s*;;-1;;vandalism
+p+u+t+e+r+[ií]*o+s*;;-1;;vandalism
+p+u+t+i+ *[ck]+l+[uú]+[bs]*e*s*;;-1;;vandalism
+p+u+t+i+f+e+r+i+o+s*;;-1;;vandalism
+p+u+t+i+n+e+s+;;-1;;vandalism
+p+u+t+i+t+[ao]+s*;;-2;;vandalism
+p+u+t+o+s* *a+m+o+s*;;-1;;vandalism
+p+u+t+o+t+e+s*;;-1;;vandalism
+p+u+t[oó]+ne*s*;;-1;;vandalism
+p+u+ñ+e+t+a+s*;;-1;;vandalism
+p+u+ñ+e+t+e+r+[ao]+s*;;-3;;vandalism
+p2\+k2;;-2;;vandalism
+pagead2?\.googlesyndication\.com;;-999;;vandalism
+pagina \d+ de \d+ vandalizadas aqui en wikipedia usando el programa "walker prox spam";;-1000;;vandalism
+papa[cs]ito;;-1;;vandalism
+patito feo;;2;;g;;
+patos? boludos?;;3;;g;;#http://es.wikipedia.org/w/index.php?diff=next&oldid=20902199
+peste porcina;;3;;g;;
+petardas\.com;;-10;;vandalism
+pete wentz;;5;;g;;#pete http://es.wikipedia.org/w/index.php?diff=prev&oldid=17796301
+pete wisdom;;5;;g;;#pete
+pornhub\.com;;-10;;vandalism
+pornotube\.com;;-10;;vandalism
+r+e+ *c+o+n+t+r+a+;;-1;;vandalism
+r+e+c+o+n+c+h+a+d+e+t+u+m+a+d+r+e+;;-1;;vandalism
+r+e+p+o+(l+l|y+)a+s*;;-1;;vandalism
+r+e+t+a+r+d+e*r*d*s*;;-1;;vandalism
+r+i+n+c+[oó]+n+ +d+e+l+ +v+a+g+o+;;-1;;vandalism#la mayoria serán vandalismos, y tampoco se deben permitir enlaces al ricon del vago, por no ser fuente fiable
+r+o+r+o+;;-1;;t;;
+r+q+l+i+a+o+;;-1;;vandalism#reculiao http://es.wikipedia.org/w/index.php?title=pit%c3%a1goras&diff=prev&oldid=19172937
+r+u+b+i+a+z+[oa]+s*;;-1;;vandalism
+r+u+l+e+z+;;-1;;t;;
+r\.i\.p;;-1;;t;;
+redtube;;-10;;vandalism
+s+a+[ck]+a+r*(t+e+|o+s+) *(1|u+n+|l+o+s+) *m+o+[ck]+o+s*;;-2;;vandalism#http://es.wikipedia.org/w/index.php?title=hip%c3%b3tesis_%28m%c3%a9todo_cient%c3%adfico%29&diff=prev&oldid=35631729
+s+a+l+i+d+o+r+r+[oa]+s*;;-1;;vandalism
+s+a+l+u+d+o+s+;;-1;;t;;
+s+a+n+t+a+ +r+i+t+a+ +r+i+t+a+;;-1;;t;;
+s+e+ *(l+a+)? *come+;;-1;;vandalism
+s+e+ *(l+a+)? *comi[oó]+;;-1;;vandalism
+s+e+c+u+e+s+t+r+a+d+o+[^a-z0-9]{,5}a+[^a-z0-9]{,5}w+i+k+i+p+e+d+i+a+;;-9999;;vandalism
+s+e+x+i+;;-1;;vandalism#sexy no siempre es vandalismo, dejamos sexi
+s+h+e+m+a+l+o+t+e+s*;;-1;;vandalism
+s+i+ *l+e+e+s+ *e+s+t+o+;;-1;;vandalism
+s+l+u+t+s*;;-1;;vandalism
+s+o+[iy]+ *d+e+[sz]+o+[ck]+u+p+a+d+[oa]+;;-1;;vandalism# http://es.wikipedia.org/w/index.php?title=prox%c3%a9mica&diff=prev&oldid=35633487
+s+o+[yi]+ *(e+l+ *m+e+j+[oó]+[rn]+|l+a+ *m+e+j+[oó]+[rn]+);;-1;;vandalism
+s+o+[yi]+ *(e+l+|l+a+) *m+[áa]+s+;;-1;;t;;
+s+o+[yi]+( *u+n+| *1)? *v+[aá]+n+d+a+l+o+;;-1;;vandalism
+s+o+p+l+a+ *n+u+[ck]+a+s*;;-1;;vandalism
+s+o+r+e+t+e+s*;;-1;;vandalism
+s+o+s u+n+a*;;-1;;vandalism
+s+o+y+[^a-z0-9]{,5}u+n+[^a-z0-9]{,5}(e+d+i+t+o+r+|u+s+u+a+r+i+o+)[^a-z0-9]{,5}e+x+p+u+l+s+a+d+o+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=dominio_de_nivel_superior&diff=prev&oldid=19770705
+s+u+[bc]+n+o+r+m+a+l+[ae]*s*;;-5;;vandalism
+s+u+[bc]+n+o+r+m+a+l+i+d+a+d+e*s*;;-5;;vandalism
+s+u+c+e+s+f+u+l+ +[^ \n]+ +i+s+ +s+u+c+e+s+f+u+l+;;-2;;vandalism
+s+u+c+k+ +m+y+;;-1;;vandalism
+s+u+d+a+[ck]+a+[sz]*;;-1;;vandalism
+s+u+s* puta+s* madre+s*;;-1;;vandalism
+s+u+s+ *m+u+e+r+t+o+s*;;-1;;vandalism
+s+€+m+€+n+;;-9999;;vandalism#uso de € para evitar al bot http://es.wikipedia.org/w/index.php?title=complemento_circunstancial&diff=32594529&oldid=32594390
+sabemos lo que te gusta;;3;;g;;#onda expansiva radio
+screamin\' pijas;;3;;g;;
+sexo oral;;5;;g;;#término sexual bien dicho
+shit *dicks*;;-1;;vandalism
+so[iy] la m[áa][zs] [vb]ella;;-1;;vandalism
+t+a+r+a+d+[ao]+s*;;-1;;vandalism
+t+e* c+o+m+e+s+;;-1;;vandalism
+t+e* c+o+m+i+s+t+e+;;-1;;vandalism
+t+e* g+u+s+t+a+;;-1;;vandalism
+t+e*n+g+o+ *(e+l|la+) *(c+u+l+o+|c+o+n+c+h+a+|c+o+ñ+o+|p+o+l+a+|p+o+y+a+);;-1;;vandalism
+t+e+l+a+ *d+e+l+ *t+e+l+[óo]+n+;;-1;;vandalism
+t+e+n+g+o+ *u+n+a*;;-1;;vandalism
+t+e+t+a+s*;;-2;;vandalism
+t+e+t+a+z+a+s+;;-2;;vandalism
+t+e+t+i+t+a+s*;;-1;;vandalism
+t+e+t+o+n+a+s*;;-1;;vandalism
+t+h+i+s+ *p+a+g+e+ *b+r+o+u+g+h+t+ *t+o+ *y+o+u+;;-100;;vandalism
+t+h+i+s+ *p+a+g+e+ *h+a+s+ *b+e+e+n+ *v+a+n+d+a+l+i+s+e+d+;;-100;;vandalism
+t+i+t+s+;;-1;;vandalism
+t+o+c+a+r* *([mtsl]+e+)? *(l[oa]s*)? *(h*u+e+[vb]+o+s*|p+e+l+o+t+a+s*|p+o+(l+l+|y+)a+s*|w+e+[vb]+o+s*);;-1;;vandalism
+t+o+d+o+[ao]+s+ *(e+r+a+n+|s+o+n+) *u+n+[ao]+s+;;-1;;vandalism
+t+o+m+a+r+ *p+o+r+( *e+l+)? *[ck]+u+l+o+;;-1;;vandalism
+t+o+n+t+[ao]+s* *(k+i+e+n+e*s*|q+u*i+e+n+e*s*|e+l+|l+a+|l+o+s+|l+a+s+) *([qk]+u*e*)? *l+o+ *l+e+a+n*;;-1;;vandalism
+t+o+t*n+t+[ao]+l+c+u+l+o+s*;;-1;;vandalism
+t+o+t*n+t+[ao]+s* *(d+e+|d+e+l+|d+e+ *e+l+) *(c+u+l+o+|o+r+t+o+|r+e+m+a+t+e+);;-2;;vandalism
+t+o+t*n+t+[ao]+s*;;-2;;vandalism
+t+o+t*n+t+i+t+[ao]+s*;;-1;;vandalism
+t+o+t*n+t+o+r+r+[oó]+n+[ae]*s*;;-1;;vandalism
+t+r+a+[vb]+e+l+o+s*;;-1;;vandalism
+t+r+a+[vb]+e+s+t+i+s*;;-1;;vandalism
+t+r+a+g+a+ *(l+e+c+h+e+s*|l+e+f+a+s*|p+o+(l+l+|y+)a+s+|s+a+b+l+e+s+);;-1;;vandalism
+t+r+a+n+c+a+s*;;-1;;vandalism
+t+r+o+l+[oa]+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=nicol%c3%a1s_cop%c3%a9rnico&curid=7360&diff=25484234&oldid=25484209
+t+r+u+c+h+o+s*;;-1;;vandalism#cuidado con el pez trucha
+t+r+u+ñ+o+s*;;-1;;vandalism
+t+u+s+ *m+u+e+r+t+o+s*;;-1;;vandalism
+t\.?[kq]\.?m\.?;;-1;;t;;
+texto de titular;;-1;;t;;
+texto en cursiva;;-1;;t;;
+texto en negrita;;-1;;t;;
+tu+s* (put[ao]+s* )?(abuel[ao]+s*|madre+s*|mama+s*|m+u+e+r+t+o+s*|padre+s*|papa+s*|v+i+e+j+[ao]+s*);;-2;;vandalism
+tube8\.com;;-10;;vandalism
+tusfotoscaseras\.com;;-10;;vandalism
+tuslesbianas\.com;;-10;;vandalism
+título del enlace;;-1;;t;;
+u(_u){1,};;-1;;t;;
+u+h+mm+;;-1;;test #al menos dos m http://es.wikipedia.org/wiki/especial:search?search=uhm&go=ir
+u+s+t+e+d+e+s+ *(s+o+n+|s+o+[iy]+s+);;-1;;vandalism
+u+yyy+;;-1;;vandalism
+ufff+;;-1;;t;;
+un[^a-z0-9]{,5}ejemplo[^a-z0-9]{,5}claro[^a-z0-9]{,5}es[^a-z0-9]{,5}lo[^a-z0-9]{,5}sucedido[^a-z0-9]{,5}con[^a-z0-9]{,5}re(b|v)eli.n;;-9999;;vandalism
+urine vandal owns;;-90;;vandalism
+usuario discusión;;-1;;test #http://es.wikipedia.org/w/index.php?title=econom%c3%ada_de_argentina&diff=prev&oldid=35634576
+v+e+r+y+ +h+o+t+;;-1;;vandalism
+v+e+t+e+ +a+ +l+a+;;-1;;vandalism
+v+e+t+e+ +p+a+l+;;-1;;vandalism
+vdd+;;-1;;t;;
+verduler[ao]s*;;-1;;vandalism
+vicente boluda;;10;;g;;#http://es.wikipedia.org/w/index.php?diff=23319359&oldid=23319279
+viva la propiedad privada;;-9999;;vandalism#pedido http://es.wikipedia.org/w/index.php?diff=20462350&oldid=20440724
+w+[au]+[sz]+ +h+e+r+e+;;-1;;test #http://es.wikipedia.org/w/index.php?title=tragedia&curid=2733&diff=25750814&oldid=25750558 http://es.wikipedia.org/w/index.php?title=tezoatl%c3%a1n_de_segura_y_luna_%28municipio%29&diff=prev&oldid=35631929
+w+a+r+r[ao]+s*;;-1;;vandalism
+w+e+[oó]+n+e*s*;;-1;;vandalism
+w+e+[vb]+a+d+a+s*;;-1;;vandalism
+w+e+a+s*;;-1;;vandalism
+w+e+n+[ao]+s*;;-1;;t;;
+w+eee+;;-1;;test #al menos 3 e
+w+h+o+r+e+s*;;-1;;vandalism
+w+i+k+i+[ \-]*([cs]+e+n+s+u+r+a+s*|[cs]+e+n+s+u+r+a+d+o+r+[ea]*s*|f+a+(c+h+|x+)a+s*|m+a+f+i+a+s*|m+i*e+r+d+a+s*|p+e+d+[oó]+f+i+l+o+s*|p+e+d+[oó]+s*);;-9999;;vandalism
+w+i+k+i+p+e+d+i+a+ *l+i+b+r+e+ *d+e* *[cs]+e+n+s+u+r+a+s*;;-9999;;vandalism
+w+i+k+i+p+e+d+i+a+[^a-z0-9]{,5}n+o+[^a-z0-9]{,5}p+e+r+m+i+t+e+[^a-z0-9]{,5}q+u+e+[^a-z0-9]{,5}s+e+[^a-z0-9]{,5}m+e+n+c+i+o+n+e+;;-9999;;vandalism#http://es.wikipedia.org/w/index.php?title=la_guerra_gaucha_(pel%c3%adcula)&diff=19771604&oldid=19771575
+w\-?t\-?f *[\?\!]+;;-1;;vandalism
+wea international;;5;;g;;#http://es.wikipedia.org/w/index.php?title=usuario:avbot/errores&diff=23538886&oldid=23538812
+why *so *serious *\?;;-3;;vandalismbtards
+wikipedia *jews+;;-3;;vandalism
+x+[\"\']+d+;;-1;;t;;
+x+a+[ou]+;;-1;;vandalism
+x+a+v+a+l+e*s*;;-1;;vandalism
+x+d+;;-1;;t;;
+x+f+a+;;-1;;vandalism
+x+o+x+o+;;-1;;vandalism#típica despedida inglesa
+x+u+l+[oa]+s*;;-1;;vandalism
+x+u+m+i+n+o+s*;;-1;;vandalism
+x+u+p+a+[bv]a+s*;;-1;;vandalism
+x+u+p+a+l+a+;;-1;;vandalism
+x+u+p+a+r+;;-1;;vandalism
+x+u+p+a+r+o+s+;;-1;;vandalism
+x+u+p+a+s*;;-1;;vandalism
+y+a+ +v+e+s+;;-1;;test #http://es.wikipedia.org/w/index.php?title=impresionismo&diff=prev&oldid=25743038
+y+e+a+hh+;;-1;;vandalism
+y+o+ +s+o+[yi]+ +d+e+;;-1;;vandalism
+youporn\.com;;-10;;vandalism
+your soul to the wikimedia foundation;;-5;;vandalism#http://es.wikipedia.org/w/index.php?title=john_seigenthaler,_sr&diff=35172468&oldid=35172465
+z+a+s+ +e+n+ +t+o+d+a+ +l+a+ +b+o+c+a+;;-1;;vandalism
+z+o+r+r+[óo]+n+e*s*;;-1;;vandalism
+z+o+r+r+a+s*;;-1;;vandalism
+z+o+r+r+e+r+[íi]+o+s*;;-1;;vandalism
+z+o+r+r+u+n+a+s*;;-1;;vandalism
+z+u+r+r+u+ñ+o+s*;;-2;;vandalism
+ñ+o+r+d+o+s*;;-1;;vandalism
+p+o+o+p+ *h+o+l+e+s*;;-1;;vandalism#http://es.wikipedia.org/w/index.php?title=Reciario&diff=next&oldid=36111146
