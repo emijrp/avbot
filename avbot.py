@@ -382,6 +382,8 @@ class AVBOT():
             self.users[user] = {'groups': userprops['groups'], 'whitelisted': False, 'editcount': userprops['editcount']}
         return self.isUserNewbie(user)
     
+    
+    
     def analyseChange(self, change):
         change['timestamp_utc'] = datetime.datetime.fromtimestamp(change['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
         if change['user'] == self.wikiBotName: # Ignore own edits
@@ -506,24 +508,101 @@ class AVBOT():
                         ircbuffer += data.decode('utf-8')
             except socket.error:
                 print >>sys.stderr, 'Socket error!'
-
-    def analyseEdit(self, change):
+    
+    def getDiff(self, change):
+        """ Devuelve el diff de dos revisiones """
+        """ Return a diff of two revisions """
+        
         query = pywikibot.data.api.Request(parameters={'action': 'compare', 'fromrev': change['revision']['old'], 'torev': change['revision']['new']}, site=self.site)
         data = query.submit()
+        diff = {'added': [], 'deleted': []}
         if 'compare' in data and '*' in data['compare']:
-            added = []
-            m = re.findall(r'(?im)<ins [^<>]*?>([^<>]*?)</ins>', data['compare']['*'])
-            for i in m:
-                added.append(i)
-            m = re.findall(r'(?im)<td class="diff-addedline"><div>([^<>]*?)</div></td>', data['compare']['*'])
-            for i in m:
-                added.append(i)
-            added_plain = '\n'.join(added)
-            
-            for filterr in self.filters:
-                m = re.findall(filterr['compiled'], added_plain)
+            diff['added'] += re.findall(r'(?im)<ins [^<>]*?>([^<>]*?)</ins>', data['compare']['*'])
+            diff['added'] += re.findall(r'(?im)<td class="diff-addedline"><div>([^<>]*?)</div></td>', data['compare']['*'])
+            diff['deleted'] += re.findall(r'(?im)<del [^<>]*?>([^<>]*?)</ins>', data['compare']['*'])
+            diff['deleted'] += re.findall(r'(?im)<td class="diff-deletedline"><div>([^<>]*?)</div></td>', data['compare']['*'])
+        return diff
+    
+    def getScore(self, diff):
+        """ Calcula la puntuación para un diff al pasarle los filtros """
+        """ Calculate score for diff using filters """
+        
+        score = {
+            'test': {'added_score': 0, 'deleted_score': 0}, 
+            'vandalism': {'added_score': 0, 'deleted_score': 0}, 
+            'global': {'score': 0, 'group': 'unknown'}, 
+        }
+        for ifilter in self.filters:
+            for iadded in diff['added']:
+                m = re.findall(ifilter['compiled'], iadded)
                 for i in m:
-                    print("!!!Encontrado %s (%s score)" % (filterr['regexp'], filterr['score']))
+                    print("!!!Añadido %s (%s score)" % (ifilter['regexp'], ifilter['score']))
+                    score[ifilter['group']]['added_score'] += ifilter['score']
+            for ideleted in diff['deleted']:
+                m = re.findall(ifilter['compiled'], ideleted)
+                for i in m:
+                    print("!!!Eliminado %s (%s score)" % (ifilter['regexp'], ifilter['score'] * -1))
+                    score[ifilter['group']]['deleted_score'] += ifilter['score'] * -1
+        
+        score['global']['score'] = (score['test']['added_score'] + score['vandalism']['added_score']) + \
+                                   (score['test']['deleted_score'] + score['vandalism']['deleted_score'])
+        score['global']['group'] = score['test']['added_score'] <= score['vandalism']['added_score'] and 'test' or 'vandalism'
+        return score
+    
+    def revertEdit(self, change, alledits=False):
+        """ Revierte una edición de un usuario o todas sus ediciones """
+        """ Revert one or all edits by a user """
+        
+        print("---> Reverting %s edit(s) by %s" % (change['revision']['new'], change['user']))
+        pass
+    
+    def isEditBlanking(self, change):
+        """ Evalúa si una edición es un blanqueo """
+        """ Assess whether an edit is a blanking """
+        
+        lenOld = change['length']['old']
+        lenNew = change['length']['new']
+        if lenNew < lenOld and \
+           not re.search(r'(?im)(redirect|redirección)', '\n'.join(change['diff']['added'])):
+            percent = (lenOld-lenNew)/(lenOld/100.0)
+            if (lenOld>=500 and lenOld<1000 and percent>=90) or \
+                (lenOld>=1000 and lenOld<2500 and percent>=85) or \
+                (lenOld>=2500 and lenOld<5000 and percent>=75) or \
+                (lenOld>=5000 and lenOld<10000 and percent>=72.5) or \
+                (lenOld>=10000 and lenOld<20000 and percent>=70) or \
+                (lenOld>=20000 and percent>=65):
+                return True
+        return False
+    
+    def isEditVandalism(self, change, score):
+        vandalismthreshold = -4
+        vandalismdensity = 150
+        if score['global']['group'] == 'vandalism':
+            if score['global']['score'] <= vandalismthreshold:
+                return True
+            elif score['global']['score'] < 0 and 
+        return False
+    
+    def analyseEdit(self, change):
+        """ Analiza una edición """
+        """ Analyse one edit """
+        
+        diff = self.getDiff(change)
+        change['diff'] = diff
+        score = self.getScore(diff)
+        print("Score: %s" % (score))
+        
+        # calcular score general o por tipos mejor?
+        if self.isEditTest(change, score):
+            self.revertEdit(change)
+            self.sendMessage(change, message='test')
+        elif self.isEditBlanking(change):
+            self.revertEdit(change)
+            self.sendMessage(change, message='blanking')
+        elif self.isEditVandalism(change, score):
+            self.revertEdit(change)
+            self.sendMessage(change, message='vandalism')
+    
     """
 
             for m in match:

@@ -356,31 +356,7 @@ def mustBeReverted(editData, cleandata, userClass):
                 editData['details']=u"" #no olvidar
                 return revertAllEditsByUser(editData, userClass, regexplist) #Revert
         
-    #Blanking edit?
-    lenOld=editData['lenOld']
-    lenNew=editData['lenNew']
-    if lenNew<lenOld and not re.search(avbotglobals.parserRegexps['blanqueos'], editData['newText']): #Avoid articles converted into #REDIRECT [[...]] and other legitimate blankings
-        percent=(lenOld-lenNew)/(lenOld/100.0)
-        if (lenOld>=500 and lenOld<1000 and percent>=90) or \
-            (lenOld>=1000 and lenOld<2500 and percent>=85) or \
-            (lenOld>=2500 and lenOld<5000 and percent>=75) or \
-            (lenOld>=5000 and lenOld<10000 and percent>=72.5) or \
-            (lenOld>=10000 and lenOld<20000 and percent>=70) or \
-            (lenOld>=20000 and percent>=65):
-            editData['type']='bl'
-            editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
-            editData['details']=u''
-            
-            return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-        """
-        if editData['lenOld']>=1000 and editData['lenNew']<=500 and editData['lenNew']<editData['lenOld']/7: # 1/7 es un buen numero, 85,7%
-            editData['type']='bl'
-            editData['score']=-(editData['lenNew']+1) #la puntuacion de los blanqueos es la nueva longitud + 1, negada, para evitar el -0
-            editData['details']=u''
-            
-            return revertAllEditsByUser(editData, userClass, regexplist) #Revert
-        """
-    #TODO: Blanking line like this, All glory to the hypnoto
+   
     
     #Interwiki and categories blanking. Example: http://es.wikipedia.org/w/index.php?title=Reciclaje&diff=34127808&oldid=34116543
     oldCategoriesNumber=len(re.findall(avbotglobals.parserRegexps['categories'], editData['oldText']))

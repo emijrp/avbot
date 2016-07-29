@@ -163,19 +163,19 @@ def magicInterwiki(page, resumen, idioma):
     else:
         return nuevo, resumen
 
-def namespaceTranslator(namespace):
+def namespaceTranslator(namespaceid):
     """ Carga espacios de nombres por idioma """
     """ Load namespace per language """
-    data=avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges")
-    data=data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
-    m=re.compile(ur'<option value="([1-9]\d*)">(.*?)</option>').finditer(data)
-    wikipedianm=u''
+    
+    data = avbotglobals.preferences['site'].getUrl("/w/index.php?title=Special:RecentChanges")
+    data = data.split('<select id="namespace" name="namespace" class="namespaceselector">')[1].split('</select>')[0]
+    m = re.compile(ur'<option value="(?P<nmid>[0-9]+)">(?P<nmname>[^<>]+?)</option>').finditer(data)
     for i in m:
-        number=int(i.group(1))
-        name=i.group(2)
-        if number==namespace:
-            wikipedianm+=name
-    return wikipedianm
+        nmid = int(i.group('nmid'))
+        nmname = i.group('nmname')
+        if namespaceid == nmid:
+            return nmname
+    return ''
 
 def resumeTranslator(editData):
     """ Traductor de resúmenes de edición primitivo """
@@ -261,25 +261,6 @@ def getParameters():
         wikipedia.output(u"Not all obligatory parameters were found. Please, check (*) parameters.")
         sys.exit()
 
-def getTime():
-    """ Coge la hora del sistema """
-    """ Get system time """
-    return time.strftime('%H:%M:%S')
-
-def encodeLine(line):
-    """ Codifica una cadena en UTF-8 a poder ser """
-    """ Encode string into UTF-8 """
-    
-    try:
-        line2=unicode(line,'utf-8')
-    except UnicodeError:
-        try:
-            line2=unicode(line,'iso8859-1')
-        except UnicodeError:
-            print u'Unknown codification'
-            return ''
-    return line2
-
 def getUserClass(editData):
     """ Averigua el tipo de usuario del que se trata """
     """ Check user class """
@@ -343,31 +324,3 @@ def checkBlockInEnglishWikipedia(editData):
     
     return comment, isProxy
 
-def checkForUpdates():
-    fullpath = "/"+"/".join(os.path.abspath( __file__ ).split("/")[:-1])+"/"
-    svn='http://avbot.googlecode.com/svn/trunk/'
-    f=urllib.urlopen(svn)
-    html=f.read()
-    m=re.compile(ur">(?P<filename>[^<]+?\.py)</a>").finditer(html)
-    for i in m:
-        filename=i.group("filename")
-        wikipedia.output(u"Checking file %s..." % filename)
-        g=open(fullpath+filename, 'r')
-        h=urllib.urlopen(svn+filename)
-        if g.read()!=h.read():
-            wikipedia.output(u"%s has changed!!!" % filename)
-            g.close()
-            return True
-        else:
-            wikipedia.output(u"OK!")
-            g.close()
-    f.close()
-    return False
-
-def existenceFile():
-    while True:
-        if not os.path.isfile(avbotglobals.existFile):
-            existFile=open(avbotglobals.existFile, 'w')
-            existFile.write(str("hi"))
-            existFile.close()
-        time.sleep(60) # debe ser menor que el time del cron / 2
