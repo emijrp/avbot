@@ -254,6 +254,7 @@ class AVBOT():
             if filterLocation['type'] == 'file':
                 location = '%s/%s' % (self.path, filterLocation['location'])
                 if os.path.isfile(location):
+                    self.sortFiltersFile(location)
                     with open(location, 'r') as f:
                         for row in f.read().strip().splitlines():
                             self.loadFilter(row)
@@ -703,6 +704,27 @@ class AVBOT():
     def sendMessage(self, change, message=''):
         #TODO
         pass
+    
+    def sortFiltersFile(self, location):
+        dic = {}
+        with open(location, 'r') as f:
+            lines = f.read().strip().splitlines()
+        
+        for line in lines:
+            regexp, score, group2 = line.split(';;')
+            group = group2.split('#')[0].strip()
+            if group in dic:
+                dic[group].append(line)
+            else:
+                dic[group] = [line]
+        
+        with open(location, 'w') as f:
+            groups = dic.keys().sort()
+            output = ''
+            for group in groups:
+                dic[group].sort()
+                output += '%s\n' % ('\n'.join(dic[group]))
+            f.write(output)
     
     def undoHTMLEntities(self, text):
         text = re.sub(r'&lt;', '<', text)
