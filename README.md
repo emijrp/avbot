@@ -41,4 +41,5 @@ There are two main **[publications](https://github.com/emijrp/avbot/tree/master/
 AVBOT code is GPLv3.
 
 ## Contribute
+
 If you want to send any **suggestion**, reach me at [emijrp@gmail.com](mailto:emijrp@gmail.com). For **bugs**, you can use the [issues section](https://github.com/emijrp/avbot/issues). Thanks.
